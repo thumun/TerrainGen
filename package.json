@@ -9,8 +9,9 @@
     "test": "vitest run",
     "typecheck": "tsc",
     "lint": "eslint",
-    "format": "prettier",
-    "check": "prettier --write . && eslint --fix"
+    "lint:fix": "eslint --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
