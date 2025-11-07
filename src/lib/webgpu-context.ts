@@ -18,7 +18,7 @@ export async function initWebGPU(canvas: HTMLCanvasElement): Promise<WebGPUConte
   // Our type system thinks this will always be defined, but browsers without webGPU supported
   // won't have this field defined
   //
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
   if (!navigator.gpu) {
     const errorMessageElement = document.createElement('h1');
     errorMessageElement.textContent =

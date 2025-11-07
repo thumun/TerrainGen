@@ -1,9 +1,10 @@
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import reactHooks from 'eslint-plugin-react-hooks';
-import importX from 'eslint-plugin-import-x';
-import globals from 'globals';
 import { defineConfig } from 'eslint/config';
+import prettierConfig from 'eslint-config-prettier/flat';
+import { importX } from 'eslint-plugin-import-x';
+import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 const GLOB_EXCLUDE = [
   '**/.nx/**',
@@ -15,20 +16,44 @@ const GLOB_EXCLUDE = [
   '**/vite.config.*.timestamp-*.*',
 ];
 
+const importRules = {
+  'import-x/order': [
+    'warn',
+    {
+      alphabetize: { order: 'asc' },
+      'newlines-between': 'always',
+    },
+  ],
+};
+
 export default defineConfig([
   {
     name: 'ignores',
     ignores: GLOB_EXCLUDE,
   },
   {
+    name: 'javascript',
+    files: ['**/*.js'],
+    extends: [eslint.configs.recommended, importX.flatConfigs.recommended, prettierConfig],
+    languageOptions: {
+      sourceType: 'module',
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: { ...importRules },
+  },
+  {
     name: 'javascript/typescript',
-    files: ['**/*.{js,ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     extends: [
       eslint.configs.recommended,
       tseslint.configs.recommendedTypeChecked,
       reactHooks.configs.flat.recommended,
       importX.flatConfigs.recommended,
       importX.flatConfigs.typescript,
+      prettierConfig,
     ],
     languageOptions: {
       sourceType: 'module',
@@ -42,6 +67,6 @@ export default defineConfig([
         ...globals.browser,
       },
     },
-    rules: {},
+    rules: { ...importRules },
   },
 ]);

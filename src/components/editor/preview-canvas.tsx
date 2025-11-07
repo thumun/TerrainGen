@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import type { PreviewNode } from '@/lib/scene';
+
 import WebGPUCanvas from '@/components/webgpu-canvas';
 import { PreviewRenderer } from '@/lib/renderers/preview-renderer';
+import type { PreviewNode } from '@/lib/scene';
 
 export type PreviewCanvasProps = {
   previewNodes: Array<PreviewNode>;

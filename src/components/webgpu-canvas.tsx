@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
 
@@ -46,6 +47,7 @@ export default function WebGPUCanvas({ createRenderer, rendererRef }: WebGPUCanv
       let lastTime = Date.now();
       const doFrame = (time: number) => {
         if (!rendererRef.current) return;
+        // TODO: probably add some kind of stats profiling stuff
         rendererRef.current.onFrame({ time, deltaTime: time - lastTime });
         lastTime = time;
         frameRequestId = window.requestAnimationFrame((t) => doFrame(t));

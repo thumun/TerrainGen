@@ -1,5 +1,3 @@
-import { StrictMode } from 'react';
-import ReactDOM from 'react-dom/client';
 import {
   Outlet,
   RouterProvider,
@@ -8,11 +6,13 @@ import {
   createRouter,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-
-import './styles.css';
-import reportWebVitals from './report-web-vitals.ts';
+import { StrictMode } from 'react';
+import * as ReactDOM from 'react-dom/client';
 
 import App from './app.tsx';
+import reportWebVitals from './report-web-vitals.ts';
+
+import './styles.css';
 
 const rootRoute = createRootRoute({
   component: () => (
