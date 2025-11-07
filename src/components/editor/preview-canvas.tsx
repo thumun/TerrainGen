@@ -8,7 +8,7 @@ export type PreviewCanvasProps = {
   previewNodes: Array<PreviewNode>;
 };
 
-export function PreviewCanvas({ previewNodes }: PreviewCanvasProps) {
+export default function PreviewCanvas({ previewNodes }: PreviewCanvasProps) {
   const rendererRef = useRef<PreviewRenderer | undefined>(undefined);
 
   // Update pipelines etc when preview nodes change

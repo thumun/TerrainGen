@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { MainCanvas } from './main-canvas';
+import MainCanvas from './main-canvas';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet

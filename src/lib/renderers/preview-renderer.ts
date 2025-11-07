@@ -20,7 +20,7 @@ export class PreviewRenderer implements IRenderer {
 
   onFrame() {
     // const { device } = this.webGPU;
-    // TODO: run the pipeline!
+    // TODO: run the pipeline(s)!
   }
 
   dispose() {

@@ -8,7 +8,7 @@ export type MainCanvasProps = {
   sceneGraph: SceneGraph;
 };
 
-export function MainCanvas({ sceneGraph }: MainCanvasProps) {
+export default function MainCanvas({ sceneGraph }: MainCanvasProps) {
   const rendererRef = useRef<MainRenderer | undefined>(undefined);
 
   // Update pipelines etc when scene graph changes
