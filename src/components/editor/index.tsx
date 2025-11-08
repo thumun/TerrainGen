@@ -16,14 +16,14 @@ export default function Editor() {
   // This "preview nodes" data should be computed from the scene graph.
 
   return (
-    <div className="w-full max-w-[2400px] mx-auto grid grid-rows-[auto_1fr] h-screen max-h-[1800px] overflow-hidden">
-      <header className="bg-zinc-700 py-4 px-8">
+    <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
+      <header className="bg-zinc-700 px-8 py-4">
         <h1 className="text-2xl font-bold tracking-tight">TerrainGen</h1>
       </header>
-      <main className="grid grid-cols-[3fr_minmax(560px,2fr)] grow bg-zinc-800">
+      <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <div className="text-zinc-400 py-2 px-4 border-b-2 border-zinc-900 bg-zinc-900">
+          <div className="border-b-2 border-zinc-900 bg-zinc-900 px-4 py-2 text-zinc-400">
             Toolbar or something goes here
           </div>
           <div className="relative grow">
@@ -37,10 +37,10 @@ export default function Editor() {
           <div className="relative aspect-4/3">
             <MainCanvas sceneGraph={sceneGraph} />
           </div>
-          <div className="grow relative">
-            <div className="absolute inset-0 py-4 px-8 overflow-y-auto">
+          <div className="relative grow">
+            <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <div className="space-y-4 mt-6">
+              <div className="mt-6 space-y-4">
                 <p>parameter 1</p>
                 <p>parameter 2</p>
                 <p>parameter 3</p>
@@ -48,7 +48,7 @@ export default function Editor() {
                 <p>parameter 5</p>
               </div>
               <h2 className="mt-12 text-xl font-medium">Import/Export</h2>
-              <div className="space-y-4 mt-6">
+              <div className="mt-6 space-y-4">
                 <p>import</p>
                 <p>export</p>
               </div>
