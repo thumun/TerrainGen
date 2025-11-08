@@ -9,8 +9,8 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
-import App from './app.tsx';
-import reportWebVitals from './report-web-vitals.ts';
+import EditorPage from './pages/editor';
+import reportWebVitals from './report-web-vitals';
 
 import './styles.css';
 
@@ -26,7 +26,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: App,
+  component: EditorPage,
 });
 
 const routeTree = rootRoute.addChildren([indexRoute]);

@@ -20,6 +20,7 @@ export default function PreviewCanvas({ previewNodes }: PreviewCanvasProps) {
     <WebGPUCanvas
       createRenderer={(webGPU) => new PreviewRenderer(webGPU)}
       rendererRef={rendererRef}
+      divClassName="absolute inset-0"
     />
   );
 }

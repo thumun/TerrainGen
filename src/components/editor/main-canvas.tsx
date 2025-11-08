@@ -20,6 +20,7 @@ export default function MainCanvas({ sceneGraph }: MainCanvasProps) {
     <WebGPUCanvas
       createRenderer={(webGPU) => new MainRenderer(webGPU)}
       rendererRef={rendererRef}
+      divClassName="absolute inset-0 bg-zinc-900"
     />
   );
 }

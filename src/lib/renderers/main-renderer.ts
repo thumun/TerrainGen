@@ -137,14 +137,14 @@ export class MainRenderer implements IRenderer {
       vertex: {
         module: device.createShaderModule({
           label: 'naive vert shader',
-          code: shaders.naiveVertSrc,
+          code: ``,
         }),
         buffers: [MainRenderer.VertexBufferLayout],
       },
       fragment: {
         module: device.createShaderModule({
           label: 'naive frag shader',
-          code: shaders.naiveFragSrc,
+          code: ``,
         }),
         targets: [
           {

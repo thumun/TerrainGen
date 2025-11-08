@@ -30,9 +30,22 @@ interface WebGPUCanvasProps {
    * with the renderer object.
    */
   rendererRef: RefObject<IRenderer | undefined>;
+  divClassName?: string;
 }
 
-export default function WebGPUCanvas({ createRenderer, rendererRef }: WebGPUCanvasProps) {
+/**
+ * Reusable component to set up a `canvas` component and its context for usage with WebGPU.
+ * This is all bundled in `WebGPUContext` objects.
+ *
+ * Because `IRenderer` implementations depend on the device + context to be initialized, this
+ * component also takes a `createRenderer` method, responsible for creating the `IRenderer`
+ * using the `WebGPUContext`.
+ */
+export default function WebGPUCanvas({
+  createRenderer,
+  rendererRef,
+  divClassName = 'relative',
+}: WebGPUCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null!);
 
   // initialize everything at component lifecycle start!
@@ -69,5 +82,26 @@ export default function WebGPUCanvas({ createRenderer, rendererRef }: WebGPUCanv
     };
   }, [createRenderer, rendererRef]);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 bg-blue-100" />;
+  // setup resize callbacks
+  const divRef = useRef<HTMLDivElement>(null!);
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const { blockSize, inlineSize } = entry.contentBoxSize[0];
+      canvasRef.current.width = inlineSize;
+      canvasRef.current.height = blockSize;
+
+      // TODO: trigger `Renderer` resize event
+    });
+
+    resizeObserver.observe(divRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [divRef, canvasRef]);
+
+  return (
+    <div ref={divRef} className={divClassName}>
+      <canvas ref={canvasRef} className="absolute inset-0" />
+    </div>
+  );
 }
