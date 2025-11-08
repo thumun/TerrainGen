@@ -10,6 +10,7 @@ export class PreviewRenderer implements IRenderer {
   // TODO: various buffers, layouts, pipelines
   // Will probably need array/object of pipelines or abstracted preview node pipeline objects
 
+  // @ts-expect-error TODO: use this context object elsewhere
   constructor(private webGPU: WebGPUContext) {
     // TODO: setup pipelines (might be nothing at the start)
   }

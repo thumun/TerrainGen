@@ -11,8 +11,9 @@ export class MainRenderer implements IRenderer {
   modelBindGroupLayout: GPUBindGroupLayout;
   materialBindGroupLayout: GPUBindGroupLayout;
 
-  sceneUniformsBindGroupLayout: GPUBindGroupLayout;
-  sceneUniformsBindGroup: GPUBindGroup;
+  // TODO: these uniform guys
+  // sceneUniformsBindGroupLayout: GPUBindGroupLayout;
+  // sceneUniformsBindGroup: GPUBindGroup;
 
   depthTexture: GPUTexture;
   depthTextureView: GPUTextureView;
@@ -76,41 +77,43 @@ export class MainRenderer implements IRenderer {
       ],
     });
 
-    this.sceneUniformsBindGroupLayout = device.createBindGroupLayout({
-      label: 'scene uniforms bind group layout',
-      entries: [
-        // DONE-1.2: an entry for camera uniforms at binding 0, visible to only the vertex shader, and of type "uniform"
-        {
-          // camera uniforms
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: 'uniform' },
-        },
-        {
-          // lightSet
-          binding: 1,
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: 'read-only-storage' },
-        },
-      ],
-    });
-
-    this.sceneUniformsBindGroup = device.createBindGroup({
-      label: 'scene uniforms bind group',
-      layout: this.sceneUniformsBindGroupLayout,
-      entries: [
-        // TODO: import/create camera code, imo we should make an orbit camera
-        {
-          binding: 0,
-          resource: { buffer: this.camera.uniformsBuffer },
-        },
-        {
-          binding: 1,
-          // TODO: I think lighting should be a uniform at least at the start
-          resource: { buffer: this.lights.lightSetStorageBuffer },
-        },
-      ],
-    });
+    // TODO: scene uniform layouts and groups
+    //
+    // this.sceneUniformsBindGroupLayout = device.createBindGroupLayout({
+    //   label: 'scene uniforms bind group layout',
+    //   entries: [
+    //     // DONE-1.2: an entry for camera uniforms at binding 0, visible to only the vertex shader, and of type "uniform"
+    //     {
+    //       // camera uniforms
+    //       binding: 0,
+    //       visibility: GPUShaderStage.VERTEX,
+    //       buffer: { type: 'uniform' },
+    //     },
+    //     {
+    //       // lightSet
+    //       binding: 1,
+    //       visibility: GPUShaderStage.FRAGMENT,
+    //       buffer: { type: 'read-only-storage' },
+    //     },
+    //   ],
+    // });
+    //
+    // this.sceneUniformsBindGroup = device.createBindGroup({
+    //   label: 'scene uniforms bind group',
+    //   layout: this.sceneUniformsBindGroupLayout,
+    //   entries: [
+    //     // TODO: import/create camera code, imo we should make an orbit camera
+    //     {
+    //       binding: 0,
+    //       resource: { buffer: this.camera.uniformsBuffer },
+    //     },
+    //     {
+    //       binding: 1,
+    //       // TODO: I think lighting should be a uniform at least at the start
+    //       resource: { buffer: this.lights.lightSetStorageBuffer },
+    //     },
+    //   ],
+    // });
 
     this.depthTexture = device.createTexture({
       size: [this.webGPU.canvas.width, this.webGPU.canvas.height],
@@ -123,7 +126,7 @@ export class MainRenderer implements IRenderer {
       layout: device.createPipelineLayout({
         label: 'naive pipeline layout',
         bindGroupLayouts: [
-          this.sceneUniformsBindGroupLayout,
+          // this.sceneUniformsBindGroupLayout,
           this.modelBindGroupLayout,
           this.materialBindGroupLayout,
         ],
