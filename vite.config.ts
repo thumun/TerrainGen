@@ -6,6 +6,10 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    // only need to support browser versions with WebGPU support
+    target: ['chrome113', 'edge113', 'firefox141', 'safari26'],
+  },
   plugins: [viteReact(), tailwindcss()],
   resolve: {
     alias: {
