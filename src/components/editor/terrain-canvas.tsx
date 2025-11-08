@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
 
 import WebGPUCanvas from '@/components/webgpu-canvas';
-import { MainRenderer } from '@/lib/renderers/main-renderer';
+import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import type { SceneGraph } from '@/lib/scene';
 
-export type MainCanvasProps = {
+export type TerrainCanvasProps = {
   sceneGraph: SceneGraph;
 };
 
-export default function MainCanvas({ sceneGraph }: MainCanvasProps) {
-  const rendererRef = useRef<MainRenderer | undefined>(undefined);
+export default function TerrainCanvas({ sceneGraph }: TerrainCanvasProps) {
+  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
   // Update pipelines etc when scene graph changes
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function MainCanvas({ sceneGraph }: MainCanvasProps) {
 
   return (
     <WebGPUCanvas
-      createRenderer={(webGPU) => new MainRenderer(webGPU)}
+      createRenderer={(webGPU) => new TerrainRenderer(webGPU)}
       rendererRef={rendererRef}
       divClassName="absolute inset-0 bg-zinc-900"
     />

@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
 
 import WebGPUCanvas from '@/components/webgpu-canvas';
-import { PreviewRenderer } from '@/lib/renderers/preview-renderer';
+import { NodeGraphRenderer } from '@/lib/renderers/node-graph-renderer';
 import type { PreviewNode } from '@/lib/scene';
 
-export type PreviewCanvasProps = {
+export type NodeGraphCanvasProps = {
   previewNodes: Array<PreviewNode>;
 };
 
-export default function PreviewCanvas({ previewNodes }: PreviewCanvasProps) {
-  const rendererRef = useRef<PreviewRenderer | undefined>(undefined);
+export default function NodeGraphCanvas({ previewNodes }: NodeGraphCanvasProps) {
+  const rendererRef = useRef<NodeGraphRenderer | undefined>(undefined);
 
   // Update pipelines etc when preview nodes change
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function PreviewCanvas({ previewNodes }: PreviewCanvasProps) {
 
   return (
     <WebGPUCanvas
-      createRenderer={(webGPU) => new PreviewRenderer(webGPU)}
+      createRenderer={(webGPU) => new NodeGraphRenderer(webGPU)}
       rendererRef={rendererRef}
       divClassName="absolute inset-0"
     />

@@ -2,7 +2,7 @@ import type { IRenderer } from '@/components/webgpu-canvas';
 import type { PreviewNode } from '@/lib/scene';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
-export class PreviewRenderer implements IRenderer {
+export class NodeGraphRenderer implements IRenderer {
   // ------------------------------------------------------------------------------------------
   // ------ Setup: buffers, layouts, pipeline
   // ------------------------------------------------------------------------------------------

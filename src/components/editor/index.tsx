@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import MainCanvas from './main-canvas';
-import PreviewCanvas from './preview-canvas';
+import NodeGraphCanvas from './node-graph-canvas';
+import TerrainCanvas from './terrain-canvas';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet
@@ -27,7 +27,7 @@ export default function Editor() {
             Toolbar or something goes here
           </div>
           <div className="relative grow">
-            <PreviewCanvas previewNodes={previewNodes} />
+            <NodeGraphCanvas previewNodes={previewNodes} />
             {/* TODO: Overlay the node editor here... */}
           </div>
         </div>
@@ -35,7 +35,7 @@ export default function Editor() {
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <MainCanvas sceneGraph={sceneGraph} />
+            <TerrainCanvas sceneGraph={sceneGraph} />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
