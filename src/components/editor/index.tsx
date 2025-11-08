@@ -16,7 +16,7 @@ export default function Editor() {
   // This "preview nodes" data should be computed from the scene graph.
 
   return (
-    <div className="w-full max-w-[2400px] mx-auto grid grid-rows-[auto_1fr] h-screen max-h-[1800px]">
+    <div className="w-full max-w-[2400px] mx-auto grid grid-rows-[auto_1fr] h-screen max-h-[1800px] overflow-hidden">
       <header className="bg-zinc-700 py-4 px-8">
         <h1 className="text-2xl font-bold tracking-tight">TerrainGen</h1>
       </header>

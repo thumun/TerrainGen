@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
+import { useGPUDevice } from '@/hooks/use-gpu-device';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
 
@@ -46,15 +47,17 @@ export default function WebGPUCanvas({
   rendererRef,
   divClassName = 'relative',
 }: WebGPUCanvasProps) {
+  const { device } = useGPUDevice();
   const canvasRef = useRef<HTMLCanvasElement>(null!);
 
   // initialize everything at component lifecycle start!
   useEffect(() => {
+    if (!device) return;
+
     let frameRequestId: number | undefined = undefined;
-    let webGPUContext: WebGPUContext | undefined = undefined;
+    const webGPUContext = initWebGPU(device, canvasRef.current);
 
     const init = async () => {
-      webGPUContext = await initWebGPU(canvasRef.current);
       rendererRef.current = await createRenderer(webGPUContext);
 
       let lastTime = Date.now();
@@ -80,24 +83,32 @@ export default function WebGPUCanvas({
 
       rendererRef.current = undefined;
     };
-  }, [createRenderer, rendererRef]);
+  }, [createRenderer, device, rendererRef]);
+
+  const resizeCanvas = useCallback(() => {
+    canvasRef.current.width = divRef.current.clientWidth;
+    canvasRef.current.height = divRef.current.clientHeight;
+
+    // TODO: trigger `Renderer` resize event
+  }, []);
 
   // setup resize callbacks
   const divRef = useRef<HTMLDivElement>(null!);
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(([entry]) => {
-      const { blockSize, inlineSize } = entry.contentBoxSize[0];
-      canvasRef.current.width = inlineSize;
-      canvasRef.current.height = blockSize;
-
-      // TODO: trigger `Renderer` resize event
+    // set canvas size once initially
+    // for some reason we need this timeout or else layout isn't updated yet
+    // also attempted `useLayoutEffect` but that didn't seem to work
+    setTimeout(() => {
+      resizeCanvas();
     });
 
+    // attach resize observer
+    const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(divRef.current);
     return () => {
       resizeObserver.disconnect();
     };
-  }, [divRef, canvasRef]);
+  }, [resizeCanvas]);
 
   return (
     <div ref={divRef} className={divClassName}>

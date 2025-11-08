@@ -8,17 +8,7 @@ export type WebGPUContext = {
   aspectRatio: number;
 };
 
-export async function initWebGPU(canvas: HTMLCanvasElement): Promise<WebGPUContext> {
-  const devicePixelRatio = window.devicePixelRatio;
-  canvas.width = canvas.clientWidth * devicePixelRatio;
-  canvas.height = canvas.clientHeight * devicePixelRatio;
-
-  const aspectRatio = canvas.width / canvas.height;
-
-  // Our type system thinks this will always be defined, but browsers without webGPU supported
-  // won't have this field defined
-  //
-
+export async function getWebGPUDevice() {
   if (!navigator.gpu) {
     const errorMessageElement = document.createElement('h1');
     errorMessageElement.textContent =
@@ -34,12 +24,24 @@ export async function initWebGPU(canvas: HTMLCanvasElement): Promise<WebGPUConte
     throw new Error('no appropriate GPUAdapter found');
   }
 
-  const device = await adapter.requestDevice();
+  return await adapter.requestDevice();
+}
+
+export function initWebGPU(device: GPUDevice, canvas: HTMLCanvasElement): WebGPUContext {
+  const devicePixelRatio = window.devicePixelRatio;
+  canvas.width = canvas.clientWidth * devicePixelRatio;
+  canvas.height = canvas.clientHeight * devicePixelRatio;
+
+  const aspectRatio = canvas.width / canvas.height;
+
+  // Our type system thinks this will always be defined, but browsers without webGPU supported
+  // won't have this field defined
+  //
 
   const context = canvas.getContext('webgpu')!;
   const canvasFormat = navigator.gpu.getPreferredCanvasFormat();
   context.configure({
-    device: device,
+    device,
     format: canvasFormat,
   });
 
