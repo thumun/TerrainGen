@@ -44,7 +44,7 @@ To run this application:
 
 ```bash
 npm install
-npm run start
+npm run dev
 ```
 
 ### Building For Production
@@ -55,7 +55,7 @@ To build this application for production:
 npm run build
 ```
 
-The resulting static content will be in the `dist` folder.
+The resulting static content will be in the `dist` folder. You can preview these with `npm run preview`.
 
 We have created a GitHub Actions workflow (`.github/workflows/deploy.yml`) to automatically deploy static content to GitHub Pages.
 
