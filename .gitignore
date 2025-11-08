@@ -8,3 +8,7 @@ count.txt
 .nitro
 .tanstack
 .wrangler
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
