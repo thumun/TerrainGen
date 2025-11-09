@@ -1,0 +1,53 @@
+{
+  "name": "terrain-gen",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0 <23.0.0",
+    "npm": ">=11.0.0 <12.0.0"
+  },
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build && tsc",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.6",
+    "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-router": "^1.132.0",
+    "@tanstack/react-router-devtools": "^1.132.0",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.0.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "@webgpu/types": "^0.1.66",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^16.5.0",
+    "jsdom": "^27.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.46.3",
+    "vite": "^7.1.7",
+    "vitest": "^3.0.5",
+    "web-vitals": "^5.1.0"
+  }
+}
