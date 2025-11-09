@@ -1,6 +1,7 @@
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import type { WebGPUContext } from '@/lib/webgpu-context';
+import * as shaders from '../shaders/shaders';
 
 export class TerrainRenderer implements IRenderer {
   // ------------------------------------------------------------------------------------------
@@ -140,13 +141,13 @@ export class TerrainRenderer implements IRenderer {
       vertex: {
         module: device.createShaderModule({
           label: 'naive vert shader',
-          code: ``,
+          code: shaders.naiveVertSrc,
         }),
         buffers: [TerrainRenderer.VertexBufferLayout],
       },
       fragment: {
         module: device.createShaderModule({
-          label: 'naive frag shader',
+          label: shaders.naiveFragSrc,
           code: ``,
         }),
         targets: [
