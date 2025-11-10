@@ -1,9 +1,15 @@
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import type { WebGPUContext } from '@/lib/webgpu-context';
+import { Stage } from '@/lib/scene/stage';
+import { Camera } from '@/lib/scene/camera';
 import * as shaders from '../shaders/shaders';
 
 export class TerrainRenderer implements IRenderer {
+
+  protected stage: Stage;
+  protected camera: Camera;
+
   // ------------------------------------------------------------------------------------------
   // ------ Setup: buffers, layouts, pipeline
   // ------------------------------------------------------------------------------------------
@@ -45,8 +51,12 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
-  constructor(private webGPU: WebGPUContext) {
+  constructor(private webGPU: WebGPUContext, stage: Stage) {
     const { device } = this.webGPU;
+    this.stage = stage;
+    this.camera = stage.camera;
+
+    console.log(this.camera);
 
     this.modelBindGroupLayout = device.createBindGroupLayout({
       label: 'model bind group layout',

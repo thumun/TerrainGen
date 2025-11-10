@@ -18,7 +18,7 @@ export default function TerrainCanvas({ sceneGraph }: TerrainCanvasProps) {
 
   return (
     <WebGPUCanvas
-      createRenderer={(webGPU) => new TerrainRenderer(webGPU)}
+      createRenderer={(webGPU, stage) => new TerrainRenderer(webGPU, stage)}
       rendererRef={rendererRef}
       divClassName="absolute inset-0 bg-zinc-900"
     />

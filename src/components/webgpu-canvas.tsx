@@ -4,6 +4,8 @@ import type { RefObject } from 'react';
 import { useGPUDevice } from '@/hooks/use-gpu-device';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
+import { Camera } from "@/lib/scene/camera";
+import { Stage } from "@/lib/scene/stage"
 
 type PossiblyAwaitable<TArgs extends Array<unknown> = [], T = void> =
   | ((...args: TArgs) => T)
@@ -25,7 +27,7 @@ export interface IRenderer {
 }
 
 interface WebGPUCanvasProps {
-  createRenderer: PossiblyAwaitable<[WebGPUContext], IRenderer>;
+  createRenderer: PossiblyAwaitable<[WebGPUContext, Stage], IRenderer>;
   /**
    * By taking rendererRef from a prop, we allow higher-level components to own and communicate
    * with the renderer object.
@@ -57,8 +59,12 @@ export default function WebGPUCanvas({
     let frameRequestId: number | undefined = undefined;
     const webGPUContext = initWebGPU(device, canvasRef.current);
 
+    // setup scene
+    const camera = new Camera(webGPUContext);
+    const stage = new Stage(camera);
+
     const init = async () => {
-      rendererRef.current = await createRenderer(webGPUContext);
+      rendererRef.current = await createRenderer(webGPUContext, stage);
 
       let lastTime = Date.now();
       const doFrame = (time: number) => {
