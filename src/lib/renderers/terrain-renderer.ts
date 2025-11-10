@@ -88,7 +88,6 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.writeBuffer(this.indexBuffer, 0, indexData);
 
     this.numIndices = indexData.length;
-    console.log(this.numIndices)
 
     // set up bind groups, layouts, pipelines etc.
 
@@ -193,7 +192,9 @@ export class TerrainRenderer implements IRenderer {
   // ------ Required methods for IRenderer interface
   // ------------------------------------------------------------------------------------------
 
-  onFrame() {
+  onFrame(frameInfo: { time: number; deltaTime: number }) {
+    this.camera.onFrame(frameInfo.deltaTime);
+
     // run the pipeline
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
@@ -230,11 +231,11 @@ export class TerrainRenderer implements IRenderer {
 
   dispose() {
     // destroy all allocated buffers
+    if (this.depthTexture) this.depthTexture.destroy();
+    if (this.vertexBuffer) this.vertexBuffer.destroy();
+    if (this.indexBuffer) this.indexBuffer.destroy();
 
-    if (this.depthTexture) {
-      this.depthTexture.destroy();
-    }
-}
+  }
 
   // ------------------------------------------------------------------------------------------
   // ------ Custom methods for MainRenderer
