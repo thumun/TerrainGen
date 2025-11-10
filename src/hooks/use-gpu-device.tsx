@@ -15,16 +15,17 @@ export function GPUDeviceProvider({ children }: PropsWithChildren) {
 
   // Fetch ye olde GPU device
   useEffect(() => {
-    if (store.device) return;
-
     const controller = new AbortController();
-    let device: GPUDevice | undefined = undefined;
+
+    let device: GPUDevice | undefined;
     const init = async () => {
-      device = await getWebGPUDevice();
+      const newDevice = await getWebGPUDevice();
       // Cancel state setting if we cleanup before promise resolves
       if (controller.signal.aborted) {
+        newDevice?.destroy();
         return;
       }
+      device = newDevice;
 
       setStore({ device });
     };
@@ -32,10 +33,11 @@ export function GPUDeviceProvider({ children }: PropsWithChildren) {
     void init();
 
     return () => {
-      controller.abort();
       device?.destroy();
+      // abort if we haven't resolved the init promise
+      controller.abort();
     };
-  }, [store.device]);
+  }, []);
 
   return <GPUDeviceContext.Provider value={store}>{children}</GPUDeviceContext.Provider>;
 }

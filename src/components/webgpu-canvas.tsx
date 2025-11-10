@@ -63,8 +63,14 @@ export default function WebGPUCanvas({
     const camera = new Camera(webGPUContext);
     const stage = new Stage(camera);
 
+    const controller = new AbortController();
     const init = async () => {
-      rendererRef.current = await createRenderer(webGPUContext, stage);
+      const newRenderer = await createRenderer(webGPUContext, stage);
+      if (controller.signal.aborted) {
+        newRenderer.dispose();
+        return;
+      }
+      rendererRef.current = newRenderer;
 
       let lastTime = Date.now();
       const doFrame = (time: number) => {
@@ -84,10 +90,11 @@ export default function WebGPUCanvas({
     // return cleanup method
     return () => {
       if (frameRequestId !== undefined) window.cancelAnimationFrame(frameRequestId);
-      if (rendererRef.current) rendererRef.current.dispose();
-      if (webGPUContext) webGPUContext.device.destroy();
-
+      rendererRef.current?.dispose();
+      webGPUContext.device?.destroy();
       rendererRef.current = undefined;
+      // abort if we haven't resolved the init promise
+      controller.abort();
     };
   }, [createRenderer, device, rendererRef]);
 
