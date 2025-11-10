@@ -18,9 +18,9 @@ export class TerrainRenderer implements IRenderer {
   modelBindGroupLayout: GPUBindGroupLayout;
   materialBindGroupLayout: GPUBindGroupLayout;
 
-  // TODO: these uniform guys
-  // sceneUniformsBindGroupLayout: GPUBindGroupLayout;
-  // sceneUniformsBindGroup: GPUBindGroup;
+  // these uniform guys
+  sceneUniformsBindGroupLayout: GPUBindGroupLayout;
+  sceneUniformsBindGroup: GPUBindGroup;
 
   depthTexture: GPUTexture;
   depthTextureView: GPUTextureView;
@@ -56,8 +56,6 @@ export class TerrainRenderer implements IRenderer {
     this.stage = stage;
     this.camera = stage.camera;
 
-    console.log(this.camera);
-
     this.modelBindGroupLayout = device.createBindGroupLayout({
       label: 'model bind group layout',
       entries: [
@@ -88,43 +86,31 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    // TODO: scene uniform layouts and groups
-    //
-    // this.sceneUniformsBindGroupLayout = device.createBindGroupLayout({
-    //   label: 'scene uniforms bind group layout',
-    //   entries: [
-    //     // DONE-1.2: an entry for camera uniforms at binding 0, visible to only the vertex shader, and of type "uniform"
-    //     {
-    //       // camera uniforms
-    //       binding: 0,
-    //       visibility: GPUShaderStage.VERTEX,
-    //       buffer: { type: 'uniform' },
-    //     },
-    //     {
-    //       // lightSet
-    //       binding: 1,
-    //       visibility: GPUShaderStage.FRAGMENT,
-    //       buffer: { type: 'read-only-storage' },
-    //     },
-    //   ],
-    // });
-    //
-    // this.sceneUniformsBindGroup = device.createBindGroup({
-    //   label: 'scene uniforms bind group',
-    //   layout: this.sceneUniformsBindGroupLayout,
-    //   entries: [
-    //     // TODO: import/create camera code, imo we should make an orbit camera
-    //     {
-    //       binding: 0,
-    //       resource: { buffer: this.camera.uniformsBuffer },
-    //     },
-    //     {
-    //       binding: 1,
-    //       // TODO: I think lighting should be a uniform at least at the start
-    //       resource: { buffer: this.lights.lightSetStorageBuffer },
-    //     },
-    //   ],
-    // });
+    // scene uniform layouts and groups
+    this.sceneUniformsBindGroupLayout = device.createBindGroupLayout({
+      label: 'scene uniforms bind group layout',
+      entries: [
+        {
+          // camera uniforms
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+    
+    this.sceneUniformsBindGroup = device.createBindGroup({
+      label: 'scene uniforms bind group',
+      layout: this.sceneUniformsBindGroupLayout,
+      entries: [
+        // TODO: import/create camera code, imo we should make an orbit camera
+        {
+          // camera uniforms
+          binding: 0,
+          resource: { buffer: this.camera.uniformsBuffer },
+        },
+      ],
+    });
 
     this.depthTexture = device.createTexture({
       size: [this.webGPU.canvas.width, this.webGPU.canvas.height],
@@ -137,7 +123,7 @@ export class TerrainRenderer implements IRenderer {
       layout: device.createPipelineLayout({
         label: 'naive pipeline layout',
         bindGroupLayouts: [
-          // this.sceneUniformsBindGroupLayout,
+          this.sceneUniformsBindGroupLayout,
           this.modelBindGroupLayout,
           this.materialBindGroupLayout,
         ],
@@ -157,8 +143,8 @@ export class TerrainRenderer implements IRenderer {
       },
       fragment: {
         module: device.createShaderModule({
-          label: shaders.naiveFragSrc,
-          code: ``,
+          label: 'naive frag shader',
+          code: shaders.naiveFragSrc,
         }),
         targets: [
           {
@@ -179,8 +165,12 @@ export class TerrainRenderer implements IRenderer {
   }
 
   dispose() {
-    // Destroy all allocated buffers
-  }
+    // destroy all allocated buffers
+
+    if (this.depthTexture) {
+      this.depthTexture.destroy();
+    }
+}
 
   // ------------------------------------------------------------------------------------------
   // ------ Custom methods for MainRenderer
