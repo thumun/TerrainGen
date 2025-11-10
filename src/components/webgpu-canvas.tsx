@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
 import { useGPUDevice } from '@/hooks/use-gpu-device';
+import { Camera } from '@/lib/scene/camera';
+import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
-import { Camera } from "@/lib/scene/camera";
-import { Stage } from "@/lib/scene/stage"
 
 type PossiblyAwaitable<TArgs extends Array<unknown> = [], T = void> =
   | ((...args: TArgs) => T)
@@ -113,7 +113,7 @@ export default function WebGPUCanvas({
     // also attempted `useLayoutEffect` but that didn't seem to work
     setTimeout(() => {
       resizeCanvas();
-    }, );
+    });
 
     // attach resize observer
     const resizeObserver = new ResizeObserver(resizeCanvas);

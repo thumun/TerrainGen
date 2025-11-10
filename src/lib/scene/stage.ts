@@ -1,9 +1,9 @@
-import { Camera } from "./camera";
+import { Camera } from './camera';
 
 export class Stage {
-    camera: Camera;
+  camera: Camera;
 
-    constructor(camera: Camera) {
-        this.camera = camera;
-    }
+  constructor(camera: Camera) {
+    this.camera = camera;
+  }
 }

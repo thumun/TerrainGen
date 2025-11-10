@@ -1,9 +1,10 @@
+import * as shaders from '../shaders/shaders';
+
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
-import type { WebGPUContext } from '@/lib/webgpu-context';
-import { Stage } from '@/lib/scene/stage';
 import { Camera } from '@/lib/scene/camera';
-import * as shaders from '../shaders/shaders';
+import { Stage } from '@/lib/scene/stage';
+import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
@@ -52,7 +53,10 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
-  constructor(private webGPU: WebGPUContext, stage: Stage) {
+  constructor(
+    private webGPU: WebGPUContext,
+    stage: Stage,
+  ) {
     this.device = webGPU.device;
     this.context = webGPU.context;
     this.stage = stage;
@@ -60,9 +64,8 @@ export class TerrainRenderer implements IRenderer {
 
     // create vertex data for a triangle (test)
     const vertexData = new Float32Array([
-      0.0,  10, -10.0,   0, 0, 1,   0.5, 0.0,
-      -10, -10, -10.0,   1, 0, 0,   0.0, 1.0,
-      10, -10, -10.0,   0, 1, 0,   1.0, 1.0,
+      0.0, 10, -10.0, 0, 0, 1, 0.5, 0.0, -10, -10, -10.0, 1, 0, 0, 0.0, 1.0, 10, -10, -10.0, 0,
+      1, 0, 1.0, 1.0,
     ]);
 
     const indexData = new Uint32Array([0, 1, 2]);
@@ -99,7 +102,7 @@ export class TerrainRenderer implements IRenderer {
         },
       ],
     });
-    
+
     this.sceneUniformsBindGroup = this.device.createBindGroup({
       label: 'scene uniforms bind group',
       layout: this.sceneUniformsBindGroupLayout,
@@ -122,9 +125,7 @@ export class TerrainRenderer implements IRenderer {
     this.pipeline = this.device.createRenderPipeline({
       layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
-        bindGroupLayouts: [
-          this.sceneUniformsBindGroupLayout
-        ],
+        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -164,21 +165,21 @@ export class TerrainRenderer implements IRenderer {
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
     const renderPass = encoder.beginRenderPass({
-      label: "naive render pass",
+      label: 'naive render pass',
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [.3, 0, 0, 1],
-          loadOp: "clear",
-          storeOp: "store"
-        }
+          clearValue: [0.3, 0, 0, 1],
+          loadOp: 'clear',
+          storeOp: 'store',
+        },
       ],
       depthStencilAttachment: {
         view: this.depthTextureView,
         depthClearValue: 1.0,
-        depthLoadOp: "clear",
-        depthStoreOp: "store"
-      }
+        depthLoadOp: 'clear',
+        depthStoreOp: 'store',
+      },
     });
     renderPass.setPipeline(this.pipeline);
 
@@ -198,7 +199,6 @@ export class TerrainRenderer implements IRenderer {
     if (this.depthTexture) this.depthTexture.destroy();
     if (this.vertexBuffer) this.vertexBuffer.destroy();
     if (this.indexBuffer) this.indexBuffer.destroy();
-
   }
 
   // ------------------------------------------------------------------------------------------

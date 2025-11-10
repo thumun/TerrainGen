@@ -2,26 +2,26 @@
 // stolen from hw 4
 
 import commonRaw from './common.wgsl?raw';
-
-import naiveVertRaw from './naive.vs.wgsl?raw';
 import naiveFragRaw from './naive.fs.wgsl?raw';
+import naiveVertRaw from './naive.vs.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
 
 export const constants = {
-    bindGroup_scene: 0
+  bindGroup_scene: 0,
 };
 
 // =================================
 
-function evalShaderRaw(raw: string) {
-    return eval('`' + raw.replaceAll('${', '${constants.') + '`');
+function evalShaderRaw(raw: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return eval('`' + raw.replaceAll('${', '${constants.') + '`');
 }
 
-const commonSrc: string = evalShaderRaw(commonRaw);
+const commonSrc = evalShaderRaw(commonRaw);
 
 function processShaderRaw(raw: string) {
-    return commonSrc + evalShaderRaw(raw);
+  return commonSrc + evalShaderRaw(raw);
 }
 
 export const naiveVertSrc: string = processShaderRaw(naiveVertRaw);
