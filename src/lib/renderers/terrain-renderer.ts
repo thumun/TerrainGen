@@ -16,10 +16,6 @@ export class TerrainRenderer implements IRenderer {
   // ------ Setup: buffers, layouts, pipeline
   // ------------------------------------------------------------------------------------------
 
-  // TODO: these might get killed since we don't have models per se
-  modelBindGroupLayout: GPUBindGroupLayout;
-  materialBindGroupLayout: GPUBindGroupLayout;
-
   // these uniform guys
   sceneUniformsBindGroupLayout: GPUBindGroupLayout;
   sceneUniformsBindGroup: GPUBindGroup;
@@ -64,9 +60,9 @@ export class TerrainRenderer implements IRenderer {
 
     // create vertex data for a triangle (test)
     const vertexData = new Float32Array([
-      0.0,  0.5, 0.0,   0, 0, 1,   0.5, 0.0,
-    -0.5, -0.5, 0.0,   0, 0, 1,   0.0, 1.0,
-      0.5, -0.5, 0.0,   0, 0, 1,   1.0, 1.0,
+      0.0,  10, -10.0,   0, 0, 1,   0.5, 0.0,
+      -10, -10, -10.0,   1, 0, 0,   0.0, 1.0,
+      10, -10, -10.0,   0, 1, 0,   1.0, 1.0,
     ]);
 
     const indexData = new Uint32Array([0, 1, 2]);
@@ -89,37 +85,7 @@ export class TerrainRenderer implements IRenderer {
 
     this.numIndices = indexData.length;
 
-    // set up bind groups, layouts, pipelines etc.
-
-    this.modelBindGroupLayout = this.device.createBindGroupLayout({
-      label: 'model bind group layout',
-      entries: [
-        {
-          // modelMat
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    });
-
-    this.materialBindGroupLayout = this.device.createBindGroupLayout({
-      label: 'material bind group layout',
-      entries: [
-        {
-          // diffuseTex
-          binding: 0,
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: {},
-        },
-        {
-          // diffuseTexSampler
-          binding: 1,
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: {},
-        },
-      ],
-    });
+    // set up bind groups, layouts, pipelines etc
 
     // scene uniform layouts and groups
     this.sceneUniformsBindGroupLayout = this.device.createBindGroupLayout({
@@ -157,9 +123,7 @@ export class TerrainRenderer implements IRenderer {
       layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
         bindGroupLayouts: [
-          this.sceneUniformsBindGroupLayout,
-          this.modelBindGroupLayout,
-          this.materialBindGroupLayout,
+          this.sceneUniformsBindGroupLayout
         ],
       }),
       depthStencil: {
@@ -204,7 +168,7 @@ export class TerrainRenderer implements IRenderer {
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [1, 0, 0, 1],
+          clearValue: [.3, 0, 0, 1],
           loadOp: "clear",
           storeOp: "store"
         }

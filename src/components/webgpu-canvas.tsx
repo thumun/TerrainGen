@@ -113,7 +113,7 @@ export default function WebGPUCanvas({
     // also attempted `useLayoutEffect` but that didn't seem to work
     setTimeout(() => {
       resizeCanvas();
-    });
+    }, );
 
     // attach resize observer
     const resizeObserver = new ResizeObserver(resizeCanvas);
