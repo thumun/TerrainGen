@@ -57,8 +57,14 @@ export default function WebGPUCanvas({
     let frameRequestId: number | undefined = undefined;
     const webGPUContext = initWebGPU(device, canvasRef.current);
 
+    const controller = new AbortController();
     const init = async () => {
-      rendererRef.current = await createRenderer(webGPUContext);
+      const newRenderer = await createRenderer(webGPUContext);
+      if (controller.signal.aborted) {
+        newRenderer.dispose();
+        return;
+      }
+      rendererRef.current = newRenderer;
 
       let lastTime = Date.now();
       const doFrame = (time: number) => {
@@ -78,10 +84,11 @@ export default function WebGPUCanvas({
     // return cleanup method
     return () => {
       if (frameRequestId !== undefined) window.cancelAnimationFrame(frameRequestId);
-      if (rendererRef.current) rendererRef.current.dispose();
-      if (webGPUContext) webGPUContext.device.destroy();
-
+      rendererRef.current?.dispose();
+      webGPUContext.device?.destroy();
       rendererRef.current = undefined;
+      // abort if we haven't resolved the init promise
+      controller.abort();
     };
   }, [createRenderer, device, rendererRef]);
 
