@@ -21,21 +21,27 @@ import TransformNode from '@/nodes/TransformNode';
 const initialNodes: Node[] = [
   {
     id: '1',
-    type: 'transform', // custom node type
+    type: 'transform',
     position: { x: 50, y: 50 },
-    data: { value: 123 },
+    data: { 
+      value: 123
+     },
   },
   {
     id: '2',
-    type: 'noise', // custom node type
+    type: 'noise',
     position: { x: 100, y: 50 },
-    data: { value: 123 },
+    data: { 
+      value: 123
+    }
   },
   {
     id: '3',
-    type: 'add', // custom node type
+    type: 'add',
     position: { x: 200, y: 50 },
-    data: { value: 123 },
+    data: {  
+      value: 123
+    },
   }
 ];
 
@@ -56,6 +62,30 @@ export default function App() {
     [setEdges]
   );
 
+  // checks if edge connection valid
+  const isValidConnection = useCallback((connection: Connection) => {
+    const sourceNode = nodes.find(node => node.id === connection.source);
+    const targetNode = nodes.find(node => node.id === connection.target);
+    
+    if (!sourceNode || !targetNode || !connection.sourceHandle || !connection.targetHandle) {
+      return false;
+    }
+
+    // returns prefix (geo, vec3, etc.) or entire id otherwise
+    const getHandlePrefix = (handleId: string): string => {
+      const hyphenIndex = handleId.indexOf('-');
+      if (hyphenIndex !== -1) {
+        return handleId.substring(0, hyphenIndex);
+      }
+      return handleId;
+    };
+
+    const sourcePrefix = getHandlePrefix(connection.sourceHandle);
+    const targetPrefix = getHandlePrefix(connection.targetHandle);
+
+    return sourcePrefix === targetPrefix;
+  }, [nodes]);
+
   return (
     <div style={{ width: '100%', height: '100vh' }}>
       <ReactFlow
@@ -67,6 +97,7 @@ export default function App() {
         onConnect={onConnect}
         fitView
         fitViewOptions={fitViewOptions}
+        isValidConnection={isValidConnection}
       >
         <Background />
         <Controls />

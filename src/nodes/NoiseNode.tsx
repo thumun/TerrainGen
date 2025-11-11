@@ -25,6 +25,7 @@ function NoiseNode() {
           position={Position.Right}
           id="vec3-out"
           className="!absolute !right-[-8px] !top-1/8 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
       
       <div className="text-center mb-2">
@@ -40,6 +41,7 @@ function NoiseNode() {
           position={Position.Left}
           id="vec3-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <label className="text-sm font-medium flex-1">Input</label>
       </div>
@@ -49,8 +51,9 @@ function NoiseNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="value2-in"
+          id="float-scale-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-blue-500"
+          data-handlecolor="blue"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Scale</label>
@@ -74,8 +77,9 @@ function NoiseNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="value2-in"
+          id="float-density-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-blue-500"
+          data-handlecolor="blue"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Density</label>

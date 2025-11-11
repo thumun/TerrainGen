@@ -23,8 +23,9 @@ function AddNode() {
       <Handle
         type="source"
         position={Position.Right}
-        id="result-out"
+        id="vec3-out"
         className="!absolute !right-[-8px] !top-1/8 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+        data-handlecolor="green"
       />
 
       {/* Node Title */}
@@ -39,8 +40,9 @@ function AddNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="value1-in"
+          id="vec3-val1-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Value A</label>
@@ -64,8 +66,9 @@ function AddNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="value2-in"
+          id="vec3-val2-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Value B</label>
@@ -82,15 +85,6 @@ function AddNode() {
           onChange={onChange2}
           className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
         />
-      </div>
-
-      {/* Output Handle */}
-      <div className="relative flex items-center justify-center bg-slate-700/50 p-3 rounded-md">
-
-        <div className="text-center">
-          <label className="text-sm font-medium block mb-1">Output</label>
-
-        </div>
       </div>
     </div>
   );

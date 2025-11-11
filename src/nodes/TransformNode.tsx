@@ -36,8 +36,9 @@ function TransformNode() {
       <Handle
         type="source"
         position={Position.Right}
-        id="geometry-out"
+        id="geo-out"
         className="!absolute !right-[-8px] !top-1/12 !-translate-y-1/2 !w-3 !h-3 !bg-pink-500"
+        data-handle="pink"
       />
 
       {/* Node Title */}
@@ -52,8 +53,9 @@ function TransformNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="geometry-in"
+          id="geo-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-pink-500"
+          data-handle="pink"
         />
         <label className="text-sm font-medium flex-1">Geometry</label>
       </div>
@@ -63,8 +65,9 @@ function TransformNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="translate-in"
+          id="vec3-trans-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Translation</label>
         <div className="flex space-x-2 justify-center">
@@ -103,8 +106,9 @@ function TransformNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="rotate-in"
+          id="vec3-rotate-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Rotation</label>
         <div className="flex space-x-2 justify-center">
@@ -143,8 +147,9 @@ function TransformNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="scale-in"
+          id="vec3-scale-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Scale</label>
         <div className="flex space-x-2 justify-center">
@@ -183,8 +188,9 @@ function TransformNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="uniform-scale-in"
+          id="float-scale-in"
           className="!absolute !left-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-blue-500"
+          data-handlecolor="blue"
         />
         <label className="text-sm font-medium">Uniform Scale</label>
         <input 
