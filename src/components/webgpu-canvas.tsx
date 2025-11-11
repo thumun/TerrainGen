@@ -63,10 +63,15 @@ export default function WebGPUCanvas({
         Math.floor(height * window.devicePixelRatio),
       ];
 
+      const [roundedWidth, roundedHeight] = [
+        pixelWidth / window.devicePixelRatio,
+        pixelHeight / window.devicePixelRatio,
+      ];
+
       canvasRef.current.width = pixelWidth;
       canvasRef.current.height = pixelHeight;
-      canvasRef.current.style.width = `${width}px`;
-      canvasRef.current.style.height = `${height}px`;
+      canvasRef.current.style.width = `${roundedWidth}px`;
+      canvasRef.current.style.height = `${roundedHeight}px`;
 
       rendererRef.current?.onResize({
         width: pixelWidth,
