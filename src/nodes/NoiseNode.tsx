@@ -7,14 +7,16 @@ function NoiseNode() {
 
   const onScaleChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    setScale(newValue);
-    console.log('Value 2:', newValue);
+    if (!isNaN) {
+      setScale(newValue);
+    }
   }, []);
 
   const onDensityChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    setDensity(newValue);
-    console.log('Value 2:', newValue);
+    if (!isNaN) {
+      setDensity(newValue);
+    }
   }, []);
 
   return (
@@ -24,7 +26,6 @@ function NoiseNode() {
         position={Position.Right}
         id="vec3-out"
         className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-        data-handlecolor="green"
       />
 
       <div className="mb-2 text-center">
@@ -40,7 +41,6 @@ function NoiseNode() {
           position={Position.Left}
           id="vec3-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <label className="flex-1 text-sm font-medium">Input</label>
       </div>
@@ -52,7 +52,6 @@ function NoiseNode() {
           position={Position.Left}
           id="float-scale-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
-          data-handlecolor="blue"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Scale</label>
@@ -78,7 +77,6 @@ function NoiseNode() {
           position={Position.Left}
           id="float-density-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
-          data-handlecolor="blue"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Density</label>

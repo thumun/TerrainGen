@@ -11,22 +11,30 @@ function TransformNode() {
   // attach to our box, based on param, str->float & update above state
   const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 0;
-    setTranslate((prev) => ({ ...prev, [axis]: numValue }));
+    if (!isNaN) {
+      setTranslate((prev) => ({ ...prev, [axis]: numValue }));
+    }
   }, []);
 
   const onRotateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 0;
-    setRotate((prev) => ({ ...prev, [axis]: numValue }));
+    if (!isNaN) {
+      setRotate((prev) => ({ ...prev, [axis]: numValue }));
+    }
   }, []);
 
   const onScaleChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 1;
-    setScale((prev) => ({ ...prev, [axis]: numValue }));
+    if (!isNaN) {
+      setScale((prev) => ({ ...prev, [axis]: numValue }));
+    }
   }, []);
 
   const onUniformScaleChange = useCallback((value: string) => {
     const numValue = parseFloat(value) || 1;
-    setUniformScale(numValue);
+    if (!isNaN) {
+      setUniformScale(numValue);
+    }
   }, []);
 
   return (
@@ -36,7 +44,6 @@ function TransformNode() {
         position={Position.Right}
         id="geo-out"
         className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-pink-500"
-        data-handle="pink"
       />
 
       {/* Node Title */}
@@ -53,7 +60,6 @@ function TransformNode() {
           position={Position.Left}
           id="geo-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-pink-500"
-          data-handle="pink"
         />
         <label className="flex-1 text-sm font-medium">Geometry</label>
       </div>
@@ -65,7 +71,6 @@ function TransformNode() {
           position={Position.Left}
           id="vec3-trans-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Translation</label>
         <div className="flex justify-center space-x-2">
@@ -106,7 +111,6 @@ function TransformNode() {
           position={Position.Left}
           id="vec3-rotate-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Rotation</label>
         <div className="flex justify-center space-x-2">
@@ -147,7 +151,6 @@ function TransformNode() {
           position={Position.Left}
           id="vec3-scale-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <label className="text-sm font-medium">Scale</label>
         <div className="flex justify-center space-x-2">
@@ -188,7 +191,6 @@ function TransformNode() {
           position={Position.Left}
           id="float-scale-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
-          data-handlecolor="blue"
         />
         <label className="text-sm font-medium">Uniform Scale</label>
         <input

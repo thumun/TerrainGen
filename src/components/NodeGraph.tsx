@@ -9,7 +9,6 @@ import ReactFlow, {
   type Node,
   type Edge,
   type Connection,
-  //   type Connection
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';

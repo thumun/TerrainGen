@@ -7,14 +7,16 @@ function AddNode() {
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    setValue1(newValue);
-    console.log('Value 1:', newValue);
+    if (!isNaN) {
+      setValue1(newValue);
+    }
   }, []);
 
   const onChange2 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    setValue2(newValue);
-    console.log('Value 2:', newValue);
+    if (!isNaN) {
+      setValue2(newValue);
+    }
   }, []);
 
   return (
@@ -24,7 +26,6 @@ function AddNode() {
         position={Position.Right}
         id="vec3-out"
         className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-        data-handlecolor="green"
       />
 
       {/* Node Title */}
@@ -41,7 +42,6 @@ function AddNode() {
           position={Position.Left}
           id="vec3-val1-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Value A</label>
@@ -67,7 +67,6 @@ function AddNode() {
           position={Position.Left}
           id="vec3-val2-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-          data-handlecolor="green"
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Value B</label>
