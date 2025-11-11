@@ -1,24 +1,33 @@
+import * as shaders from '../shaders/shaders';
+
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
+import { Camera } from '@/lib/scene/camera';
+import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
+  protected stage: Stage;
+  protected camera: Camera;
+
+  context: GPUCanvasContext;
+  device: GPUDevice;
+
   // ------------------------------------------------------------------------------------------
   // ------ Setup: buffers, layouts, pipeline
   // ------------------------------------------------------------------------------------------
 
-  // TODO: these might get killed since we don't have models per se
-  modelBindGroupLayout: GPUBindGroupLayout;
-  materialBindGroupLayout: GPUBindGroupLayout;
-
-  // TODO: these uniform guys
-  // sceneUniformsBindGroupLayout: GPUBindGroupLayout;
-  // sceneUniformsBindGroup: GPUBindGroup;
+  // these uniform guys
+  sceneUniformsBindGroupLayout: GPUBindGroupLayout;
+  sceneUniformsBindGroup: GPUBindGroup;
 
   depthTexture: GPUTexture;
   depthTextureView: GPUTextureView;
 
   pipeline: GPURenderPipeline;
+  vertexBuffer: GPUBuffer;
+  indexBuffer: GPUBuffer;
+  numIndices = -1;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -44,14 +53,49 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
-  constructor(private webGPU: WebGPUContext) {
-    const { device } = this.webGPU;
+  constructor(
+    private webGPU: WebGPUContext,
+    stage: Stage,
+  ) {
+    this.device = webGPU.device;
+    this.context = webGPU.context;
+    this.stage = stage;
+    this.camera = stage.camera;
 
-    this.modelBindGroupLayout = device.createBindGroupLayout({
-      label: 'model bind group layout',
+    // create vertex data for a triangle (test)
+    const vertexData = new Float32Array([
+      0.0, 10, -10.0, 0, 0, 1, 0.5, 0.0, -10, -10, -10.0, 1, 0, 0, 0.0, 1.0, 10, -10, -10.0, 0,
+      1, 0, 1.0, 1.0,
+    ]);
+
+    const indexData = new Uint32Array([0, 1, 2]);
+
+    this.vertexBuffer = this.device.createBuffer({
+      label: 'triangle vertex buffer',
+      size: vertexData.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+
+    this.device.queue.writeBuffer(this.vertexBuffer, 0, vertexData);
+
+    this.indexBuffer = this.device.createBuffer({
+      label: 'triangle index buffer',
+      size: indexData.byteLength,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    });
+
+    this.device.queue.writeBuffer(this.indexBuffer, 0, indexData);
+
+    this.numIndices = indexData.length;
+
+    // set up bind groups, layouts, pipelines etc
+
+    // scene uniform layouts and groups
+    this.sceneUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'scene uniforms bind group layout',
       entries: [
         {
-          // modelMat
+          // camera uniforms
           binding: 0,
           visibility: GPUShaderStage.VERTEX,
           buffer: { type: 'uniform' },
@@ -59,95 +103,58 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.materialBindGroupLayout = device.createBindGroupLayout({
-      label: 'material bind group layout',
+    this.sceneUniformsBindGroup = this.device.createBindGroup({
+      label: 'scene uniforms bind group',
+      layout: this.sceneUniformsBindGroupLayout,
       entries: [
         {
-          // diffuseTex
+          // camera uniforms
           binding: 0,
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: {},
-        },
-        {
-          // diffuseTexSampler
-          binding: 1,
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: {},
+          resource: { buffer: this.camera.uniformsBuffer },
         },
       ],
     });
 
-    // TODO: scene uniform layouts and groups
-    //
-    // this.sceneUniformsBindGroupLayout = device.createBindGroupLayout({
-    //   label: 'scene uniforms bind group layout',
-    //   entries: [
-    //     // DONE-1.2: an entry for camera uniforms at binding 0, visible to only the vertex shader, and of type "uniform"
-    //     {
-    //       // camera uniforms
-    //       binding: 0,
-    //       visibility: GPUShaderStage.VERTEX,
-    //       buffer: { type: 'uniform' },
-    //     },
-    //     {
-    //       // lightSet
-    //       binding: 1,
-    //       visibility: GPUShaderStage.FRAGMENT,
-    //       buffer: { type: 'read-only-storage' },
-    //     },
-    //   ],
-    // });
-    //
-    // this.sceneUniformsBindGroup = device.createBindGroup({
-    //   label: 'scene uniforms bind group',
-    //   layout: this.sceneUniformsBindGroupLayout,
-    //   entries: [
-    //     // TODO: import/create camera code, imo we should make an orbit camera
-    //     {
-    //       binding: 0,
-    //       resource: { buffer: this.camera.uniformsBuffer },
-    //     },
-    //     {
-    //       binding: 1,
-    //       // TODO: I think lighting should be a uniform at least at the start
-    //       resource: { buffer: this.lights.lightSetStorageBuffer },
-    //     },
-    //   ],
-    // });
-
-    this.depthTexture = device.createTexture({
-      size: [this.webGPU.canvas.width, this.webGPU.canvas.height],
-      format: 'depth24plus',
-      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    // initialize depth texture and depth texture view
+    this.depthTexture = this.createDepthTexture({
+      width: this.webGPU.canvas.width * window.devicePixelRatio,
+      height: this.webGPU.canvas.height * window.devicePixelRatio,
     });
     this.depthTextureView = this.depthTexture.createView();
 
-    this.pipeline = device.createRenderPipeline({
-      layout: device.createPipelineLayout({
+    this.pipeline = this.createRenderPipeline();
+  }
+
+  private createDepthTexture(dimensions: { width: number; height: number }) {
+    return this.device.createTexture({
+      size: [dimensions.width, dimensions.height],
+      format: 'depth24plus',
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+  }
+
+  private createRenderPipeline() {
+    return this.device.createRenderPipeline({
+      layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
-        bindGroupLayouts: [
-          // this.sceneUniformsBindGroupLayout,
-          this.modelBindGroupLayout,
-          this.materialBindGroupLayout,
-        ],
+        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
       }),
       depthStencil: {
         depthWriteEnabled: true,
         depthCompare: 'less',
         format: 'depth24plus',
       },
-      // TODO: replace this with basic triangle rendering just for testing
       vertex: {
-        module: device.createShaderModule({
+        module: this.device.createShaderModule({
           label: 'naive vert shader',
-          code: ``,
+          code: shaders.naiveVertSrc,
         }),
         buffers: [TerrainRenderer.VertexBufferLayout],
       },
       fragment: {
-        module: device.createShaderModule({
+        module: this.device.createShaderModule({
           label: 'naive frag shader',
-          code: ``,
+          code: shaders.naiveFragSrc,
         }),
         targets: [
           {
@@ -162,13 +169,56 @@ export class TerrainRenderer implements IRenderer {
   // ------ Required methods for IRenderer interface
   // ------------------------------------------------------------------------------------------
 
-  onFrame() {
-    // const { device } = this.webGPU;
-    // TODO: run the pipeline!
+  onResize(pixelDimensions: { width: number; height: number }) {
+    this.depthTexture.destroy();
+    this.depthTexture = this.createDepthTexture(pixelDimensions);
+    this.depthTextureView = this.depthTexture.createView();
+
+    this.pipeline = this.createRenderPipeline();
+  }
+
+  onFrame(frameInfo: { time: number; deltaTime: number }) {
+    this.camera.onFrame(frameInfo.deltaTime);
+
+    // run the pipeline
+    const encoder = this.device.createCommandEncoder();
+    const canvasTextureView = this.context.getCurrentTexture().createView();
+
+    const renderPass = encoder.beginRenderPass({
+      label: 'naive render pass',
+      colorAttachments: [
+        {
+          view: canvasTextureView,
+          clearValue: [0.3, 0, 0, 1],
+          loadOp: 'clear',
+          storeOp: 'store',
+        },
+      ],
+      depthStencilAttachment: {
+        view: this.depthTextureView,
+        depthClearValue: 1.0,
+        depthLoadOp: 'clear',
+        depthStoreOp: 'store',
+      },
+    });
+    renderPass.setPipeline(this.pipeline);
+
+    renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
+
+    renderPass.setVertexBuffer(0, this.vertexBuffer);
+    renderPass.setIndexBuffer(this.indexBuffer, 'uint32');
+    renderPass.drawIndexed(this.numIndices);
+
+    renderPass.end();
+
+    this.device.queue.submit([encoder.finish()]);
   }
 
   dispose() {
-    // Destroy all allocated buffers
+    // destroy all allocated buffers
+    if (this.depthTexture) this.depthTexture.destroy();
+    if (this.vertexBuffer) this.vertexBuffer.destroy();
+    if (this.indexBuffer) this.indexBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
