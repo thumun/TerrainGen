@@ -1,4 +1,4 @@
-import * as instructions from './instructions';
+import * as instructions from './types/instructions';
 
 const OPERATOR_CHARACTERS = {
   add: '+',
