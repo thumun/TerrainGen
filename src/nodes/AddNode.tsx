@@ -20,6 +20,13 @@ function AddNode() {
   return (
     <div className="transform-node bg-slate-800 text-white p-4 rounded-lg shadow-md min-w-[280px] space-y-4 border border-slate-600">
       
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="result-out"
+        className="!absolute !right-[-8px] !top-1/8 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
+      />
+
       {/* Node Title */}
       <div className="text-center mb-2">
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-sm inline-block transform -translate-y-1">
@@ -79,12 +86,7 @@ function AddNode() {
 
       {/* Output Handle */}
       <div className="relative flex items-center justify-center bg-slate-700/50 p-3 rounded-md">
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="result-out"
-          className="!absolute !right-[-8px] !top-1/2 !-translate-y-1/2 !w-3 !h-3 !bg-green-500"
-        />
+
         <div className="text-center">
           <label className="text-sm font-medium block mb-1">Output</label>
 
