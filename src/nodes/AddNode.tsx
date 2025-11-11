@@ -7,16 +7,12 @@ function AddNode() {
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    if (!isNaN) {
-      setValue1(newValue);
-    }
+    setValue1(newValue);
   }, []);
 
   const onChange2 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    if (!isNaN) {
-      setValue2(newValue);
-    }
+    setValue2(newValue);
   }, []);
 
   return (

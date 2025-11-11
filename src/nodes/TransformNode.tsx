@@ -11,30 +11,23 @@ function TransformNode() {
   // attach to our box, based on param, str->float & update above state
   const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 0;
-    if (!isNaN) {
-      setTranslate((prev) => ({ ...prev, [axis]: numValue }));
-    }
+
+    setTranslate((prev) => ({ ...prev, [axis]: numValue }));
   }, []);
 
   const onRotateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 0;
-    if (!isNaN) {
-      setRotate((prev) => ({ ...prev, [axis]: numValue }));
-    }
+    setRotate((prev) => ({ ...prev, [axis]: numValue }));
   }, []);
 
   const onScaleChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 1;
-    if (!isNaN) {
-      setScale((prev) => ({ ...prev, [axis]: numValue }));
-    }
+    setScale((prev) => ({ ...prev, [axis]: numValue }));
   }, []);
 
   const onUniformScaleChange = useCallback((value: string) => {
     const numValue = parseFloat(value) || 1;
-    if (!isNaN) {
-      setUniformScale(numValue);
-    }
+    setUniformScale(numValue);
   }, []);
 
   return (

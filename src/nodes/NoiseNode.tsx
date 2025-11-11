@@ -7,16 +7,12 @@ function NoiseNode() {
 
   const onScaleChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    if (!isNaN) {
-      setScale(newValue);
-    }
+    setScale(newValue);
   }, []);
 
   const onDensityChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
-    if (!isNaN) {
-      setDensity(newValue);
-    }
+    setDensity(newValue);
   }, []);
 
   return (
