@@ -5,11 +5,11 @@ import ReactFlow, {
   Controls,
   useNodesState,
   useEdgesState,
-  type FitViewOptions, 
-  type Node, 
+  type FitViewOptions,
+  type Node,
   type Edge,
-  type Connection, 
-//   type Connection 
+  type Connection,
+  //   type Connection
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
@@ -23,26 +23,26 @@ const initialNodes: Node[] = [
     id: '1',
     type: 'transform',
     position: { x: 50, y: 50 },
-    data: { 
-      value: 123
-     },
+    data: {
+      value: 123,
+    },
   },
   {
     id: '2',
     type: 'noise',
     position: { x: 100, y: 50 },
-    data: { 
-      value: 123
-    }
+    data: {
+      value: 123,
+    },
   },
   {
     id: '3',
     type: 'add',
     position: { x: 200, y: 50 },
-    data: {  
-      value: 123
+    data: {
+      value: 123,
     },
-  }
+  },
 ];
 
 const fitViewOptions: FitViewOptions = {
@@ -59,32 +59,35 @@ export default function App() {
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   // checks if edge connection valid
-  const isValidConnection = useCallback((connection: Connection) => {
-    const sourceNode = nodes.find(node => node.id === connection.source);
-    const targetNode = nodes.find(node => node.id === connection.target);
-    
-    if (!sourceNode || !targetNode || !connection.sourceHandle || !connection.targetHandle) {
-      return false;
-    }
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      const sourceNode = nodes.find((node) => node.id === connection.source);
+      const targetNode = nodes.find((node) => node.id === connection.target);
 
-    // returns prefix (geo, vec3, etc.) or entire id otherwise
-    const getHandlePrefix = (handleId: string): string => {
-      const hyphenIndex = handleId.indexOf('-');
-      if (hyphenIndex !== -1) {
-        return handleId.substring(0, hyphenIndex);
+      if (!sourceNode || !targetNode || !connection.sourceHandle || !connection.targetHandle) {
+        return false;
       }
-      return handleId;
-    };
 
-    const sourcePrefix = getHandlePrefix(connection.sourceHandle);
-    const targetPrefix = getHandlePrefix(connection.targetHandle);
+      // returns prefix (geo, vec3, etc.) or entire id otherwise
+      const getHandlePrefix = (handleId: string): string => {
+        const hyphenIndex = handleId.indexOf('-');
+        if (hyphenIndex !== -1) {
+          return handleId.substring(0, hyphenIndex);
+        }
+        return handleId;
+      };
 
-    return sourcePrefix === targetPrefix;
-  }, [nodes]);
+      const sourcePrefix = getHandlePrefix(connection.sourceHandle);
+      const targetPrefix = getHandlePrefix(connection.targetHandle);
+
+      return sourcePrefix === targetPrefix;
+    },
+    [nodes],
+  );
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
