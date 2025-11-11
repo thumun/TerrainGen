@@ -13,9 +13,9 @@ import ReactFlow, {
 
 import 'reactflow/dist/style.css';
 
-import AddNode from '@/nodes/AddNode';
-import NoiseNode from '@/nodes/NoiseNode';
-import TransformNode from '@/nodes/TransformNode';
+import AddNode from '@/nodes/math-node';
+import NoiseNode from '@/nodes/noise-node';
+import TransformNode from '@/nodes/transform-node';
 
 const initialNodes: Node[] = [
   {
@@ -52,7 +52,7 @@ const nodeTypes = { transform: TransformNode, noise: NoiseNode, add: AddNode };
 
 const initialEdges: Edge[] = [];
 
-export default function App() {
+export default function NodeGraph() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 
-import NodeGraph from '@/components/NodeGraph';
+import NodeGraph from '@/components/node-graph';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet
