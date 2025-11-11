@@ -14,13 +14,27 @@ import ReactFlow, {
 
 import 'reactflow/dist/style.css';
 
-import TransformNode from '../nodes/TransformNode';
+import AddNode from '@/nodes/AddNode';
+import NoiseNode from '@/nodes/NoiseNode';
+import TransformNode from '@/nodes/TransformNode';
 
 const initialNodes: Node[] = [
   {
     id: '1',
     type: 'transform', // custom node type
     position: { x: 50, y: 50 },
+    data: { value: 123 },
+  },
+  {
+    id: '2',
+    type: 'noise', // custom node type
+    position: { x: 100, y: 50 },
+    data: { value: 123 },
+  },
+  {
+    id: '3',
+    type: 'add', // custom node type
+    position: { x: 200, y: 50 },
     data: { value: 123 },
   }
 ];
@@ -29,11 +43,9 @@ const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-const nodeTypes = { transform: TransformNode };
+const nodeTypes = { transform: TransformNode, noise: NoiseNode, add: AddNode };
 
-const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', label: 'Edge' },
-];
+const initialEdges: Edge[] = [];
 
 export default function App() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
