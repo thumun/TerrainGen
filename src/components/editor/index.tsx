@@ -3,6 +3,8 @@ import { useState } from 'react';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 
+import NodeGraph from '@/components/node-graph';
+
 export default function Editor() {
   // @ts-expect-error not setting this yet
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,7 +30,7 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            {/* TODO: Overlay the node editor here... */}
+            <NodeGraph />
           </div>
         </div>
 
