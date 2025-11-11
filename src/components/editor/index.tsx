@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
+import NodeGraph from '@/components/NodeGraph';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet
@@ -28,7 +29,7 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            {/* TODO: Overlay the node editor here... */}
+            <NodeGraph />
           </div>
         </div>
 
