@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
+
 import NodeGraph from '@/components/NodeGraph';
 
 export default function Editor() {
