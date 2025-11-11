@@ -4,6 +4,7 @@ import { Handle, Position } from 'reactflow';
 function NoiseNode() {
   const [scale, setScale] = useState(0.5);
   const [density, setDensity] = useState(0.5);
+  const [operation, setOperation] = useState('add');
 
   const onScaleChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
@@ -13,6 +14,10 @@ function NoiseNode() {
   const onDensityChange = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
     setDensity(newValue);
+  }, []);
+
+  const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+    setOperation(evt.target.value);
   }, []);
 
   return (
@@ -89,6 +94,27 @@ function NoiseNode() {
           onChange={onDensityChange}
           className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
         />
+      </div>
+
+      {/* Type of Node */}
+      <div className="mb-2 text-center">
+        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+          <select
+            value={operation}
+            onChange={onOperationChange}
+            className="bg-transparent font-bold focus:outline-none"
+          >
+            <option value="Simplex" className="bg-slate-800 text-white">
+              Simplex
+            </option>
+            <option value="Perlin" className="bg-slate-800 text-white">
+              Perlin
+            </option>
+            <option value="Worley" className="bg-slate-800 text-white">
+              Worley
+            </option>
+          </select>
+        </div>
       </div>
     </div>
   );

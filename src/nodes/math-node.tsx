@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
 import { Handle, Position } from 'reactflow';
 
-function AddNode() {
+function MathNode() {
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
+  const [operation, setOperation] = useState('add');
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
@@ -13,6 +14,10 @@ function AddNode() {
   const onChange2 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
     setValue2(newValue);
+  }, []);
+
+  const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+    setOperation(evt.target.value);
   }, []);
 
   return (
@@ -27,7 +32,7 @@ function AddNode() {
       {/* Node Title */}
       <div className="mb-2 text-center">
         <div className="inline-block -translate-y-1 transform rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-bold text-white shadow-sm">
-          Add
+          Math
         </div>
       </div>
 
@@ -80,8 +85,41 @@ function AddNode() {
           className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
         />
       </div>
+
+      {/* Type of Node */}
+      <div className="mb-2 text-center">
+        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+          <select
+            value={operation}
+            onChange={onOperationChange}
+            className="bg-transparent font-bold focus:outline-none"
+          >
+            <option value="Add" className="bg-slate-800 text-white">
+              Add
+            </option>
+            <option value="Sub" className="bg-slate-800 text-white">
+              Subtract
+            </option>
+            <option value="Mult" className="bg-slate-800 text-white">
+              Multiply
+            </option>
+            <option value="Div" className="bg-slate-800 text-white">
+              Divide
+            </option>
+            <option value="Min" className="bg-slate-800 text-white">
+              Min
+            </option>
+            <option value="Mix" className="bg-slate-800 text-white">
+              Mix
+            </option>
+            <option value="Max" className="bg-slate-800 text-white">
+              Max
+            </option>
+          </select>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default AddNode;
+export default MathNode;

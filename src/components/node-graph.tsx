@@ -13,7 +13,7 @@ import ReactFlow, {
 
 import 'reactflow/dist/style.css';
 
-import AddNode from '@/nodes/math-node';
+import MathNode from '@/nodes/math-node';
 import NoiseNode from '@/nodes/noise-node';
 import TransformNode from '@/nodes/transform-node';
 
@@ -48,7 +48,7 @@ const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-const nodeTypes = { transform: TransformNode, noise: NoiseNode, add: AddNode };
+const nodeTypes = { transform: TransformNode, noise: NoiseNode, add: MathNode };
 
 const initialEdges: Edge[] = [];
 
