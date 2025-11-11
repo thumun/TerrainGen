@@ -115,14 +115,26 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.depthTexture = this.device.createTexture({
-      size: [this.webGPU.canvas.width, this.webGPU.canvas.height],
-      format: 'depth24plus',
-      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    // initialize depth texture and depth texture view
+    this.depthTexture = this.createDepthTexture({
+      width: this.webGPU.canvas.width * window.devicePixelRatio,
+      height: this.webGPU.canvas.height * window.devicePixelRatio,
     });
     this.depthTextureView = this.depthTexture.createView();
 
-    this.pipeline = this.device.createRenderPipeline({
+    this.pipeline = this.createRenderPipeline();
+  }
+
+  private createDepthTexture(dimensions: { width: number; height: number }) {
+    return this.device.createTexture({
+      size: [dimensions.width, dimensions.height],
+      format: 'depth24plus',
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+  }
+
+  private createRenderPipeline() {
+    return this.device.createRenderPipeline({
       layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
         bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
@@ -156,6 +168,14 @@ export class TerrainRenderer implements IRenderer {
   // ------------------------------------------------------------------------------------------
   // ------ Required methods for IRenderer interface
   // ------------------------------------------------------------------------------------------
+
+  onResize(pixelDimensions: { width: number; height: number }) {
+    this.depthTexture.destroy();
+    this.depthTexture = this.createDepthTexture(pixelDimensions);
+    this.depthTextureView = this.depthTexture.createView();
+
+    this.pipeline = this.createRenderPipeline();
+  }
 
   onFrame(frameInfo: { time: number; deltaTime: number }) {
     this.camera.onFrame(frameInfo.deltaTime);

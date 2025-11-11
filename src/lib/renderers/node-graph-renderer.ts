@@ -19,6 +19,12 @@ export class NodeGraphRenderer implements IRenderer {
   // ------ Required methods for IRenderer interface
   // ------------------------------------------------------------------------------------------
 
+  // @ts-expect-error TODO: use dimensions
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onResize(pixelDimensions: { width: number; height: number }) {
+    // TODO: probably do something with this
+  }
+
   onFrame() {
     // const { device } = this.webGPU;
     // TODO: run the pipeline(s)!

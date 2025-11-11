@@ -12,7 +12,10 @@ type PossiblyAwaitable<TArgs extends Array<unknown> = [], T = void> =
   | ((...args: TArgs) => Promise<T>);
 
 export interface IRenderer {
-  // TODO: could add a `onResize` method here
+  /**
+   * Called initially, and on each resize.
+   */
+  onResize: (pixelDimensions: { width: number; height: number }) => void;
   /**
    * Called on each frame.
    */
@@ -52,6 +55,45 @@ export default function WebGPUCanvas({
   const { device } = useGPUDevice();
   const canvasRef = useRef<HTMLCanvasElement>(null!);
 
+  const resizeCanvas = useCallback(
+    (clientDimensions: { width: number; height: number }) => {
+      const { width, height } = clientDimensions;
+      const [pixelWidth, pixelHeight] = [
+        Math.floor(width * window.devicePixelRatio),
+        Math.floor(height * window.devicePixelRatio),
+      ];
+
+      const [roundedWidth, roundedHeight] = [
+        pixelWidth / window.devicePixelRatio,
+        pixelHeight / window.devicePixelRatio,
+      ];
+
+      canvasRef.current.width = pixelWidth;
+      canvasRef.current.height = pixelHeight;
+      canvasRef.current.style.width = `${roundedWidth}px`;
+      canvasRef.current.style.height = `${roundedHeight}px`;
+
+      rendererRef.current?.onResize({
+        width: pixelWidth,
+        height: pixelHeight,
+      });
+    },
+    [rendererRef],
+  );
+
+  // setup resize callbacks
+  const divRef = useRef<HTMLDivElement>(null!);
+  useEffect(() => {
+    // attach resize observer
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      resizeCanvas(entry.contentRect);
+    });
+    resizeObserver.observe(divRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [resizeCanvas]);
+
   // initialize everything at component lifecycle start!
   useEffect(() => {
     if (!device) return;
@@ -71,6 +113,11 @@ export default function WebGPUCanvas({
         return;
       }
       rendererRef.current = newRenderer;
+
+      resizeCanvas({
+        width: divRef.current.clientWidth,
+        height: divRef.current.clientHeight,
+      });
 
       let lastTime = Date.now();
       const doFrame = (time: number) => {
@@ -96,36 +143,11 @@ export default function WebGPUCanvas({
       // abort if we haven't resolved the init promise
       controller.abort();
     };
-  }, [createRenderer, device, rendererRef]);
-
-  const resizeCanvas = useCallback(() => {
-    canvasRef.current.width = divRef.current.clientWidth;
-    canvasRef.current.height = divRef.current.clientHeight;
-
-    // TODO: trigger `Renderer` resize event
-  }, []);
-
-  // setup resize callbacks
-  const divRef = useRef<HTMLDivElement>(null!);
-  useEffect(() => {
-    // set canvas size once initially
-    // for some reason we need this timeout or else layout isn't updated yet
-    // also attempted `useLayoutEffect` but that didn't seem to work
-    setTimeout(() => {
-      resizeCanvas();
-    });
-
-    // attach resize observer
-    const resizeObserver = new ResizeObserver(resizeCanvas);
-    resizeObserver.observe(divRef.current);
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [resizeCanvas]);
+  }, [createRenderer, device, rendererRef, resizeCanvas]);
 
   return (
     <div ref={divRef} className={divClassName}>
-      <canvas ref={canvasRef} className="absolute inset-0" />
+      <canvas ref={canvasRef} className="absolute" />
     </div>
   );
 }
