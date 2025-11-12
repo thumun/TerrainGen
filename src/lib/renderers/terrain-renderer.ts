@@ -184,7 +184,7 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setVertexBuffer(0, this.mesh.vertexBuffer!);
     renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
-    renderPass.drawIndexed(this.mesh.numIndices);
+    renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
 
     renderPass.end();
 
