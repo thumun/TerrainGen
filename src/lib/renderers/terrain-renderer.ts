@@ -1,10 +1,11 @@
-import * as shaders from '../shaders/shaders';
-
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
 import { Mesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
+import * as jit from '@/lib/shaders/jit';
+import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
+import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
@@ -43,6 +44,9 @@ export class TerrainRenderer implements IRenderer {
 
   customComputeUniformBindGroupLayout: GPUBindGroupLayout;
   customComputeUniformBindGroup: GPUBindGroup;
+
+  customComputeNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
+  customComputeNodeGraphUniformsBindGroup: GPUBindGroup;
 
   customComputePipeline: GPUComputePipeline;
 
@@ -206,9 +210,7 @@ export class TerrainRenderer implements IRenderer {
     this.customComputeBindGroup = this.device.createBindGroup({
       label: 'custom compute bind group',
       layout: this.customComputeBindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
-      ],
+      entries: [{ binding: 0, resource: { buffer: this.mesh.vertexBuffer! } }],
     });
 
     this.customComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
@@ -231,6 +233,17 @@ export class TerrainRenderer implements IRenderer {
       entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
     });
 
+    this.customComputeNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom compute node graph uniform bind group layout',
+      entries: [],
+    });
+
+    this.customComputeNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'custom compute node graph uniforms bind group',
+      layout: this.customComputeNodeGraphUniformsBindGroupLayout,
+      entries: [],
+    });
+
     this.customComputePipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
       layout: this.device.createPipelineLayout({
@@ -248,8 +261,6 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
-
-
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -328,6 +339,7 @@ export class TerrainRenderer implements IRenderer {
     customComputePass.setPipeline(this.customComputePipeline);
     customComputePass.setBindGroup(0, this.customComputeBindGroup);
     customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
+    customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
     customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     customComputePass.end();
 
@@ -373,7 +385,100 @@ export class TerrainRenderer implements IRenderer {
   // ------------------------------------------------------------------------------------------
 
   setSceneGraph(scene: SceneGraph) {
-    // TODO: update pipeline with new scene content
-    console.log(scene);
+    // TODO: convert node graph into instructions and uniforms
+    // Question: should uniforms be passed in as a single struct?
+    //   We would then have to codegen the uniform struct definition.
+    //   Probably not that bad.
+    // Otherwise, we will have to make a gajillion buffers
+    //
+    // consensus after discussion: should use struct instead
+
+    // also TODO: reuse code between this and our constructor
+
+    this.customComputeNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom nodegraph bind group layout',
+      entries: [
+        {
+          binding: 0, // uniform 1 (vec3f)
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: { type: 'uniform' },
+        },
+        {
+          binding: 1, // uniform 2 (vec3f)
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    const nodeGraphUniformsBuffer0 = this.device.createBuffer({
+      size: 4 * 3, // vec3f
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    const nodeGraphUniformsBuffer1 = this.device.createBuffer({
+      size: 4 * 3,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    // TODO: maybe update these uniforms randomly for testing
+    // setInterval(() => {}, 1000);
+
+    this.customComputeNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'custom nodegraph bind group',
+      layout: this.customComputeNodeGraphUniformsBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: nodeGraphUniformsBuffer0 },
+        },
+        {
+          binding: 1,
+          resource: { buffer: nodeGraphUniformsBuffer1 },
+        },
+      ],
+    });
+
+    const customComputeShader = jit.generateDisplaceShaderCode(
+      {
+        uniforms: [
+          { key: 'uuid1', type: 'vec3f', group: 2, binding: 0 },
+          { key: 'uuid2', type: 'vec3f', group: 2, binding: 1 },
+        ],
+        instructionSet: [
+          {
+            type: 'math',
+            operation: 'add',
+            references: { readA: 'uuid1', readB: 'uuid2', write: 'uuid3' },
+          },
+          {
+            type: 'separate-xyz',
+            references: { read: 'uuid3', writeY: 'uuid4' },
+          },
+        ],
+        outputs: { height: 'uuid4' },
+      },
+      displaceComputeShaderTemplate,
+    );
+
+    console.log('custom compute shader:', customComputeShader);
+
+    this.customComputePipeline = this.device.createComputePipeline({
+      label: 'custom compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'custom compute pipeline layout',
+        bindGroupLayouts: [
+          this.customComputeBindGroupLayout,
+          this.customComputeUniformBindGroupLayout,
+          this.customComputeNodeGraphUniformsBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'custom compute shader',
+          code: customComputeShader,
+        }),
+        entryPoint: 'main',
+      },
+    });
   }
 }
