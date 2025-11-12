@@ -17,9 +17,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
-import type * as util from '@/lib/shaders/jit/types/util';
 import type * as shaders from '@/lib/shaders/jit/types/shaders';
-
+import type * as util from '@/lib/shaders/jit/types/util';
 import MathNode from '@/nodes/math-node';
 import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
@@ -101,7 +100,6 @@ export default function NodeGraph() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const mapNodeToInstruction = (node: Node): instructions.All | null => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { type, data } = node;
 
     switch (type) {
@@ -137,7 +135,7 @@ export default function NodeGraph() {
     return `${nodeId}_${suffix}`;
   };
 
-  const getFinalOutputKey = (pipeline: Node[]): util.ReferenceKey => {
+  const getFinalOutputKey = useCallback((pipeline: Node[]): util.ReferenceKey => {
     const lastNode = pipeline[pipeline.length - 1];
 
     // Determine output key based on last node type
@@ -151,63 +149,66 @@ export default function NodeGraph() {
       default:
         return generateReferenceKey(lastNode.id, 'output');
     }
-  };
-
-  const executePipeline = useCallback((pipeline: Node[]) => {
-    console.log('Executing pipeline with steps:');
-    // pipeline.forEach((node, index) => {
-    //   console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
-    // });
-
-    // Collect all instructions and uniforms
-    const instructionSet: instructions.All[] = [];
-    const uniforms: util.Uniform[] = [];
-    const uniformBindings = new Map<string, { group: number; binding: number }>();
-
-    const currentGroup = 1;
-    let currentBinding = 0;
-
-    // First pass: identify all input nodes that need uniforms
-    pipeline.forEach((node) => {
-      if (node.type === 'vector' || node.type === 'noise') {
-        // These are input nodes that should create uniforms
-        const uniformKey = generateReferenceKey(node.id, 'value');
-
-        if (!uniformBindings.has(uniformKey)) {
-          uniforms.push({
-            key: uniformKey,
-            type: 'vec3f', // or determine type based on node
-            group: currentGroup,
-            binding: currentBinding,
-          });
-          uniformBindings.set(uniformKey, { group: currentGroup, binding: currentBinding });
-          currentBinding++;
-        }
-      }
-    });
-
-    // Second pass: create instructions
-    pipeline.forEach((node, index) => {
-      console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
-
-      const instruction = mapNodeToInstruction(node);
-      if (instruction) {
-        instructionSet.push(instruction);
-      }
-    });
-
-    // Create the final shader config
-    const shaderConfig: shaders.VertexShaderConfig = {
-      type: 'vertex',
-      uniforms,
-      instructionSet,
-      outputs: {
-        height: getFinalOutputKey(pipeline), // You need to determine the final output key
-      },
-    };
-
-    console.log('Generated shader config:', shaderConfig);
   }, []);
+
+  const executePipeline = useCallback(
+    (pipeline: Node[]) => {
+      console.log('Executing pipeline with steps:');
+      // pipeline.forEach((node, index) => {
+      //   console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
+      // });
+
+      // Collect all instructions and uniforms
+      const instructionSet: instructions.All[] = [];
+      const uniforms: util.Uniform[] = [];
+      const uniformBindings = new Map<string, { group: number; binding: number }>();
+
+      const currentGroup = 1;
+      let currentBinding = 0;
+
+      // First pass: identify all input nodes that need uniforms
+      pipeline.forEach((node) => {
+        if (node.type === 'vector' || node.type === 'noise') {
+          // These are input nodes that should create uniforms
+          const uniformKey = generateReferenceKey(node.id, 'value');
+
+          if (!uniformBindings.has(uniformKey)) {
+            uniforms.push({
+              key: uniformKey,
+              type: 'vec3f', // or determine type based on node
+              group: currentGroup,
+              binding: currentBinding,
+            });
+            uniformBindings.set(uniformKey, { group: currentGroup, binding: currentBinding });
+            currentBinding++;
+          }
+        }
+      });
+
+      // Second pass: create instructions
+      pipeline.forEach((node, index) => {
+        console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
+
+        const instruction = mapNodeToInstruction(node);
+        if (instruction) {
+          instructionSet.push(instruction);
+        }
+      });
+
+      // Create the final shader config
+      const shaderConfig: shaders.VertexShaderConfig = {
+        type: 'vertex',
+        uniforms,
+        instructionSet,
+        outputs: {
+          height: getFinalOutputKey(pipeline), // You need to determine the final output key
+        },
+      };
+
+      console.log('Generated shader config:', shaderConfig);
+    },
+    [getFinalOutputKey],
+  );
 
   const getNodeGraph = (nodeId: string, nodes: Node[], edges: Edge[]): Node[] => {
     const visited = new Set<string>();
@@ -258,7 +259,6 @@ export default function NodeGraph() {
         // getting the node by using the handle (target)
         const targetNode = nodes.find((node) => node.id === params.target);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
 
