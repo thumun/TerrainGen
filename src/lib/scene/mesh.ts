@@ -28,8 +28,8 @@ export abstract class Mesh {
   uniformsBuffer: GPUBuffer | undefined;
 
   constructor(size = 1, resolution = 1) {
-    let numVertices = (resolution + 1) * (resolution + 1);
-    let numIndices = resolution * resolution * 6;
+    const numVertices = (resolution + 1) * (resolution + 1);
+    const numIndices = resolution * resolution * 6;
 
     this.size = size;
     this.resolution = resolution;

@@ -3,8 +3,8 @@ import * as shaders from '../shaders/shaders';
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
-import { Stage } from '@/lib/scene/stage';
 import { Mesh } from '@/lib/scene/mesh';
+import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
@@ -275,7 +275,7 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
-    renderPass.setVertexBuffer(0, this.mesh.vertexBuffer!);
+    renderPass.setVertexBuffer(0, this.mesh.vertexBuffer);
     renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
     renderPass.end();
