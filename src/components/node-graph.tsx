@@ -14,6 +14,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import MathNode from '@/nodes/math-node';
+import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
 import TransformNode from '@/nodes/transform-node';
 
@@ -36,7 +37,15 @@ const initialNodes: Node[] = [
   },
   {
     id: '3',
-    type: 'add',
+    type: 'math',
+    position: { x: 200, y: 50 },
+    data: {
+      value: 123,
+    },
+  },
+  {
+    id: '4',
+    type: 'mix',
     position: { x: 200, y: 50 },
     data: {
       value: 123,
@@ -48,7 +57,7 @@ const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-const nodeTypes = { transform: TransformNode, noise: NoiseNode, add: MathNode };
+const nodeTypes = { transform: TransformNode, noise: NoiseNode, math: MathNode, mix: MixNode };
 
 const initialEdges: Edge[] = [];
 
