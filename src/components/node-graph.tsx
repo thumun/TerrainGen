@@ -81,28 +81,71 @@ export default function NodeGraph() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const executePipeline = useCallback((pipeline: Node[]) => {
+    console.log('Executing pipeline with steps:');
+    pipeline.forEach((node, index) => {
+      console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
+    });
+  }, []);
+
+  const getNodeGraph = (nodeId: string, nodes: Node[], edges: Edge[]): Node[] => {
+    const visited = new Set<string>();
+    const result: Node[] = [];
+
+    const traverse = (currentNodeId: string) => {
+      if (visited.has(currentNodeId)) {
+        return;
+      } else {
+        visited.add(currentNodeId);
+      }
+
+      const currentNode = nodes.find((n) => n.id === currentNodeId);
+      if (!currentNode) {
+        return;
+      }
+
+      if (currentNodeId !== nodeId) {
+        result.push(currentNode);
+      }
+
+      // this gets all the input edges for curr node
+      const incomingEdges = edges.filter((edge) => edge.target === currentNodeId);
+
+      incomingEdges.forEach((edge) => {
+        traverse(edge.source);
+      });
+    };
+
+    traverse(nodeId);
+    return result.reverse();
+  };
+
+  const onOutputNodeConnected = useCallback((outputNode: Node, connectedNodes: Node[]) => {
+    const pipeline = [...connectedNodes, outputNode];
+    executePipeline(pipeline);
+  }, []);
+
+  // this gets called for every edge connection created
   const onConnect = useCallback(
     (params: Edge | Connection) => {
       setEdges((eds) => addEdge(params, eds));
 
-      // Check if the connected edge's target node is an output node
       if (params.target) {
+        // getting the node by using the handle (target)
         const targetNode = nodes.find((node) => node.id === params.target);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
 
-          // Get all nodes connected to this output node
-          //const connectedNodes = findUpstreamNodes(targetNode.id, nodes, addEdge(params, edges));
-          //console.log('Nodes connected to output:', connectedNodes);
+          // cycling backwards up graph
+          const connectedNodes = getNodeGraph(targetNode.id, nodes, addEdge(params, edges));
 
-          // Do something with the connected nodes
-          //onOutputNodeConnected(targetNode, connectedNodes);
+          onOutputNodeConnected(targetNode, connectedNodes);
         }
       }
     },
-    [setEdges, nodes],
+    [setEdges, nodes, edges, onOutputNodeConnected],
   );
 
   const isValidConnection = useCallback(
