@@ -1,20 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generateVertexShaderCode > matches the snapshot 1`] = `
-"> UNIFORMS
-@group(1) @binding(0) var<uniform> unif1 : f32;
-@group(1) @binding(1) var<uniform> unif2 : vec3f;
-
-> BODY CODE
-    let unif2_y = unif2.x;
-    let height_out = unif1 + unif2_y;
-
-> HEIGHT KEY
-height_out
-"
-`;
-
-exports[`generateVertexShaderCode > matches the snapshot with actual vertex template 1`] = `
+exports[`generateVertexShaderCode > matches the snapshot with default vertex template 1`] = `
 "struct VertexInput
 {
   @location(0) pos: vec3f,

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import * as jit from '..';
 import { defaultVertexShaderTemplate } from '../templates/default.vert';
-import type { VertexShaderTemplate } from '../types/shaders';
+import type * as shaders from '../types/shaders';
 
-const mockVertexTemplate: VertexShaderTemplate = ({
+const mockVertexTemplate: shaders.VertexShaderTemplate = ({
   uniforms,
   bodyCode,
   heightKey,
@@ -18,49 +18,33 @@ ${bodyCode}
 ${heightKey}
 `;
 
+const mockVertexShaderConfig: shaders.VertexShaderConfig = {
+  type: 'vertex',
+  uniforms: [
+    { key: 'unif1', type: 'f32', group: 1, binding: 0 },
+    { key: 'unif2', type: 'vec3f', group: 1, binding: 1 },
+  ],
+  instructionSet: [
+    { type: 'separate-xyz', references: { read: 'unif2', writeX: 'unif2_y' } },
+    {
+      type: 'math',
+      operation: 'add',
+      references: { readA: 'unif1', readB: 'unif2_y', write: 'height_out' },
+    },
+  ],
+  outputs: { height: 'height_out' },
+};
+
 describe('generateVertexShaderCode', () => {
   it('matches the snapshot with mock vertex template', () => {
-    const value = jit.generateVertexShaderCode(
-      {
-        type: 'vertex',
-        uniforms: [
-          { key: 'unif1', type: 'f32', group: 1, binding: 0 },
-          { key: 'unif2', type: 'vec3f', group: 1, binding: 1 },
-        ],
-        instructionSet: [
-          { type: 'separate-xyz', references: { read: 'unif2', writeX: 'unif2_y' } },
-          {
-            type: 'math',
-            operation: 'add',
-            references: { readA: 'unif1', readB: 'unif2_y', write: 'height_out' },
-          },
-        ],
-        outputs: { height: 'height_out' },
-      },
-      mockVertexTemplate,
-    );
+    const value = jit.generateVertexShaderCode(mockVertexShaderConfig, mockVertexTemplate);
 
     expect(value).toMatchSnapshot();
   });
 
-  it('matches the snapshot with actual vertex template', () => {
+  it('matches the snapshot with default vertex template', () => {
     const value = jit.generateVertexShaderCode(
-      {
-        type: 'vertex',
-        uniforms: [
-          { key: 'unif1', type: 'f32', group: 1, binding: 0 },
-          { key: 'unif2', type: 'vec3f', group: 1, binding: 1 },
-        ],
-        instructionSet: [
-          { type: 'separate-xyz', references: { read: 'unif2', writeX: 'unif2_y' } },
-          {
-            type: 'math',
-            operation: 'add',
-            references: { readA: 'unif1', readB: 'unif2_y', write: 'height_out' },
-          },
-        ],
-        outputs: { height: 'height_out' },
-      },
+      mockVertexShaderConfig,
       defaultVertexShaderTemplate,
     );
 
