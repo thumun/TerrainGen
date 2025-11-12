@@ -1,7 +1,7 @@
 import * as shaders from '../types/shaders';
 
 export const defaultVertexShaderTemplate: shaders.VertexShaderTemplate = {
-  content: ({ uniforms, body: bodyCode, heightKey }) => `struct VertexInput
+  content: ({ uniforms, utils, body, heightKey }) => `struct VertexInput
 {
   @location(0) pos: vec3f,
   @location(1) nor: vec3f,
@@ -18,12 +18,14 @@ struct VertexOutput
 
 ${uniforms}
 
+${utils}
+
 @vertex
 fn main(in: VertexInput) -> VertexOutput
 {
   let modelPos = vec4(in.pos, 1.0);
 
-${bodyCode}
+${body}
 
   modelPos.y = ${heightKey};
 
