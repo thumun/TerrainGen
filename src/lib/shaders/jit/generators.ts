@@ -1,3 +1,4 @@
+import { fbmNoiseUtil } from './shader-utils';
 import * as instructions from './types/instructions';
 import type * as util from './types/util';
 
@@ -5,20 +6,25 @@ export function generateUniform(uniform: util.Uniform) {
   return `@group(${uniform.group}) @binding(${uniform.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
 
+type ShaderUtil = () => string;
+type GenerateCodeResult = { code: string; utils?: Array<ShaderUtil> };
+
 const OPERATOR_CHARACTERS = {
   add: '+',
   sub: '-',
   mult: '*',
   div: '/',
-};
-export function generateMathCode(instruction: instructions.Math) {
+} as const;
+export function generateMathCode(instruction: instructions.Math): GenerateCodeResult {
   const { readA, readB, write } = instruction.references;
   const operatorChar = OPERATOR_CHARACTERS[instruction.operation];
 
-  return `let ${write} = ${readA} ${operatorChar} ${readB};`;
+  return { code: `let ${write} = ${readA} ${operatorChar} ${readB};`, utils: [] };
 }
 
-export function generateSeparateXYZCode(instruction: instructions.SeparateXYZ) {
+export function generateSeparateXYZCode(
+  instruction: instructions.SeparateXYZ,
+): GenerateCodeResult {
   const { read, writeX, writeY, writeZ } = instruction.references;
 
   if (!writeX && !writeY && !writeZ)
@@ -26,28 +32,39 @@ export function generateSeparateXYZCode(instruction: instructions.SeparateXYZ) {
       'A `SeparateXYZ` instruction with no outputs was received. There will be no resulting code.',
     );
 
-  return [
-    ...(writeX ? [`let ${writeX} = ${read}.x;`] : []),
-    ...(writeY ? [`let ${writeY} = ${read}.y;`] : []),
-    ...(writeZ ? [`let ${writeZ} = ${read}.z;`] : []),
-  ].join('\n');
+  return {
+    code: [
+      ...(writeX ? [`let ${writeX} = ${read}.x;`] : []),
+      ...(writeY ? [`let ${writeY} = ${read}.y;`] : []),
+      ...(writeZ ? [`let ${writeZ} = ${read}.z;`] : []),
+    ].join('\n'),
+  };
 }
 
-export function generateCombineXYZCode(instruction: instructions.CombineXYZ) {
+export function generateCombineXYZCode(
+  instruction: instructions.CombineXYZ,
+): GenerateCodeResult {
   const { readX, readY, readZ, write } = instruction.references;
-  return `let ${write} = vec3f(${readX}, ${readY}, ${readZ});`;
+  return { code: `let ${write} = vec3f(${readX}, ${readY}, ${readZ});` };
 }
 
-export function generateCode(instruction: instructions.All) {
+export function generateNoiseCode(instruction: instructions.Noise): GenerateCodeResult {
+  const { pos, scale, numOctaves, write } = instruction.references;
+  return {
+    code: `let ${write} = fbm_noise(${pos} * ${scale}, ${numOctaves});`,
+    utils: [fbmNoiseUtil],
+  };
+}
+
+export function generateCode(instruction: instructions.All): GenerateCodeResult {
   switch (instruction.type) {
-    case 'math': {
+    case 'math':
       return generateMathCode(instruction);
-    }
-    case 'separate-xyz': {
+    case 'separate-xyz':
       return generateSeparateXYZCode(instruction);
-    }
-    case 'combine-xyz': {
+    case 'combine-xyz':
       return generateCombineXYZCode(instruction);
-    }
+    case 'noise':
+      return generateNoiseCode(instruction);
   }
 }

@@ -1,10 +1,7 @@
 import * as shaders from '../types/shaders';
 
-export const defaultVertexShaderTemplate: shaders.VertexShaderTemplate = ({
-  uniforms,
-  bodyCode,
-  heightKey,
-}) => `struct VertexInput
+export const defaultVertexShaderTemplate: shaders.VertexShaderTemplate = {
+  content: ({ uniforms, body: bodyCode, heightKey }) => `struct VertexInput
 {
   @location(0) pos: vec3f,
   @location(1) nor: vec3f,
@@ -38,4 +35,6 @@ ${bodyCode}
 
   return out;
 }
-`;
+`,
+  localKeys: { terrainPos: 'in.pos' },
+};
