@@ -11,7 +11,7 @@ export function generateVertexShaderCode(
 
   const bodyCode = shaderConfig.instructionSet
     .map(generators.generateCode)
-    .map((line) => `    ${line}`)
+    .map((line) => `  ${line}`) // lol add indentation
     .join('\n');
 
   const heightKey = shaderConfig.outputs.height;

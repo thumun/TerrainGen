@@ -24,8 +24,8 @@ fn main(in: VertexInput) -> VertexOutput
 {
   let modelPos = vec4(in.pos, 1.0);
 
-    let unif2_y = unif2.x;
-    let height_out = unif1 + unif2_y;
+  let unif2_y = unif2.x;
+  let height_out = unif1 + unif2_y;
 
   modelPos.y = height_out;
 
@@ -46,8 +46,8 @@ exports[`generateVertexShaderCode > matches the snapshot with mock vertex templa
 @group(1) @binding(1) var<uniform> unif2 : vec3f;
 
 > BODY CODE
-    let unif2_y = unif2.x;
-    let height_out = unif1 + unif2_y;
+  let unif2_y = unif2.x;
+  let height_out = unif1 + unif2_y;
 
 > HEIGHT KEY
 height_out
