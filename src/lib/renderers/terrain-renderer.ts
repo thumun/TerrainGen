@@ -4,11 +4,13 @@ import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
 import { Stage } from '@/lib/scene/stage';
+import { Mesh } from '@/lib/scene/mesh';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
+  protected mesh: Mesh;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -25,9 +27,6 @@ export class TerrainRenderer implements IRenderer {
   depthTextureView: GPUTextureView;
 
   pipeline: GPURenderPipeline;
-  vertexBuffer: GPUBuffer;
-  indexBuffer: GPUBuffer;
-  numIndices = -1;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -61,32 +60,10 @@ export class TerrainRenderer implements IRenderer {
     this.context = webGPU.context;
     this.stage = stage;
     this.camera = stage.camera;
+    this.mesh = stage.mesh;
 
-    // create vertex data for a triangle (test)
-    const vertexData = new Float32Array([
-      0.0, 10, -10.0, 0, 0, 1, 0.5, 0.0, -10, -10, -10.0, 1, 0, 0, 0.0, 1.0, 10, -10, -10.0, 0,
-      1, 0, 1.0, 1.0,
-    ]);
-
-    const indexData = new Uint32Array([0, 1, 2]);
-
-    this.vertexBuffer = this.device.createBuffer({
-      label: 'triangle vertex buffer',
-      size: vertexData.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-
-    this.device.queue.writeBuffer(this.vertexBuffer, 0, vertexData);
-
-    this.indexBuffer = this.device.createBuffer({
-      label: 'triangle index buffer',
-      size: indexData.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-    });
-
-    this.device.queue.writeBuffer(this.indexBuffer, 0, indexData);
-
-    this.numIndices = indexData.length;
+    // create vertex data
+    this.mesh.writeBuffers(this.device);
 
     // set up bind groups, layouts, pipelines etc
 
@@ -205,9 +182,9 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
 
-    renderPass.setVertexBuffer(0, this.vertexBuffer);
-    renderPass.setIndexBuffer(this.indexBuffer, 'uint32');
-    renderPass.drawIndexed(this.numIndices);
+    renderPass.setVertexBuffer(0, this.mesh.vertexBuffer!);
+    renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
+    renderPass.drawIndexed(this.mesh.numIndices);
 
     renderPass.end();
 
@@ -216,9 +193,9 @@ export class TerrainRenderer implements IRenderer {
 
   dispose() {
     // destroy all allocated buffers
-    if (this.depthTexture) this.depthTexture.destroy();
-    if (this.vertexBuffer) this.vertexBuffer.destroy();
-    if (this.indexBuffer) this.indexBuffer.destroy();
+    // if (this.depthTexture) this.depthTexture.destroy();
+    // if (this.vertexBuffer) this.vertexBuffer.destroy();
+    // if (this.indexBuffer) this.indexBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------

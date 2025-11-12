@@ -4,6 +4,7 @@ import type { RefObject } from 'react';
 import { useGPUDevice } from '@/hooks/use-gpu-device';
 import { Camera } from '@/lib/scene/camera';
 import { Stage } from '@/lib/scene/stage';
+import { Mesh } from '@/lib/scene/mesh';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
 
@@ -103,7 +104,8 @@ export default function WebGPUCanvas({
 
     // setup scene
     const camera = new Camera(webGPUContext);
-    const stage = new Stage(camera);
+    const mesh = new Mesh();
+    const stage = new Stage(camera, mesh);
 
     const controller = new AbortController();
     const init = async () => {
