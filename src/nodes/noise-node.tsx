@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, type NodeProps } from 'reactflow';
 
-function NoiseNode() {
+interface NoiseNodeData {
+  isOutput?: boolean;
+}
+
+function NoiseNode({ data }: NodeProps<NoiseNodeData>) {
   const [scale, setScale] = useState(0.5);
   const [density, setDensity] = useState(0.5);
   const [operation, setOperation] = useState('add');
@@ -19,6 +23,9 @@ function NoiseNode() {
   const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     setOperation(evt.target.value);
   }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isOutput = data?.isOutput || false;
 
   return (
     <div className="transform-node min-w-[260px] space-y-3 rounded-lg bg-slate-800 p-3 text-white shadow-md">

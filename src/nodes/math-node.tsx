@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, type NodeProps } from 'reactflow';
 
-function MathNode() {
+interface MathNodeData {
+  isOutput?: boolean;
+}
+
+function MathNode({ data }: NodeProps<MathNodeData>) {
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
   const [operation, setOperation] = useState('add');
@@ -19,6 +23,9 @@ function MathNode() {
   const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     setOperation(evt.target.value);
   }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isOutput = data?.isOutput || false;
 
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">

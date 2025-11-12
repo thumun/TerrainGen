@@ -9,6 +9,7 @@ import ReactFlow, {
   type Node,
   type Edge,
   type Connection,
+  type NodeTypes,
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
@@ -16,6 +17,7 @@ import 'reactflow/dist/style.css';
 import MathNode from '@/nodes/math-node';
 import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
+import TerrainNode from '@/nodes/terrain-node';
 import TransformNode from '@/nodes/transform-node';
 
 const initialNodes: Node[] = [
@@ -46,9 +48,17 @@ const initialNodes: Node[] = [
   {
     id: '4',
     type: 'mix',
-    position: { x: 200, y: 50 },
+    position: { x: 300, y: 50 },
     data: {
       value: 123,
+    },
+  },
+  {
+    id: '5',
+    type: 'terrain',
+    position: { x: 400, y: 50 },
+    data: {
+      isOutput: true,
     },
   },
 ];
@@ -57,7 +67,13 @@ const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-const nodeTypes = { transform: TransformNode, noise: NoiseNode, math: MathNode, mix: MixNode };
+const nodeTypes: NodeTypes = {
+  transform: TransformNode,
+  noise: NoiseNode,
+  math: MathNode,
+  mix: MixNode,
+  terrain: TerrainNode,
+};
 
 const initialEdges: Edge[] = [];
 
@@ -66,11 +82,29 @@ export default function NodeGraph() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params: Edge | Connection) => {
+      setEdges((eds) => addEdge(params, eds));
+
+      // Check if the connected edge's target node is an output node
+      if (params.target) {
+        const targetNode = nodes.find((node) => node.id === params.target);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (targetNode?.data?.isOutput === true) {
+          console.log('Connected to output node:', targetNode);
+
+          // Get all nodes connected to this output node
+          //const connectedNodes = findUpstreamNodes(targetNode.id, nodes, addEdge(params, edges));
+          //console.log('Nodes connected to output:', connectedNodes);
+
+          // Do something with the connected nodes
+          //onOutputNodeConnected(targetNode, connectedNodes);
+        }
+      }
+    },
+    [setEdges, nodes],
   );
 
-  // checks if edge connection valid
   const isValidConnection = useCallback(
     (connection: Connection) => {
       const sourceNode = nodes.find((node) => node.id === connection.source);
@@ -80,7 +114,6 @@ export default function NodeGraph() {
         return false;
       }
 
-      // returns prefix (geo, vec3, etc.) or entire id otherwise
       const getHandlePrefix = (handleId: string): string => {
         const hyphenIndex = handleId.indexOf('-');
         if (hyphenIndex !== -1) {
