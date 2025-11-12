@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as generators from '../generators';
+import * as shaderUtils from '../shader-utils';
 
 describe('generateUniform', () => {
   it('generates uniform input code', () => {
@@ -21,7 +22,7 @@ describe('math', () => {
       operation: 'add',
       references: { readA: 'alpha', readB: 'beta', write: 'gamma' },
     });
-    expect(result).toBe('let gamma = alpha + beta;');
+    expect(result.code).toBe('let gamma = alpha + beta;');
   });
 
   it('creates subtraction instructions', () => {
@@ -30,7 +31,7 @@ describe('math', () => {
       operation: 'sub',
       references: { readA: 'alpha', readB: 'beta', write: 'gamma' },
     });
-    expect(result).toBe('let gamma = alpha - beta;');
+    expect(result.code).toBe('let gamma = alpha - beta;');
   });
 
   it('creates multiplication instructions', () => {
@@ -39,7 +40,7 @@ describe('math', () => {
       operation: 'mult',
       references: { readA: 'alpha', readB: 'beta', write: 'gamma' },
     });
-    expect(result).toBe('let gamma = alpha * beta;');
+    expect(result.code).toBe('let gamma = alpha * beta;');
   });
 
   it('creates division instructions', () => {
@@ -48,7 +49,7 @@ describe('math', () => {
       operation: 'div',
       references: { readA: 'alpha', readB: 'beta', write: 'gamma' },
     });
-    expect(result).toBe('let gamma = alpha / beta;');
+    expect(result.code).toBe('let gamma = alpha / beta;');
   });
 });
 
@@ -58,7 +59,7 @@ describe('separate XYZ', () => {
       type: 'separate-xyz',
       references: { read: 'alpha', writeX: 'beta' },
     });
-    expect(result).toBe(`let beta = alpha.x;`);
+    expect(result.code).toBe(`let beta = alpha.x;`);
   });
 
   it('separates into all XYZ variables', () => {
@@ -66,7 +67,7 @@ describe('separate XYZ', () => {
       type: 'separate-xyz',
       references: { read: 'alpha', writeX: 'beta', writeY: 'gamma', writeZ: 'delta' },
     });
-    expect(result).toBe(`let beta = alpha.x;
+    expect(result.code).toBe(`let beta = alpha.x;
 let gamma = alpha.y;
 let delta = alpha.z;`);
   });
@@ -78,6 +79,39 @@ describe('combine XYZ', () => {
       type: 'combine-xyz',
       references: { readX: 'alpha', readY: 'beta', readZ: 'gamma', write: 'delta' },
     });
-    expect(result).toBe(`let delta = vec3f(alpha, beta, gamma);`);
+    expect(result.code).toBe(`let delta = vec3f(alpha, beta, gamma);`);
+  });
+});
+
+describe('noise', () => {
+  describe('fbm', () => {
+    it('creates fbm noise call', () => {
+      const result = generators.generateNoiseCode({
+        type: 'noise',
+        method: 'fbm',
+        references: {
+          pos: 'pos_var',
+          scale: 'scale_var',
+          numOctaves: 'octaves_var',
+          write: 'output',
+        },
+      });
+      expect(result.code).toBe(`let output = fbm_noise(pos_var * scale_var, octaves_var);`);
+    });
+
+    it('gives us shader util', () => {
+      const result = generators.generateNoiseCode({
+        type: 'noise',
+        method: 'fbm',
+        references: {
+          pos: 'pos_var',
+          scale: 'scale_var',
+          numOctaves: 'octaves_var',
+          write: 'output',
+        },
+      });
+      expect(result.utils).toContain(shaderUtils.fbmNoise);
+      expect(result.utils).toHaveLength(1);
+    });
   });
 });

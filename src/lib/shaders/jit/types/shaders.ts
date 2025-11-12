@@ -15,8 +15,16 @@ export type VertexShaderConfig = ShaderConfigBase & {
 
 type VertexShaderTemplateValues = {
   uniforms: string;
-  bodyCode: string;
+  utils: string;
+  body: string;
   heightKey: string;
 };
 
-export type VertexShaderTemplate = (values: VertexShaderTemplateValues) => string;
+export type VertexShaderTemplate = {
+  content: (values: VertexShaderTemplateValues) => string;
+  /** Can be used as `ReferenceKey`s in `VertexShaderConfig`s to refer to certain in-scope variables */
+  localKeys: {
+    /** `vec3f` - the terrain position for any given vertex */
+    terrainPos: util.ReferenceKey;
+  };
+};

@@ -1,5 +1,9 @@
 import type * as util from './util';
 
+// --------------------------------------------------------------------------------------------
+// ------ Math/Utility
+// --------------------------------------------------------------------------------------------
+
 export type Math = {
   type: 'math';
   operation: 'add' | 'sub' | 'mult' | 'div';
@@ -30,4 +34,19 @@ export type CombineXYZ = {
   };
 };
 
-export type All = Math | SeparateXYZ | CombineXYZ;
+// --------------------------------------------------------------------------------------------
+// ------ Noise
+// --------------------------------------------------------------------------------------------
+
+export type Noise = {
+  type: 'noise';
+  method: 'fbm';
+  references: {
+    pos: util.ReferenceKey;
+    scale: util.ReferenceKey;
+    numOctaves: util.ReferenceKey;
+    write: util.ReferenceKey;
+  };
+};
+
+export type All = Math | SeparateXYZ | CombineXYZ | Noise;
