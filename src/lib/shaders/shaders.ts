@@ -4,7 +4,7 @@
 import commonRaw from './common.wgsl?raw';
 import naiveFragRaw from './naive.fs.wgsl?raw';
 import naiveVertRaw from './naive.vs.wgsl?raw';
-import terrainCompute from './jit/templates/terrain.cs.wgsl?raw';
+import terrainCompute from './terrain.cs.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
 

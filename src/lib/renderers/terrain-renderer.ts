@@ -288,6 +288,8 @@ export class TerrainRenderer implements IRenderer {
     if (this.depthTexture) this.depthTexture.destroy();
     if (this.mesh.vertexBuffer) this.mesh.vertexBuffer.destroy();
     if (this.mesh.indexBuffer) this.mesh.indexBuffer.destroy();
+    if (this.mesh.indirectBuffer) this.mesh.indirectBuffer.destroy();
+    if (this.mesh.uniformsBuffer) this.mesh.uniformsBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------

@@ -61,13 +61,11 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         vertices[vOffset + 1] = noise2d(x, z);  // pos.y
         vertices[vOffset + 2] = z; // pos.z
         vertices[vOffset + 3] = x;  // nor.x
-        vertices[vOffset + 4] = 0.0;  // nor.y
+        vertices[vOffset + 4] = 1.0;  // nor.y
         vertices[vOffset + 5] = z;  // nor.z
         vertices[vOffset + 6] = 0.0;  // uv.x
         vertices[vOffset + 7] = 0.0;  // uv.y
     }
-    
-    // how to calculate normals here? 
 
     // generate indices
     if (id.x < subdivisions * subdivisions) {
