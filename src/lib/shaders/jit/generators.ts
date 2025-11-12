@@ -3,7 +3,7 @@ import type * as util from './types/util';
 
 export function generateUniform(
   uniform: util.Uniform,
-  opts: { group: number; binding: number },
+  opts: { group: number | string; binding: number | string },
 ) {
   return `@group(${opts.group}) @binding(${opts.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
@@ -14,14 +14,14 @@ const OPERATOR_CHARACTERS = {
   mult: '*',
   div: '/',
 };
-function generateMathCode(instruction: instructions.Math) {
+export function generateMathCode(instruction: instructions.Math) {
   const { readA, readB, write } = instruction.references;
   const operatorChar = OPERATOR_CHARACTERS[instruction.operation];
 
   return `let ${write} = ${readA} ${operatorChar} ${readB};`;
 }
 
-function generateSeparateXYZCode(instruction: instructions.SeparateXYZ) {
+export function generateSeparateXYZCode(instruction: instructions.SeparateXYZ) {
   const { read, writeX, writeY, writeZ } = instruction.references;
 
   if (!writeX && !writeY && !writeZ)
@@ -36,7 +36,7 @@ function generateSeparateXYZCode(instruction: instructions.SeparateXYZ) {
   ].join('\n');
 }
 
-function generateCombineXYZCode(instruction: instructions.CombineXYZ) {
+export function generateCombineXYZCode(instruction: instructions.CombineXYZ) {
   const { readX, readY, readZ, write } = instruction.references;
   return `let ${write} = vec3f(${readX}, ${readY}, ${readZ});`;
 }
