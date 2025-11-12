@@ -3,7 +3,7 @@ import * as shaders from './types/shaders';
 
 // TODO: helper to inject utils like noise functions
 
-export function generateVertexShaderCode(
+export function generateDisplaceShaderCode(
   shaderConfig: shaders.DisplaceShaderConfig,
   template: shaders.DisplaceShaderTemplate,
 ) {

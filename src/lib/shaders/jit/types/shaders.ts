@@ -7,7 +7,6 @@ type ShaderConfigBase = {
 };
 
 export type DisplaceShaderConfig = ShaderConfigBase & {
-  type: 'vertex';
   outputs: {
     height: util.ReferenceKey;
   };
