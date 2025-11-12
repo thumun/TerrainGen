@@ -1,11 +1,8 @@
 import * as instructions from './types/instructions';
 import type * as util from './types/util';
 
-export function generateUniform(
-  uniform: util.Uniform,
-  opts: { group: number | string; binding: number | string },
-) {
-  return `@group(${opts.group}) @binding(${opts.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
+export function generateUniform(uniform: util.Uniform) {
+  return `@group(${uniform.group}) @binding(${uniform.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
 
 const OPERATOR_CHARACTERS = {

@@ -5,14 +5,9 @@ import * as shaders from './types/shaders';
 
 export function generateVertexShaderCode(
   shaderConfig: shaders.VertexShaderConfig,
-  opts: { dynamicUniformsGroup: number },
   template: shaders.VertexShaderTemplate,
 ) {
-  const uniforms = shaderConfig.uniforms
-    .map((uniform, idx) =>
-      generators.generateUniform(uniform, { group: opts.dynamicUniformsGroup, binding: idx }),
-    )
-    .join('\n');
+  const uniforms = shaderConfig.uniforms.map(generators.generateUniform).join('\n');
 
   const bodyCode = shaderConfig.instructionSet
     .map(generators.generateCode)

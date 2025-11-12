@@ -3,20 +3,14 @@ import { describe, expect, it } from 'vitest';
 import * as generators from '../generators';
 
 describe('generateUniform', () => {
-  it('allows number type groups and bindings', () => {
-    const result = generators.generateUniform(
-      { key: 'unif1', type: 'f32' },
-      { group: 1, binding: 2 },
-    );
+  it('generates uniform input code', () => {
+    const result = generators.generateUniform({
+      key: 'unif1',
+      type: 'f32',
+      group: 1,
+      binding: 2,
+    });
     expect(result).toBe(`@group(1) @binding(2) var<uniform> unif1 : f32;`);
-  });
-
-  it('allows string type groups and bindings', () => {
-    const result = generators.generateUniform(
-      { key: 'unif1', type: 'vec3f' },
-      { group: '2', binding: '5' },
-    );
-    expect(result).toBe(`@group(2) @binding(5) var<uniform> unif1 : vec3f;`);
   });
 });
 
