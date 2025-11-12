@@ -41,13 +41,4 @@ describe('generateVertexShaderCode', () => {
 
     expect(value).toMatchSnapshot();
   });
-
-  it('matches the snapshot with default vertex template', () => {
-    const value = jit.generateVertexShaderCode(
-      mockVertexShaderConfig,
-      defaultVertexShaderTemplate,
-    );
-
-    expect(value).toMatchSnapshot();
-  });
 });

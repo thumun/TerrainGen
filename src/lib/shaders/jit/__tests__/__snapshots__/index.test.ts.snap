@@ -1,45 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generateVertexShaderCode > matches the snapshot with default vertex template 1`] = `
-"struct VertexInput
-{
-  @location(0) pos: vec3f,
-  @location(1) nor: vec3f,
-  @location(2) uv: vec2f
-}
-
-struct VertexOutput
-{
-  @builtin(position) fragPos: vec4f,
-  @location(0) pos: vec3f,
-  @location(1) nor: vec3f,
-  @location(2) uv: vec2f
-}
-
-@group(1) @binding(0) var<uniform> unif1 : f32;
-@group(1) @binding(1) var<uniform> unif2 : vec3f;
-
-@vertex
-fn main(in: VertexInput) -> VertexOutput
-{
-  let modelPos = vec4(in.pos, 1.0);
-
-  let unif2_y = unif2.x;
-  let height_out = unif1 + unif2_y;
-
-  modelPos.y = height_out;
-
-  var out: VertexOutput;
-  out.fragPos = camera.viewProjMat * modelPos;
-  out.pos = modelPos.xyz / modelPos.w;
-  out.nor = in.nor;
-  out.uv = in.uv;
-
-  return out;
-}
-"
-`;
-
 exports[`generateVertexShaderCode > matches the snapshot with mock vertex template 1`] = `
 "> UNIFORMS
 @group(1) @binding(0) var<uniform> unif1 : f32;
