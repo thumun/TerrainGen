@@ -103,9 +103,9 @@ export default function NodeGraph() {
     const traverse = (currentNodeId: string) => {
       if (visited.has(currentNodeId)) {
         return;
-      } else {
-        visited.add(currentNodeId);
       }
+
+      visited.add(currentNodeId);
 
       const currentNode = nodes.find((n) => n.id === currentNodeId);
       if (!currentNode) {
@@ -128,10 +128,13 @@ export default function NodeGraph() {
     return result.reverse();
   };
 
-  const onOutputNodeConnected = useCallback((outputNode: Node, connectedNodes: Node[]) => {
-    const pipeline = [...connectedNodes, outputNode];
-    executePipeline(pipeline);
-  }, []);
+  const onOutputNodeConnected = useCallback(
+    (outputNode: Node, connectedNodes: Node[]) => {
+      const pipeline = [...connectedNodes, outputNode];
+      executePipeline(pipeline);
+    },
+    [executePipeline],
+  );
 
   // this gets called for every edge connection created
   const onConnect = useCallback(

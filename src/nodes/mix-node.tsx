@@ -1,11 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
-interface MathNodeData {
-  isOutput?: boolean;
-}
-
-function MathNode({ data }: NodeProps<MathNodeData>) {
+function MathNode() {
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
   const [value3, setValue3] = useState(0.5);
@@ -24,9 +20,6 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
     const newValue = parseFloat(evt.target.value);
     setValue3(newValue);
   }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isOutput = data?.isOutput || false;
 
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
@@ -98,7 +91,7 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val2-in"
+          id="vec3-val3-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex items-center justify-between">

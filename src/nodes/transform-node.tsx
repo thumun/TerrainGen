@@ -1,18 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
-interface TransformNodeData {
-  isOutput?: boolean;
-}
-
-function TransformNode({ data }: NodeProps<TransformNodeData>) {
+function TransformNode() {
   const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
   const [rotate, setRotate] = useState({ x: 0, y: 0, z: 0 });
   const [scale, setScale] = useState({ x: 1, y: 1, z: 1 });
   const [uniformScale, setUniformScale] = useState(1);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isOutput = data?.isOutput || false;
 
   // how this works:
   // attach to our box, based on param, str->float & update above state

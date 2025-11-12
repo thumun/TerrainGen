@@ -1,14 +1,8 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
-interface TerrainNodeData {
-  isOutput?: boolean;
-}
-
-function TerrainNode({ data }: NodeProps<TerrainNodeData>) {
+function TerrainNode() {
   const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const isOutput = data?.isOutput || true;
 
   const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
     const numValue = parseFloat(value) || 0;
