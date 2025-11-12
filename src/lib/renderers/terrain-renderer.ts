@@ -28,6 +28,10 @@ export class TerrainRenderer implements IRenderer {
 
   pipeline: GPURenderPipeline;
 
+  terrainComputeBindGroupLayout: GPUBindGroupLayout;
+  terrainComputeBindGroup: GPUBindGroup;
+  terrainComputePipeline: GPUComputePipeline;
+
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
     attributes: [
@@ -100,6 +104,62 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+
+    // setup compute pipeline (TODO: make this neater)
+    this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'terrain compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          // indices
+          binding: 1,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          // indirect draw params
+          binding: 2,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.terrainComputePipeline = this.device.createComputePipeline({
+      label: 'terrain compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'terrain compute pipeline layout',
+        bindGroupLayouts: [this.terrainComputeBindGroupLayout],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'terrain compute shader',
+          code: shaders.terrainComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
+
+    this.terrainComputeBindGroup = this.device.createBindGroup({
+      label: 'terrain compute bind group',
+      layout: this.terrainComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+        { binding: 2, resource: { buffer: this.mesh.indirectBuffer! } },
+      ],
+    });
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -161,6 +221,13 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
+    // run the compute pass
+    const computePass = encoder.beginComputePass();
+    computePass.setPipeline(this.terrainComputePipeline);
+    computePass.setBindGroup(0, this.terrainComputeBindGroup);
+    computePass.dispatchWorkgroups(1);
+    computePass.end();
+
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
       colorAttachments: [
@@ -178,14 +245,12 @@ export class TerrainRenderer implements IRenderer {
         depthStoreOp: 'store',
       },
     });
+
     renderPass.setPipeline(this.pipeline);
-
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
-
     renderPass.setVertexBuffer(0, this.mesh.vertexBuffer!);
     renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
-
     renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
@@ -193,9 +258,9 @@ export class TerrainRenderer implements IRenderer {
 
   dispose() {
     // destroy all allocated buffers
-    // if (this.depthTexture) this.depthTexture.destroy();
-    // if (this.vertexBuffer) this.vertexBuffer.destroy();
-    // if (this.indexBuffer) this.indexBuffer.destroy();
+    if (this.depthTexture) this.depthTexture.destroy();
+    if (this.mesh.vertexBuffer) this.mesh.vertexBuffer.destroy();
+    if (this.mesh.indexBuffer) this.mesh.indexBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------

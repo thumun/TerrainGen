@@ -15,21 +15,20 @@ export abstract class Mesh {
   }
 
   writeBuffers(device: GPUDevice) {
+    let numVertices = 4;
+    let numIndices = 6;
+
     this.vertexBuffer = device.createBuffer({
       label: 'triangle vertex buffer',
-      size: this.vertexData.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      size: numVertices * 32,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
-
-    device.queue.writeBuffer(this.vertexBuffer, 0, this.vertexData.buffer);
 
     this.indexBuffer = device.createBuffer({
       label: 'triangle index buffer',
-      size: this.indexData.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+      size: numIndices * 4,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
-
-    device.queue.writeBuffer(this.indexBuffer, 0, this.indexData.buffer);
 
     const indirectData = new Uint32Array([
       this.numIndices, // indexCount
@@ -42,7 +41,7 @@ export abstract class Mesh {
     this.indirectBuffer = device.createBuffer({
       label: 'triangle indirect buffer',
       size: indirectData.byteLength,
-      usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
     device.queue.writeBuffer(this.indirectBuffer, 0, indirectData.buffer);
   }
