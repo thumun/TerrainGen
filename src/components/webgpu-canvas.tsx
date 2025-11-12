@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 
 import { useGPUDevice } from '@/hooks/use-gpu-device';
 import { Camera } from '@/lib/scene/camera';
+import { Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
@@ -103,7 +104,10 @@ export default function WebGPUCanvas({
 
     // setup scene
     const camera = new Camera(webGPUContext);
-    const stage = new Stage(camera);
+    const mesh = new Plane(10, 100);
+    const stage = new Stage(camera, mesh);
+
+    // TODO: Generate shader code from nodes here
 
     const controller = new AbortController();
     const init = async () => {

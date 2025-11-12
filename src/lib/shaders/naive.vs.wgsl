@@ -24,7 +24,7 @@ fn main(in: VertexInput) -> VertexOutput
 
     var out: VertexOutput;
     out.fragPos = camera.viewProjMat * modelPos;
-    out.pos = modelPos.xyz / modelPos.w;
+    out.pos = modelPos.xyz;
     out.nor = in.nor;
     out.uv = in.uv;
 

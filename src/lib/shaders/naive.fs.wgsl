@@ -10,5 +10,8 @@ struct FragmentInput
 @fragment
 fn main(in: FragmentInput) -> @location(0) vec4f
 {
-  return vec4f(in.nor.x, in.nor.y, in.nor.z, 1.0);
+  let x = (in.nor.x + 5.0) / 10.0;
+  let z = (in.nor.z + 5.0) / 10.0;
+
+  return vec4f(x, z, in.nor.y, 1.0);
 }

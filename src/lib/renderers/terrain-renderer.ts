@@ -3,12 +3,14 @@ import * as shaders from '../shaders/shaders';
 import type { IRenderer } from '@/components/webgpu-canvas';
 import type { SceneGraph } from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
+import { Mesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
+  protected mesh: Mesh;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -25,9 +27,15 @@ export class TerrainRenderer implements IRenderer {
   depthTextureView: GPUTextureView;
 
   pipeline: GPURenderPipeline;
-  vertexBuffer: GPUBuffer;
-  indexBuffer: GPUBuffer;
-  numIndices = -1;
+
+  // compute pipeline yay
+  terrainComputeBindGroupLayout: GPUBindGroupLayout;
+  terrainComputeBindGroup: GPUBindGroup;
+
+  terrainComputeUniformBindGroupLayout: GPUBindGroupLayout;
+  terrainComputeUniformBindGroup: GPUBindGroup;
+
+  terrainComputePipeline: GPUComputePipeline;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -61,32 +69,10 @@ export class TerrainRenderer implements IRenderer {
     this.context = webGPU.context;
     this.stage = stage;
     this.camera = stage.camera;
+    this.mesh = stage.mesh;
 
-    // create vertex data for a triangle (test)
-    const vertexData = new Float32Array([
-      0.0, 10, -10.0, 0, 0, 1, 0.5, 0.0, -10, -10, -10.0, 1, 0, 0, 0.0, 1.0, 10, -10, -10.0, 0,
-      1, 0, 1.0, 1.0,
-    ]);
-
-    const indexData = new Uint32Array([0, 1, 2]);
-
-    this.vertexBuffer = this.device.createBuffer({
-      label: 'triangle vertex buffer',
-      size: vertexData.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-
-    this.device.queue.writeBuffer(this.vertexBuffer, 0, vertexData);
-
-    this.indexBuffer = this.device.createBuffer({
-      label: 'triangle index buffer',
-      size: indexData.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-    });
-
-    this.device.queue.writeBuffer(this.indexBuffer, 0, indexData);
-
-    this.numIndices = indexData.length;
+    // create vertex data
+    this.mesh.writeBuffers(this.device);
 
     // set up bind groups, layouts, pipelines etc
 
@@ -123,6 +109,76 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+
+    // ---------- compute pipeline stuff -----------
+    this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'terrain compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          // indices
+          binding: 1,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.terrainComputeBindGroup = this.device.createBindGroup({
+      label: 'terrain compute bind group',
+      layout: this.terrainComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+      ],
+    });
+
+    this.terrainComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'terrain compute uniform bind group layout',
+      entries: [
+        {
+          // uniform containing mesh size and resolution
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.terrainComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'terrain compute uniform bind group',
+      layout: this.terrainComputeUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+    });
+
+    this.terrainComputePipeline = this.device.createComputePipeline({
+      label: 'terrain compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'terrain compute pipeline layout',
+        bindGroupLayouts: [
+          this.terrainComputeBindGroupLayout,
+          this.terrainComputeUniformBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'terrain compute shader',
+          code: shaders.terrainComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -184,6 +240,17 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
+    // run the compute pass
+    const computePass = encoder.beginComputePass();
+    computePass.setPipeline(this.terrainComputePipeline);
+    computePass.setBindGroup(0, this.terrainComputeBindGroup);
+    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+
+    // what's the optimal amount of workgroups to dispatch?
+    // i guess this should depend on the vertex count
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+    computePass.end();
+
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
       colorAttachments: [
@@ -201,14 +268,12 @@ export class TerrainRenderer implements IRenderer {
         depthStoreOp: 'store',
       },
     });
+
     renderPass.setPipeline(this.pipeline);
-
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
-
-    renderPass.setVertexBuffer(0, this.vertexBuffer);
-    renderPass.setIndexBuffer(this.indexBuffer, 'uint32');
-    renderPass.drawIndexed(this.numIndices);
-
+    renderPass.setVertexBuffer(0, this.mesh.vertexBuffer);
+    renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
+    renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
     renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
@@ -217,8 +282,10 @@ export class TerrainRenderer implements IRenderer {
   dispose() {
     // destroy all allocated buffers
     if (this.depthTexture) this.depthTexture.destroy();
-    if (this.vertexBuffer) this.vertexBuffer.destroy();
-    if (this.indexBuffer) this.indexBuffer.destroy();
+    if (this.mesh.vertexBuffer) this.mesh.vertexBuffer.destroy();
+    if (this.mesh.indexBuffer) this.mesh.indexBuffer.destroy();
+    if (this.mesh.indirectBuffer) this.mesh.indirectBuffer.destroy();
+    if (this.mesh.uniformsBuffer) this.mesh.uniformsBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
