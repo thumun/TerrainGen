@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import * as jit from '..';
-import { defaultVertexShaderTemplate } from '../templates/default.vert';
 import type * as shaders from '../types/shaders';
 
 const mockVertexTemplate: shaders.VertexShaderTemplate = ({
