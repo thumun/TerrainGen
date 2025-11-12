@@ -25,7 +25,7 @@ const rootRoute = createRootRoute({
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: import.meta.env.VITE_BASE_PATH || '/',
   component: EditorPage,
 });
 
