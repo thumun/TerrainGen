@@ -61,6 +61,14 @@ const initialNodes: Node[] = [
       isOutput: true,
     },
   },
+  {
+    id: '6',
+    type: 'noise',
+    position: { x: 100, y: 50 },
+    data: {
+      value: 123,
+    },
+  },
 ];
 
 const fitViewOptions: FitViewOptions = {
