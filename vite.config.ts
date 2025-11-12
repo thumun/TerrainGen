@@ -10,6 +10,7 @@ export default defineConfig({
     // only need to support browser versions with WebGPU support
     target: ['chrome113', 'edge113', 'firefox141', 'safari26'],
   },
+  base: process.env.BASE_PATH || undefined,
   plugins: [viteReact(), tailwindcss()],
   resolve: {
     alias: {
