@@ -28,8 +28,13 @@ export class TerrainRenderer implements IRenderer {
 
   pipeline: GPURenderPipeline;
 
+  // compute pipeline yay
   terrainComputeBindGroupLayout: GPUBindGroupLayout;
   terrainComputeBindGroup: GPUBindGroup;
+
+  terrainComputeUniformBindGroupLayout: GPUBindGroupLayout;
+  terrainComputeUniformBindGroup: GPUBindGroup;
+
   terrainComputePipeline: GPUComputePipeline;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
@@ -105,11 +110,7 @@ export class TerrainRenderer implements IRenderer {
 
     this.pipeline = this.createRenderPipeline();
 
-    // setup compute pipeline (TODO: make this neater)
-    // TODO: Create additional bindings for uniforms (plane size, resolution)
-    let meshSize = this.mesh.size;
-    let meshResolution = this.mesh.resolution;
-
+    // ---------- compute pipeline stuff -----------
     this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [
@@ -129,14 +130,37 @@ export class TerrainRenderer implements IRenderer {
             type: 'storage',
           },
         },
+      ],
+    });
+
+    this.terrainComputeBindGroup = this.device.createBindGroup({
+      label: 'terrain compute bind group',
+      layout: this.terrainComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+      ],
+    });
+
+    this.terrainComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'terrain compute uniform bind group layout',
+      entries: [
         {
-          // indirect draw params
-          binding: 2,
+          // uniform containing mesh size and resolution
+          binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           buffer: {
-            type: 'storage',
+            type: 'uniform',
           },
         },
+      ],
+    });
+
+    this.terrainComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'terrain compute uniform bind group',
+      layout: this.terrainComputeUniformBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } },
       ],
     });
 
@@ -144,7 +168,10 @@ export class TerrainRenderer implements IRenderer {
       label: 'terrain compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'terrain compute pipeline layout',
-        bindGroupLayouts: [this.terrainComputeBindGroupLayout],
+        bindGroupLayouts: [
+          this.terrainComputeBindGroupLayout,
+          this.terrainComputeUniformBindGroupLayout
+        ],
       }),
       compute: {
         module: this.device.createShaderModule({
@@ -155,15 +182,7 @@ export class TerrainRenderer implements IRenderer {
       },
     });
 
-    this.terrainComputeBindGroup = this.device.createBindGroup({
-      label: 'terrain compute bind group',
-      layout: this.terrainComputeBindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
-        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
-        { binding: 2, resource: { buffer: this.mesh.indirectBuffer! } },
-      ],
-    });
+    
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -229,7 +248,11 @@ export class TerrainRenderer implements IRenderer {
     const computePass = encoder.beginComputePass();
     computePass.setPipeline(this.terrainComputePipeline);
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
-    computePass.dispatchWorkgroups(1);
+    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+
+    // what's the optimal amount of workgroups to dispatch? 
+    // i guess this should depend on the vertex count
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64)); 
     computePass.end();
 
     const renderPass = encoder.beginRenderPass({

@@ -10,6 +10,11 @@ struct CameraUniforms {
     farPlane: f32,
 }
 
+struct MeshUniforms {
+    size: f32,
+    resolution: f32,
+}
+
 struct Vertex {
     pos: vec3<f32>,
     nor: vec3<f32>,

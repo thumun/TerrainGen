@@ -6,10 +6,34 @@ var<storage, read_write> vertices: array<f32>;
 @group(0) @binding(1)
 var<storage, read_write> indices: array<u32>;
 
-@group(0) @binding(2)
-var<storage, read_write> indirect: array<u32>; // indirect draw params
+@group(1) @binding(0)
+var<uniform> meshUniforms : MeshUniforms;
 
-// TODO: bind uniform buffers for size & num subdivisions
+// i asked chat to generate some simple noise for testing
+fn hash2(p: vec2<f32>) -> f32 {
+    // Simple hash based on sine
+    let h = sin(dot(p, vec2<f32>(127.1, 311.7))) * 43758.5453123;
+    return fract(h);
+}
+
+fn noise2d(x: f32, z: f32) -> f32 {
+    // Get integer and fractional parts
+    let p = vec2<f32>(x, z);
+    let i = floor(p);
+    let f = fract(p);
+
+    // Four corners
+    let a = hash2(i + vec2<f32>(0.0, 0.0));
+    let b = hash2(i + vec2<f32>(1.0, 0.0));
+    let c = hash2(i + vec2<f32>(0.0, 1.0));
+    let d = hash2(i + vec2<f32>(1.0, 1.0));
+
+    // Smooth interpolation
+    let u = f * f * (3.0 - 2.0 * f);
+
+    // Bilinear interpolation
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
 
 fn vertexOffset(i: u32) -> u32 { 
     return i * 8u; 
@@ -17,8 +41,8 @@ fn vertexOffset(i: u32) -> u32 {
 
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
-    let subdivisions = 4u;
-    let size = 10.0;
+    let subdivisions = u32(meshUniforms.resolution);
+    let size = meshUniforms.size;
     let step = size / f32(subdivisions); // .25
 
     let vertexCount = (subdivisions + 1u) * (subdivisions + 1u); // 25
@@ -34,7 +58,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
         let vOffset = vertexOffset(id.x);
         vertices[vOffset + 0] = x; // pos.x
-        vertices[vOffset + 1] = 0.0;  // pos.y
+        vertices[vOffset + 1] = noise2d(x, z);  // pos.y
         vertices[vOffset + 2] = z; // pos.z
         vertices[vOffset + 3] = x;  // nor.x
         vertices[vOffset + 4] = 0.0;  // nor.y
@@ -42,6 +66,8 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         vertices[vOffset + 6] = 0.0;  // uv.x
         vertices[vOffset + 7] = 0.0;  // uv.y
     }
+    
+    // how to calculate normals here? 
 
     // generate indices
     if (id.x < subdivisions * subdivisions) {
@@ -63,13 +89,4 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         indices[baseIndex + 5u] = topRight;
     }
 
-    // fill indirect draw params
-    // question: should this be done separately? feels kinda wrong
-    if (id.x == 0u) {
-        indirect[0] = indexCount; // indexCount
-        indirect[1] = 1u; // instanceCount
-        indirect[2] = 0u; // firstIndex
-        indirect[3] = 0u; // baseVertex
-        indirect[4] = 0u; // firstInstance
-    }
 }
