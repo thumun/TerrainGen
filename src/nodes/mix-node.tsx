@@ -4,7 +4,7 @@ import { Handle, Position } from 'reactflow';
 function MathNode() {
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
-  const [operation, setOperation] = useState('Add');
+  const [value3, setValue3] = useState(0.5);
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
@@ -16,8 +16,9 @@ function MathNode() {
     setValue2(newValue);
   }, []);
 
-  const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    setOperation(evt.target.value);
+  const onChange3 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(evt.target.value);
+    setValue3(newValue);
   }, []);
 
   return (
@@ -32,7 +33,7 @@ function MathNode() {
       {/* Node Title */}
       <div className="mb-2 text-center">
         <div className="inline-block -translate-y-1 transform rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-bold text-white shadow-sm">
-          Math
+          Mix
         </div>
       </div>
 
@@ -85,35 +86,29 @@ function MathNode() {
           className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
         />
       </div>
-
-      {/* Type of Node */}
-      <div className="mb-2 text-center">
-        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
-          <select
-            value={operation}
-            onChange={onOperationChange}
-            className="bg-transparent font-bold focus:outline-none"
-          >
-            <option value="Add" className="bg-slate-800 text-white">
-              Add
-            </option>
-            <option value="Sub" className="bg-slate-800 text-white">
-              Subtract
-            </option>
-            <option value="Mult" className="bg-slate-800 text-white">
-              Multiply
-            </option>
-            <option value="Div" className="bg-slate-800 text-white">
-              Divide
-            </option>
-            <option value="Min" className="bg-slate-800 text-white">
-              Min
-            </option>
-            <option value="Max" className="bg-slate-800 text-white">
-              Max
-            </option>
-          </select>
+      {/* Third Value Section */}
+      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="vec3-val3-in"
+          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
+        />
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Mix Value</label>
+          <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
+            {value3.toFixed(2)}
+          </span>
         </div>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={value3}
+          onChange={onChange3}
+          className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
+        />
       </div>
     </div>
   );
