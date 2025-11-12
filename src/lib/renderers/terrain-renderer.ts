@@ -106,6 +106,10 @@ export class TerrainRenderer implements IRenderer {
     this.pipeline = this.createRenderPipeline();
 
     // setup compute pipeline (TODO: make this neater)
+    // TODO: Create additional bindings for uniforms (plane size, resolution)
+    let meshSize = this.mesh.size;
+    let meshResolution = this.mesh.resolution;
+
     this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [

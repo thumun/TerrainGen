@@ -1,32 +1,36 @@
 // template class
 export abstract class Mesh {
-  vertexData: Float32Array;
-  indexData: Uint32Array;
+  size = 0;
+  resolution = 0;
+  numVertices = 0;
+  numIndices = 0;
 
   vertexBuffer: GPUBuffer | undefined;
   indexBuffer: GPUBuffer | undefined;
   indirectBuffer: GPUBuffer | undefined;
-  numIndices = -1;
 
-  constructor(vertices: Float32Array, indices: Uint32Array) {
-    this.vertexData = vertices;
-    this.indexData = indices;
-    this.numIndices = indices.length;
+  constructor(size = 1, resolution = 1) {
+    let numVertices = (resolution + 1) * (resolution + 1);
+    let numIndices = resolution * resolution * 6;
+
+    this.size = size;
+    this.resolution = resolution;
+    this.numVertices = numVertices;
+    this.numIndices = numIndices;
+
+    // TODO: Create some uniform buffer for size & resolution
   }
 
   writeBuffers(device: GPUDevice) {
-    let numVertices = 25;
-    let numIndices = 96;
-
     this.vertexBuffer = device.createBuffer({
       label: 'triangle vertex buffer',
-      size: numVertices * 32,
+      size: this.numVertices * 32,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
 
     this.indexBuffer = device.createBuffer({
       label: 'triangle index buffer',
-      size: numIndices * 4,
+      size: this.numIndices * 4,
       usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
 
@@ -49,21 +53,6 @@ export abstract class Mesh {
 
 export class Plane extends Mesh {
   constructor(size = 1, resolution = 1) {
-    // prettier-ignore
-    const vertices = new Float32Array([
-      // position       normal    uv
-      -size, 0, -size,  0, 1, 0,  0, 0,
-       size, 0, -size,  0, 1, 0,  1, 0,
-       size, 0,  size,  0, 1, 0,  1, 1,
-      -size, 0,  size,  0, 1, 0,  0, 1,
-    ]);
-
-    // prettier-ignore
-    const indices = new Uint32Array([
-      0, 1, 2,
-      0, 2, 3,
-    ]);
-
-    super(vertices, indices);
+    super(size, resolution);
   }
 }
