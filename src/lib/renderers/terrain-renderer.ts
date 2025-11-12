@@ -37,6 +37,15 @@ export class TerrainRenderer implements IRenderer {
 
   terrainComputePipeline: GPUComputePipeline;
 
+  // custom compute pipeline (hopefully this works lol)
+  customComputeBindGroupLayout: GPUBindGroupLayout;
+  customComputeBindGroup: GPUBindGroup;
+
+  customComputeUniformBindGroupLayout: GPUBindGroupLayout;
+  customComputeUniformBindGroup: GPUBindGroup;
+
+  customComputePipeline: GPUComputePipeline;
+
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
     attributes: [
@@ -179,6 +188,68 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
+
+    this.customComputeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.customComputeBindGroup = this.device.createBindGroup({
+      label: 'custom compute bind group',
+      layout: this.customComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+      ],
+    });
+
+    this.customComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom compute uniform bind group layout',
+      entries: [
+        {
+          // uniform containing mesh size and resolution
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.customComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'custom compute uniform bind group',
+      layout: this.customComputeUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+    });
+
+    this.customComputePipeline = this.device.createComputePipeline({
+      label: 'custom compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'custom compute pipeline layout',
+        bindGroupLayouts: [
+          this.customComputeBindGroupLayout,
+          this.customComputeUniformBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'custom compute shader',
+          code: shaders.terrainComputeSrc, // change this to displacement compute
+        }),
+        entryPoint: 'main',
+      },
+    });
+
+
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -250,6 +321,15 @@ export class TerrainRenderer implements IRenderer {
     // i guess this should depend on the vertex count
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
+
+    // run second compute pass (custom shader that we generate)
+    const computeEncoder = this.device.createCommandEncoder();
+    const customComputePass = computeEncoder.beginComputePass();
+    customComputePass.setPipeline(this.customComputePipeline);
+    customComputePass.setBindGroup(0, this.customComputeBindGroup);
+    customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
+    customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+    customComputePass.end();
 
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
