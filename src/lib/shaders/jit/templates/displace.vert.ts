@@ -1,6 +1,6 @@
 import * as shaders from '../types/shaders';
 
-export const defaultVertexShaderTemplate: shaders.VertexShaderTemplate = {
+export const displaceVertexShaderTemplate: shaders.DisplaceShaderTemplate = {
   content: ({ uniforms, utils, body, heightKey }) => `struct VertexInput
 {
   @location(0) pos: vec3f,

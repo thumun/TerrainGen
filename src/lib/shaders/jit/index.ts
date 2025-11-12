@@ -4,8 +4,8 @@ import * as shaders from './types/shaders';
 // TODO: helper to inject utils like noise functions
 
 export function generateVertexShaderCode(
-  shaderConfig: shaders.VertexShaderConfig,
-  template: shaders.VertexShaderTemplate,
+  shaderConfig: shaders.DisplaceShaderConfig,
+  template: shaders.DisplaceShaderTemplate,
 ) {
   const uniforms = shaderConfig.uniforms.map(generators.generateUniform).join('\n');
 

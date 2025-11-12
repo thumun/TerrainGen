@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as jit from '..';
 import type * as shaders from '../types/shaders';
 
-const mockVertexTemplate: shaders.VertexShaderTemplate = {
+const mockVertexTemplate: shaders.DisplaceShaderTemplate = {
   content: ({ uniforms, utils, body, heightKey }) => `> UNIFORMS
 ${uniforms}
 
@@ -19,7 +19,7 @@ ${heightKey}
   localKeys: { terrainPos: 'test_terrain_pos' },
 };
 
-const mockVertexShaderConfig: shaders.VertexShaderConfig = {
+const mockVertexShaderConfig: shaders.DisplaceShaderConfig = {
   type: 'vertex',
   uniforms: [
     { key: 'unif1', type: 'f32', group: 1, binding: 0 },
