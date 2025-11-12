@@ -4,11 +4,14 @@ import * as jit from '..';
 import type * as shaders from '../types/shaders';
 
 const mockVertexTemplate: shaders.VertexShaderTemplate = {
-  content: ({ uniforms, body: bodyCode, heightKey }) => `> UNIFORMS
+  content: ({ uniforms, utils, body, heightKey }) => `> UNIFORMS
 ${uniforms}
 
+> UTILS
+${utils}
+
 > BODY CODE
-${bodyCode}
+${body}
 
 > HEIGHT KEY
 ${heightKey}
