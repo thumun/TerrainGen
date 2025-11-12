@@ -1,4 +1,4 @@
-import { fbmNoiseUtil } from './shader-utils';
+import * as shaderUtils from './shader-utils';
 import * as instructions from './types/instructions';
 import type * as util from './types/util';
 
@@ -52,7 +52,7 @@ export function generateNoiseCode(instruction: instructions.Noise): GenerateCode
   const { pos, scale, numOctaves, write } = instruction.references;
   return {
     code: `let ${write} = fbm_noise(${pos} * ${scale}, ${numOctaves});`,
-    utils: [fbmNoiseUtil],
+    utils: [shaderUtils.fbmNoise],
   };
 }
 

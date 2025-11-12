@@ -1,4 +1,4 @@
-export const fbmNoiseUtil =
+export const fbmNoise =
   // TODO: import actual wgsl noise method
   () => `fn fbm_noise(pos: vec3f, numOctaves: u32) -> f32 {
 	let result = 0.0;

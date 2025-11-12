@@ -42,8 +42,7 @@ export type Noise = {
   type: 'noise';
   method: 'fbm';
   references: {
-    /** Optionally set this to use a custom position. Otherwise, uses terrain position. */
-    pos?: util.ReferenceKey;
+    pos: util.ReferenceKey;
     scale: util.ReferenceKey;
     numOctaves: util.ReferenceKey;
     write: util.ReferenceKey;
