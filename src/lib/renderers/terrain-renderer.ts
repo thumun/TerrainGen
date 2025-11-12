@@ -159,9 +159,7 @@ export class TerrainRenderer implements IRenderer {
     this.terrainComputeUniformBindGroup = this.device.createBindGroup({
       label: 'terrain compute uniform bind group',
       layout: this.terrainComputeUniformBindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } },
-      ],
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
     });
 
     this.terrainComputePipeline = this.device.createComputePipeline({
@@ -170,7 +168,7 @@ export class TerrainRenderer implements IRenderer {
         label: 'terrain compute pipeline layout',
         bindGroupLayouts: [
           this.terrainComputeBindGroupLayout,
-          this.terrainComputeUniformBindGroupLayout
+          this.terrainComputeUniformBindGroupLayout,
         ],
       }),
       compute: {
@@ -181,8 +179,6 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
-
-    
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -250,9 +246,9 @@ export class TerrainRenderer implements IRenderer {
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
     computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
 
-    // what's the optimal amount of workgroups to dispatch? 
+    // what's the optimal amount of workgroups to dispatch?
     // i guess this should depend on the vertex count
-    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64)); 
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
 
     const renderPass = encoder.beginRenderPass({
