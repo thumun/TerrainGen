@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateVertexShaderCode > matches the snapshot with mock vertex template 1`] = `
+"> UNIFORMS
+@group(1) @binding(0) var<uniform> unif1 : f32;
+@group(1) @binding(1) var<uniform> unif2 : vec3f;
+
+> BODY CODE
+  let unif2_y = unif2.x;
+  let height_out = unif1 + unif2_y;
+
+> HEIGHT KEY
+height_out
+"
+`;
