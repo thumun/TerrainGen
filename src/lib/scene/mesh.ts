@@ -15,8 +15,8 @@ export abstract class Mesh {
   }
 
   writeBuffers(device: GPUDevice) {
-    let numVertices = 4;
-    let numIndices = 6;
+    let numVertices = 25;
+    let numIndices = 96;
 
     this.vertexBuffer = device.createBuffer({
       label: 'triangle vertex buffer',
@@ -48,7 +48,7 @@ export abstract class Mesh {
 }
 
 export class Plane extends Mesh {
-  constructor(size = 1) {
+  constructor(size = 1, resolution = 1) {
     // prettier-ignore
     const vertices = new Float32Array([
       // position       normal    uv

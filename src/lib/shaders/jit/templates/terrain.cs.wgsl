@@ -9,65 +9,67 @@ var<storage, read_write> indices: array<u32>;
 @group(0) @binding(2)
 var<storage, read_write> indirect: array<u32>; // indirect draw params
 
+// TODO: bind uniform buffers for size & num subdivisions
+
 fn vertexOffset(i: u32) -> u32 { 
     return i * 8u; 
 }
 
-@compute @workgroup_size(1)
+@compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
-    // generate quad (sorry this sucks)
-    // vertex 0
-    vertices[vertexOffset(0) + 0] = -1.0; // pos.x
-    vertices[vertexOffset(0) + 1] = 0.0;  // pos.y
-    vertices[vertexOffset(0) + 2] = -1.0; // pos.z
-    vertices[vertexOffset(0) + 3] = 0.0;  // nor.x
-    vertices[vertexOffset(0) + 4] = 1.0;  // nor.y
-    vertices[vertexOffset(0) + 5] = 0.0;  // nor.z
-    vertices[vertexOffset(0) + 6] = 0.0;  // uv.x
-    vertices[vertexOffset(0) + 7] = 0.0;  // uv.y
+    let subdivisions = 4u;
+    let size = 10.0;
+    let step = size / f32(subdivisions); // .25
 
-    // vertex 1
-    vertices[vertexOffset(1) + 0] = 1.0;
-    vertices[vertexOffset(1) + 1] = 0.0;
-    vertices[vertexOffset(1) + 2] = -1.0;
-    vertices[vertexOffset(1) + 3] = 0.0;
-    vertices[vertexOffset(1) + 4] = 1.0;
-    vertices[vertexOffset(1) + 5] = 0.0;
-    vertices[vertexOffset(1) + 6] = 1.0;
-    vertices[vertexOffset(1) + 7] = 0.0;
+    let vertexCount = (subdivisions + 1u) * (subdivisions + 1u); // 25
+    let indexCount = subdivisions * subdivisions * 6u; // 16 * 6
 
-    // vertex 2
-    vertices[vertexOffset(2) + 0] = 1.0;
-    vertices[vertexOffset(2) + 1] = 0.0;
-    vertices[vertexOffset(2) + 2] = 1.0;
-    vertices[vertexOffset(2) + 3] = 0.0;
-    vertices[vertexOffset(2) + 4] = 1.0;
-    vertices[vertexOffset(2) + 5] = 0.0;
-    vertices[vertexOffset(2) + 6] = 1.0;
-    vertices[vertexOffset(2) + 7] = 1.0;
+    // generate vertices
+    if (id.x < vertexCount) {
+        let row = id.x / (subdivisions + 1u);
+        let col = id.x % (subdivisions + 1u);
 
-    // vertex 3
-    vertices[vertexOffset(3) + 0] = -1.0;
-    vertices[vertexOffset(3) + 1] = 0.0;
-    vertices[vertexOffset(3) + 2] = 1.0;
-    vertices[vertexOffset(3) + 3] = 0.0;
-    vertices[vertexOffset(3) + 4] = 1.0;
-    vertices[vertexOffset(3) + 5] = 0.0;
-    vertices[vertexOffset(3) + 6] = 0.0;
-    vertices[vertexOffset(3) + 7] = 1.0;
+        let x = -size / 2.0 + f32(col) * step;
+        let z = -size / 2.0 + f32(row) * step;
 
-    // fill indices
-    indices[0] = 0u;
-    indices[1] = 1u;
-    indices[2] = 2u;
-    indices[3] = 0u;
-    indices[4] = 2u;
-    indices[5] = 3u;
+        let vOffset = vertexOffset(id.x);
+        vertices[vOffset + 0] = x; // pos.x
+        vertices[vOffset + 1] = 0.0;  // pos.y
+        vertices[vOffset + 2] = z; // pos.z
+        vertices[vOffset + 3] = x;  // nor.x
+        vertices[vOffset + 4] = 0.0;  // nor.y
+        vertices[vOffset + 5] = z;  // nor.z
+        vertices[vOffset + 6] = 0.0;  // uv.x
+        vertices[vOffset + 7] = 0.0;  // uv.y
+    }
+
+    // generate indices
+    if (id.x < subdivisions * subdivisions) {
+        let i: u32 = id.x / subdivisions; // row of quad
+        let j: u32 = id.x % subdivisions; // col of quad
+
+        let topLeft: u32 = i * (subdivisions + 1u) + j;
+        let topRight: u32 = topLeft + 1u;
+        let bottomLeft: u32 = (i + 1u) * (subdivisions + 1u) + j;
+        let bottomRight: u32 = bottomLeft + 1u;
+
+        let baseIndex: u32 = id.x * 6u;
+        indices[baseIndex + 0u] = topLeft;
+        indices[baseIndex + 1u] = bottomLeft;
+        indices[baseIndex + 2u] = bottomRight;
+
+        indices[baseIndex + 3u] = topLeft;
+        indices[baseIndex + 4u] = bottomRight;
+        indices[baseIndex + 5u] = topRight;
+    }
 
     // fill indirect draw params
-    indirect[0] = 6u; // indexCount
-    indirect[1] = 1u; // instanceCount
-    indirect[2] = 0u; // firstIndex
-    indirect[3] = 0u; // baseVertex
-    indirect[4] = 0u; // firstInstance
+    // question: should this be done separately? feels kinda wrong
+    if (id.x == 0u) {
+        indirect[0] = indexCount; // indexCount
+        indirect[1] = 1u; // instanceCount
+        indirect[2] = 0u; // firstIndex
+        indirect[3] = 0u; // baseVertex
+        indirect[4] = 0u; // firstInstance
+    }
 }
