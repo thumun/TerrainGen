@@ -19,55 +19,56 @@ import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
 import TerrainNode from '@/nodes/terrain-node';
 import TransformNode from '@/nodes/transform-node';
+import VectorNode from '@/nodes/vector-node';
 
 const initialNodes: Node[] = [
   {
     id: '1',
     type: 'transform',
     position: { x: 50, y: 50 },
-    data: {
-      value: 123,
-    },
+    data: { isOutput: false },
   },
   {
     id: '2',
     type: 'noise',
     position: { x: 100, y: 50 },
-    data: {
-      value: 123,
-    },
+    data: { isOutput: false },
   },
   {
     id: '3',
     type: 'math',
     position: { x: 200, y: 50 },
-    data: {
-      value: 123,
-    },
+    data: { isOutput: false },
   },
   {
     id: '4',
     type: 'mix',
     position: { x: 300, y: 50 },
-    data: {
-      value: 123,
-    },
+    data: { isOutput: false },
   },
   {
     id: '5',
     type: 'terrain',
     position: { x: 400, y: 50 },
-    data: {
-      isOutput: true,
-    },
+    data: { isOutput: true },
   },
   {
     id: '6',
     type: 'noise',
     position: { x: 100, y: 50 },
-    data: {
-      value: 123,
-    },
+    data: { isOutput: false },
+  },
+  {
+    id: '7',
+    type: 'vector',
+    position: { x: 100, y: 50 },
+    data: { isOutput: false },
+  },
+  {
+    id: '8',
+    type: 'vector',
+    position: { x: 100, y: 50 },
+    data: { isOutput: false },
   },
 ];
 
@@ -81,6 +82,7 @@ const nodeTypes: NodeTypes = {
   math: MathNode,
   mix: MixNode,
   terrain: TerrainNode,
+  vector: VectorNode,
 };
 
 const initialEdges: Edge[] = [];
