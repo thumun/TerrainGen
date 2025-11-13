@@ -39,7 +39,7 @@ jobs:
       - name: Build
         env:
           # Base path to be consumed by Vite
-          BASE_PATH: /${{ github.event.repository.name }}
+          VITE_BASE_PATH: /${{ github.event.repository.name }}
         run: npm run build
 
       - name: Setup Pages
