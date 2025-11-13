@@ -14,6 +14,46 @@ interface ContextMenuProps {
   className?: string;
 }
 
+type NodeData = {
+  isOutput?: boolean;
+  operationVal?: string;
+};
+
+interface NodeType {
+  type: string;
+  data: NodeData;
+}
+
+const baseNodes: NodeType[] = [
+  {
+    type: 'transform', // 0
+    data: { isOutput: false },
+  },
+  {
+    type: 'noise', // 1
+    data: { isOutput: false },
+  },
+  {
+    type: 'math', // 2
+    data: {
+      isOutput: false,
+      operationVal: 'add',
+    },
+  },
+  {
+    type: 'mix', // 3
+    data: { isOutput: false },
+  },
+  {
+    type: 'terrain', // 4
+    data: { isOutput: true },
+  },
+  {
+    type: 'vector', // 5
+    data: { isOutput: false },
+  },
+];
+
 export default function ContextMenu({
   id,
   top,
@@ -22,32 +62,29 @@ export default function ContextMenu({
   bottom,
   ...props
 }: ContextMenuProps) {
-  const { getNode, setNodes, addNodes, setEdges } = useReactFlow();
+  const { getNode, addNodes } = useReactFlow();
 
-  const duplicateNode = useCallback(() => {
-    if (!id) return;
+  const duplicateNode = useCallback(
+    (nodeNum: number) => {
+      const position = {
+        x: 50,
+        y: 50,
+      };
 
-    const node = getNode(id);
-    if (!node) return;
+      const baseNode = baseNodes[nodeNum];
+      if (!baseNode) return;
 
-    const position = {
-      x: node.position.x + 50,
-      y: node.position.y + 50,
-    };
+      const customNode = {
+        id: `custom-node-${Date.now()}`, // Unique ID
+        type: baseNode.type, // Your custom node type
+        position,
+        data: baseNode.data,
+      };
 
-    addNodes({
-      ...node,
-      id: `${node.id}-copy`,
-      position,
-    });
-  }, [id, getNode, addNodes]);
-
-  const deleteNode = useCallback(() => {
-    if (!id) return;
-
-    setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
-  }, [id, setNodes, setEdges]);
+      addNodes(customNode);
+    },
+    [id, getNode, addNodes],
+  );
 
   return (
     <div
@@ -55,20 +92,23 @@ export default function ContextMenu({
       className="context-menu absolute z-50 min-w-32 rounded-md border border-gray-300 bg-white shadow-lg"
       {...props}
     >
-      <p className="m-2 text-xs text-gray-600">
-        <small>node: {id}</small>
-      </p>
       <button
-        onClick={duplicateNode}
-        className="w-full border-none px-3 py-2 text-left transition-colors hover:bg-gray-100"
-      >
-        duplicate
-      </button>
-      <button
-        onClick={deleteNode}
+        onClick={() => duplicateNode(1)}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
-        delete
+        Noise
+      </button>
+      <button
+        onClick={() => duplicateNode(2)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Math
+      </button>
+      <button
+        onClick={() => duplicateNode(5)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Vector
       </button>
     </div>
   );

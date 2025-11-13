@@ -36,6 +36,8 @@ interface MenuPosition {
   bottom?: number;
 }
 
+const nodeNum = '10';
+
 const initialNodes: Node[] = [
   {
     id: '1',
@@ -142,7 +144,7 @@ export default function NodeGraph() {
       // Calculate position of the context menu for pane right-click
       const pane = reactFlowWrapper.current.getBoundingClientRect();
       setMenu({
-        id: null, // No node ID when clicking on pane
+        id: nodeNum, // No node ID when clicking on pane
         top: event.clientY < pane.height - 200 ? event.clientY : undefined,
         left: event.clientX < pane.width - 200 ? event.clientX : undefined,
         right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : undefined,
