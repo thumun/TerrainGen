@@ -23,8 +23,8 @@ function TerrainNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-trans-in"
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
+          id="float-trans-in"
+          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <label className="text-sm font-medium">Height Map</label>
         <div className="flex justify-center space-x-2">

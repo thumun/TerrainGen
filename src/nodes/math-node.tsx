@@ -1,10 +1,28 @@
-import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useCallback, useState, useEffect } from 'react';
+import { Handle, Position, type NodeProps } from 'reactflow';
 
-function MathNode() {
+interface MathNodeData {
+  operationVal: string;
+  outputType: string;
+}
+
+function MathNode({ data }: NodeProps<MathNodeData>) {
+  const operationVal = data.operationVal;
+  const outputType = data.outputType;
+
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
-  const [operation, setOperation] = useState('Add');
+  const [operation, setOperation] = useState(operationVal);
+
+  const [outType, setMode] = useState(outputType);
+
+  useEffect(() => {
+    setOperation(operationVal);
+  }, [operationVal]);
+
+  useEffect(() => {
+    setMode(operationVal);
+  }, [outputType]);
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
@@ -20,7 +38,12 @@ function MathNode() {
     setOperation(evt.target.value);
   }, []);
 
+  const onModeChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+    setMode(evt.target.value);
+  }, []);
+
   return (
+    // need to change color & id based on type
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
       <Handle
         type="source"
@@ -111,6 +134,24 @@ function MathNode() {
             </option>
             <option value="Max" className="bg-slate-800 text-white">
               Max
+            </option>
+          </select>
+        </div>
+      </div>
+
+      {/* output Type */}
+      <div className="mb-2 text-center">
+        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+          <select
+            value={outType}
+            onChange={onModeChange}
+            className="bg-transparent font-bold focus:outline-none"
+          >
+            <option value="Float" className="bg-slate-800 text-white">
+              Float
+            </option>
+            <option value="Vec3" className="bg-slate-800 text-white">
+              Vec3
             </option>
           </select>
         </div>

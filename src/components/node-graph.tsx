@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   addEdge,
   Background,
@@ -16,16 +16,25 @@ import ReactFlow, {
 
 import 'reactflow/dist/style.css';
 
-import type * as instructions from '@/lib/shaders/jit/types/instructions';
-import type * as util from '@/lib/shaders/jit/types/util';
-import type * as shaders from '@/lib/shaders/jit/types/shaders';
+import ContextMenu from './editor/context-menu';
 
+import type * as instructions from '@/lib/shaders/jit/types/instructions';
+import type * as shaders from '@/lib/shaders/jit/types/shaders';
+import type * as util from '@/lib/shaders/jit/types/util';
 import MathNode from '@/nodes/math-node';
 import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
 import TerrainNode from '@/nodes/terrain-node';
 import TransformNode from '@/nodes/transform-node';
 import VectorNode from '@/nodes/vector-node';
+
+interface MenuPosition {
+  id: string | null;
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
+}
 
 const initialNodes: Node[] = [
   {
@@ -99,9 +108,53 @@ const initialEdges: Edge[] = [];
 export default function NodeGraph() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [menu, setMenu] = useState<MenuPosition | null>(null);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      // Prevent native context menu from showing
+      event.preventDefault();
+
+      if (!reactFlowWrapper.current) return;
+
+      // Calculate position of the context menu. We want to make sure it
+      // doesn't get positioned off-screen.
+      const pane = reactFlowWrapper.current.getBoundingClientRect();
+      setMenu({
+        id: node.id,
+        top: event.clientY < pane.height - 200 ? event.clientY : undefined,
+        left: event.clientX < pane.width - 200 ? event.clientX : undefined,
+        right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : undefined,
+        bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : undefined,
+      });
+    },
+    [setMenu],
+  );
+
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      // Prevent native context menu from showing
+      event.preventDefault();
+
+      if (!reactFlowWrapper.current) return;
+
+      // Calculate position of the context menu for pane right-click
+      const pane = reactFlowWrapper.current.getBoundingClientRect();
+      setMenu({
+        id: null, // No node ID when clicking on pane
+        top: event.clientY < pane.height - 200 ? event.clientY : undefined,
+        left: event.clientX < pane.width - 200 ? event.clientX : undefined,
+        right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : undefined,
+        bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : undefined,
+      });
+    },
+    [setMenu],
+  );
+
+  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
   const mapNodeToInstruction = (node: Node): instructions.All | null => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { type, data } = node;
 
     switch (type) {
@@ -114,18 +167,18 @@ export default function NodeGraph() {
             readB: `${node.id}_b`,
             write: `${node.id}_result`,
           },
-        };
+        } as instructions.All;
 
       case 'vector':
         return {
           type: 'separate-xyz',
           references: {
             read: `${node.id}_input`,
-            writeX: data.outputX ? `${node.id}_x` : undefined,
-            writeY: data.outputY ? `${node.id}_y` : undefined,
-            writeZ: data.outputZ ? `${node.id}_z` : undefined,
+            writeX: data.outputX ? `${node.id}_vec3-out` : undefined,
+            writeY: data.outputY ? `${node.id}_vec3-out` : undefined,
+            writeZ: data.outputZ ? `${node.id}_vec3-out` : undefined,
           },
-        };
+        } as instructions.All;
 
       // Add cases for other node types
       default:
@@ -143,9 +196,9 @@ export default function NodeGraph() {
     // Determine output key based on last node type
     switch (lastNode.type) {
       case 'math':
-        return generateReferenceKey(lastNode.id, 'result');
+        return generateReferenceKey(lastNode.id, 'math');
       case 'separate-xyz':
-        return generateReferenceKey(lastNode.id, 'y'); // Assuming we want Y component
+        return generateReferenceKey(lastNode.id, 'xyz');
       case 'terrain':
         return generateReferenceKey(lastNode.id, 'height');
       default:
@@ -258,7 +311,6 @@ export default function NodeGraph() {
         // getting the node by using the handle (target)
         const targetNode = nodes.find((node) => node.id === params.target);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
 
@@ -298,7 +350,10 @@ export default function NodeGraph() {
   );
 
   return (
-    <div style={{ width: '100%', height: '100vh' }}>
+    <div
+      ref={reactFlowWrapper}
+      style={{ width: '100%', height: '100vh', position: 'relative' }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -306,12 +361,16 @@ export default function NodeGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeContextMenu={onNodeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
+        onPaneClick={onPaneClick}
         fitView
         fitViewOptions={fitViewOptions}
         isValidConnection={isValidConnection}
       >
         <Background />
         <Controls />
+        {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
       </ReactFlow>
     </div>
   );
