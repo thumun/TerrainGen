@@ -1,5 +1,5 @@
 import type { IRenderer } from '@/components/webgpu-canvas';
-import type { SceneGraph } from '@/lib/scene';
+import type * as scene from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
 import { Mesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
@@ -37,6 +37,10 @@ export class TerrainRenderer implements IRenderer {
   terrainComputeUniformBindGroup: GPUBindGroup;
 
   terrainComputePipeline: GPUComputePipeline;
+
+  // TODO: probably convert this into discriminated union with all of the
+  //   relevant bindgroups/layouts/buffers, preventing invalid reads
+  displacePipelineConfigured: boolean = false;
 
   // custom compute pipeline (hopefully this works lol)
   customComputeBindGroupLayout: GPUBindGroupLayout;
@@ -333,15 +337,19 @@ export class TerrainRenderer implements IRenderer {
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
 
-    // run second compute pass (custom shader that we generate)
-    const computeEncoder = this.device.createCommandEncoder();
-    const customComputePass = computeEncoder.beginComputePass();
-    customComputePass.setPipeline(this.customComputePipeline);
-    customComputePass.setBindGroup(0, this.customComputeBindGroup);
-    customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
-    customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
-    customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
-    customComputePass.end();
+    // run second compute pass (custom shader that we generate) only if setup
+    if (this.displacePipelineConfigured) {
+      const computeEncoder = this.device.createCommandEncoder();
+
+      const customComputePass = computeEncoder.beginComputePass();
+      customComputePass.setPipeline(this.customComputePipeline);
+      customComputePass.setBindGroup(0, this.customComputeBindGroup);
+      customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
+      customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
+      customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+
+      customComputePass.end();
+    }
 
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
@@ -384,14 +392,15 @@ export class TerrainRenderer implements IRenderer {
   // ------ Custom methods for MainRenderer
   // ------------------------------------------------------------------------------------------
 
-  setSceneGraph(scene: SceneGraph) {
-    // TODO: convert node graph into instructions and uniforms
-    // Question: should uniforms be passed in as a single struct?
+  configureDisplacePipeline(config: scene.DisplacePipeline) {
+    this.displacePipelineConfigured = true;
+
+    // TODO: should uniforms be passed in as a single struct?
     //   We would then have to codegen the uniform struct definition.
     //   Probably not that bad.
     // Otherwise, we will have to make a gajillion buffers
     //
-    // consensus after discussion: should use struct instead
+    // consensus after discussion: should use struct.
 
     // also TODO: reuse code between this and our constructor
 
@@ -439,24 +448,7 @@ export class TerrainRenderer implements IRenderer {
     });
 
     const customComputeShader = jit.generateDisplaceShaderCode(
-      {
-        uniforms: [
-          { key: 'uuid1', type: 'vec3f', group: 2, binding: 0 },
-          { key: 'uuid2', type: 'vec3f', group: 2, binding: 1 },
-        ],
-        instructionSet: [
-          {
-            type: 'math',
-            operation: 'add',
-            references: { readA: 'uuid1', readB: 'uuid2', write: 'uuid3' },
-          },
-          {
-            type: 'separate-xyz',
-            references: { read: 'uuid3', writeY: 'uuid4' },
-          },
-        ],
-        outputs: { height: 'uuid4' },
-      },
+      config,
       displaceComputeShaderTemplate,
     );
 
@@ -480,5 +472,9 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
+  }
+
+  disableDisplacePipeline() {
+    this.displacePipelineConfigured = false;
   }
 }

@@ -4,13 +4,12 @@ import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 
 import NodeGraph from '@/components/node-graph';
+import * as jitShaders from '@/lib/shaders/jit/types/shaders';
 
 export default function Editor() {
-  // @ts-expect-error not setting this yet
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [sceneGraph, setSceneGraph] = useState({ foo: 'bar' });
-
-  // the above state could come from a number of places... we could store it in the URL even!
+  const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
+    jitShaders.DisplaceShaderConfig | undefined
+  >(undefined);
 
   // @ts-expect-error not setting this yet
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,14 +29,16 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            <NodeGraph />
+            <NodeGraph
+              onDisplacePipelineUpdate={(newConfig) => setDisplacePipelineConfig(newConfig)}
+            />
           </div>
         </div>
 
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <TerrainCanvas sceneGraph={sceneGraph} />
+            <TerrainCanvas displacePipeline={displacePipelineConfig} />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">

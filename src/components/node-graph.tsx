@@ -95,7 +95,11 @@ const nodeTypes: NodeTypes = {
 
 const initialEdges: Edge[] = [];
 
-export default function NodeGraph() {
+type NodeGraphProps = {
+  onDisplacePipelineUpdate?: (newPipeline: shaders.DisplaceShaderConfig) => void;
+};
+
+export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -196,8 +200,7 @@ export default function NodeGraph() {
       });
 
       // Create the final shader config
-      const shaderConfig: shaders.VertexShaderConfig = {
-        type: 'vertex',
+      const shaderConfig: shaders.DisplaceShaderConfig = {
         uniforms,
         instructionSet,
         outputs: {
@@ -206,8 +209,9 @@ export default function NodeGraph() {
       };
 
       console.log('Generated shader config:', shaderConfig);
+      if (onDisplacePipelineUpdate) onDisplacePipelineUpdate(shaderConfig);
     },
-    [getFinalOutputKey],
+    [getFinalOutputKey, onDisplacePipelineUpdate],
   );
 
   const getNodeGraph = (nodeId: string, nodes: Node[], edges: Edge[]): Node[] => {
