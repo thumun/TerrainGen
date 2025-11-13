@@ -113,27 +113,6 @@ export default function NodeGraph() {
   const [menu, setMenu] = useState<MenuPosition | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  const onNodeContextMenu = useCallback(
-    (event: React.MouseEvent, node: Node) => {
-      // Prevent native context menu from showing
-      event.preventDefault();
-
-      if (!reactFlowWrapper.current) return;
-
-      // Calculate position of the context menu. We want to make sure it
-      // doesn't get positioned off-screen.
-      const pane = reactFlowWrapper.current.getBoundingClientRect();
-      setMenu({
-        id: node.id,
-        top: event.clientY < pane.height - 200 ? event.clientY : undefined,
-        left: event.clientX < pane.width - 200 ? event.clientX : undefined,
-        right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : undefined,
-        bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : undefined,
-      });
-    },
-    [setMenu],
-  );
-
   const onPaneContextMenu = useCallback(
     (event: React.MouseEvent) => {
       // Prevent native context menu from showing
@@ -144,11 +123,11 @@ export default function NodeGraph() {
       // Calculate position of the context menu for pane right-click
       const pane = reactFlowWrapper.current.getBoundingClientRect();
       setMenu({
-        id: nodeNum, // No node ID when clicking on pane
-        top: event.clientY < pane.height - 200 ? event.clientY : undefined,
-        left: event.clientX < pane.width - 200 ? event.clientX : undefined,
-        right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : undefined,
-        bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : undefined,
+        id: nodeNum,
+        top: event.clientY < pane.height ? event.clientY : undefined,
+        left: event.clientX < pane.width ? event.clientX : undefined,
+        right: event.clientX >= pane.width ? pane.width - event.clientX : undefined,
+        bottom: event.clientY >= pane.height ? pane.height - event.clientY : undefined,
       });
     },
     [setMenu],
@@ -363,7 +342,6 @@ export default function NodeGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeContextMenu={onNodeContextMenu}
         onPaneContextMenu={onPaneContextMenu}
         onPaneClick={onPaneClick}
         fitView

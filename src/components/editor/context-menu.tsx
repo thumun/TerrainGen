@@ -55,6 +55,7 @@ const baseNodes: NodeType[] = [
 ];
 
 export default function ContextMenu({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   id,
   top,
   left,
@@ -62,7 +63,7 @@ export default function ContextMenu({
   bottom,
   ...props
 }: ContextMenuProps) {
-  const { getNode, addNodes } = useReactFlow();
+  const { addNodes } = useReactFlow();
 
   const duplicateNode = useCallback(
     (nodeNum: number) => {
@@ -83,7 +84,7 @@ export default function ContextMenu({
 
       addNodes(customNode);
     },
-    [id, getNode, addNodes],
+    [addNodes],
   );
 
   return (
@@ -92,6 +93,12 @@ export default function ContextMenu({
       className="context-menu absolute z-50 min-w-32 rounded-md border border-gray-300 bg-white shadow-lg"
       {...props}
     >
+      <button
+        onClick={() => duplicateNode(0)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Transform
+      </button>
       <button
         onClick={() => duplicateNode(1)}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
@@ -103,6 +110,18 @@ export default function ContextMenu({
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Math
+      </button>
+      <button
+        onClick={() => duplicateNode(3)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Mix
+      </button>
+      <button
+        onClick={() => duplicateNode(4)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Terrain
       </button>
       <button
         onClick={() => duplicateNode(5)}
