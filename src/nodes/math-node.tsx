@@ -13,7 +13,6 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
   const [operation, setOperation] = useState(operationVal);
-
   const [outType, setMode] = useState(outputType);
 
   useEffect(() => {
@@ -127,50 +126,56 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
       </div>
 
       {/* Type of Node */}
-      <div className="mb-2 text-center">
-        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
-          <select
-            value={operation}
-            onChange={onOperationChange}
-            className="bg-transparent font-bold focus:outline-none"
-          >
-            <option value="Add" className="bg-slate-800 text-white">
-              Add
-            </option>
-            <option value="Sub" className="bg-slate-800 text-white">
-              Subtract
-            </option>
-            <option value="Mult" className="bg-slate-800 text-white">
-              Multiply
-            </option>
-            <option value="Div" className="bg-slate-800 text-white">
-              Divide
-            </option>
-            <option value="Min" className="bg-slate-800 text-white">
-              Min
-            </option>
-            <option value="Max" className="bg-slate-800 text-white">
-              Max
-            </option>
-          </select>
+      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Mode</label>
+          <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+            <select
+              value={operation}
+              onChange={onOperationChange}
+              className="bg-transparent font-bold focus:outline-none"
+            >
+              <option value="Add" className="bg-slate-800 text-white">
+                Add
+              </option>
+              <option value="Sub" className="bg-slate-800 text-white">
+                Subtract
+              </option>
+              <option value="Mult" className="bg-slate-800 text-white">
+                Multiply
+              </option>
+              <option value="Div" className="bg-slate-800 text-white">
+                Divide
+              </option>
+              <option value="Min" className="bg-slate-800 text-white">
+                Min
+              </option>
+              <option value="Max" className="bg-slate-800 text-white">
+                Max
+              </option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* output Type */}
-      <div className="mb-2 text-center">
-        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
-          <select
-            value={outType}
-            onChange={onModeChange}
-            className="bg-transparent font-bold focus:outline-none"
-          >
-            <option value="Float" className="bg-slate-800 text-white">
-              Float
-            </option>
-            <option value="Vec3" className="bg-slate-800 text-white">
-              Vec3
-            </option>
-          </select>
+      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Output Type</label>
+          <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+            <select
+              value={outType}
+              onChange={onModeChange}
+              className="bg-transparent font-bold focus:outline-none"
+            >
+              <option value="Float" className="bg-slate-800 text-white">
+                Float
+              </option>
+              <option value="Vec3" className="bg-slate-800 text-white">
+                Vec3
+              </option>
+            </select>
+          </div>
         </div>
       </div>
     </div>

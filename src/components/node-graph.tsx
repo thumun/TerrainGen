@@ -59,13 +59,14 @@ const initialNodes: Node[] = [
     data: {
       isOutput: false,
       operationVal: 'add',
+      outputType: 'vec3',
     },
   },
   {
     id: '4',
     type: 'mix',
     position: { x: 300, y: 50 },
-    data: { isOutput: false },
+    data: { isOutput: false, outputType: 'vec3' },
   },
   {
     id: '5',

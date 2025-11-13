@@ -17,6 +17,7 @@ interface ContextMenuProps {
 type NodeData = {
   isOutput?: boolean;
   operationVal?: string;
+  outputType?: string;
 };
 
 interface NodeType {
@@ -38,11 +39,12 @@ const baseNodes: NodeType[] = [
     data: {
       isOutput: false,
       operationVal: 'add',
+      outputType: 'float',
     },
   },
   {
     type: 'mix', // 3
-    data: { isOutput: false },
+    data: { isOutput: false, outputType: 'float' },
   },
   {
     type: 'terrain', // 4
