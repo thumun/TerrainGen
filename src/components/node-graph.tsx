@@ -38,6 +38,7 @@ interface MenuPosition {
 
 const nodeNum = '10';
 
+// can remove this
 const initialNodes: Node[] = [
   {
     id: '1',
@@ -115,12 +116,10 @@ export default function NodeGraph() {
 
   const onPaneContextMenu = useCallback(
     (event: React.MouseEvent) => {
-      // Prevent native context menu from showing
       event.preventDefault();
 
       if (!reactFlowWrapper.current) return;
 
-      // Calculate position of the context menu for pane right-click
       const pane = reactFlowWrapper.current.getBoundingClientRect();
       setMenu({
         id: nodeNum,

@@ -76,8 +76,8 @@ export default function ContextMenu({
       if (!baseNode) return;
 
       const customNode = {
-        id: `custom-node-${Date.now()}`, // Unique ID
-        type: baseNode.type, // Your custom node type
+        id: `custom-node-${Date.now()}`,
+        type: baseNode.type,
         position,
         data: baseNode.data,
       };
