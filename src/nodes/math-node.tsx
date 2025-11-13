@@ -21,7 +21,7 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
   }, [operationVal]);
 
   useEffect(() => {
-    setMode(operationVal);
+    setMode(outputType);
   }, [outputType]);
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,14 +42,31 @@ function MathNode({ data }: NodeProps<MathNodeData>) {
     setMode(evt.target.value);
   }, []);
 
+  const getOutputHandleConfig = () => {
+    switch (outType) {
+      case 'Vec3':
+        return {
+          id: 'vec3-out',
+          className: '!bg-green-500',
+        };
+      default:
+        return {
+          id: 'float-out',
+          className: '!bg-blue-500',
+        };
+    }
+  };
+
+  const outputHandle = getOutputHandleConfig();
+
   return (
     // need to change color & id based on type
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
-        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
+        id={outputHandle.id}
+        className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 ${outputHandle.className}`}
       />
 
       {/* Node Title */}
