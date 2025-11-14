@@ -37,6 +37,15 @@ export class TerrainRenderer implements IRenderer {
 
   terrainComputePipeline: GPUComputePipeline;
 
+  // normals pipeline
+  normalsComputeBindGroupLayout: GPUBindGroupLayout;
+  normalsComputeBindGroup: GPUBindGroup;
+
+  normalsComputeUniformBindGroupLayout: GPUBindGroupLayout;
+  normalsComputeUniformBindGroup: GPUBindGroup;
+
+  normalsComputePipeline: GPUComputePipeline;
+
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
     attributes: [
@@ -110,7 +119,7 @@ export class TerrainRenderer implements IRenderer {
 
     this.pipeline = this.createRenderPipeline();
 
-    // ---------- compute pipeline stuff -----------
+    // ---------- terrain compute pipeline -----------
     this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [
@@ -174,6 +183,76 @@ export class TerrainRenderer implements IRenderer {
       compute: {
         module: this.device.createShaderModule({
           label: 'terrain compute shader',
+          code: shaders.terrainComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
+
+    // ---------- normals compute pipeline -----------
+    this.normalsComputeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'normals compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          // indices
+          binding: 1,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.normalsComputeBindGroup = this.device.createBindGroup({
+      label: 'normals compute bind group',
+      layout: this.normalsComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+      ],
+    });
+
+    this.normalsComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'normals compute uniform bind group layout',
+      entries: [
+        {
+          // uniform containing mesh size and resolution
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.normalsComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'normals compute uniform bind group',
+      layout: this.normalsComputeUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+    });
+
+    this.normalsComputePipeline = this.device.createComputePipeline({
+      label: 'normals compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'normals compute pipeline layout',
+        bindGroupLayouts: [
+          this.normalsComputeBindGroupLayout,
+          this.normalsComputeUniformBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'normals compute shader',
           code: shaders.terrainComputeSrc,
         }),
         entryPoint: 'main',
@@ -245,9 +324,14 @@ export class TerrainRenderer implements IRenderer {
     computePass.setPipeline(this.terrainComputePipeline);
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
     computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
-    // what's the optimal amount of workgroups to dispatch?
-    // i guess this should depend on the vertex count
+    // CUSTOM COMPUTE GOES HERE
+
+    // run third compute pass to calculate normals
+    computePass.setPipeline(this.normalsComputePipeline);
+    computePass.setBindGroup(0, this.normalsComputeBindGroup);
+    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
 
