@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import React from 'react';
+import { useEffect } from 'react';
+
 
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
@@ -19,7 +19,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
 
   useEffect(() => {
     rendererRef.current?.setMeshUniforms(globalParams.size, globalParams.resolution);
-  }, []);
+  }, [globalParams, setGlobalParams, rendererRef]);
 
   return (
     <div className="mt-6 space-y-10 text-zinc-300">

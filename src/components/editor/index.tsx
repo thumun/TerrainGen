@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useRef } from 'react';
+import { useState, useRef  } from 'react';
+
 
 import { MemoizedNodeGraphCanvas } from './node-graph-canvas';
-import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import { MemoizedTerrainCanvas } from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
 import NodeGraph from '@/components/node-graph';
+import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet
@@ -21,7 +21,7 @@ export default function Editor() {
   // This "preview nodes" data should be computed from the scene graph.
 
   // states for size and resolution...
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const [globalParams, setGlobalParams] = useState({
     size: 10,
     resolution: 100,

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import React from 'react';
+import { memo, useEffect, useRef } from 'react';
+
 
 import WebGPUCanvas from '@/components/webgpu-canvas';
 import { NodeGraphRenderer } from '@/lib/renderers/node-graph-renderer';
@@ -26,7 +26,7 @@ export default function NodeGraphCanvas({ previewNodes }: NodeGraphCanvasProps) 
   );
 }
 
-export const MemoizedNodeGraphCanvas = React.memo(
+export const MemoizedNodeGraphCanvas = memo(
   NodeGraphCanvas,
   (prevProps: NodeGraphCanvasProps, nextProps: NodeGraphCanvasProps) =>
     prevProps.previewNodes === nextProps.previewNodes
