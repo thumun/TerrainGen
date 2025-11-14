@@ -23,8 +23,8 @@ export default function Editor() {
   // states for size and resolution...
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [globalParams, setGlobalParams] = useState({
-    size: 0.5,
-    resolution: 10,
+    size: 10,
+    resolution: 100,
   });
 
   // global reference to the renderer

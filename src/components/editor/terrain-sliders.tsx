@@ -28,9 +28,9 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
         <label className="text-sm font-medium">Terrain Size</label>
         <input
           type="range"
-          min={0}
-          max={1}
-          step={0.01}
+          min={1}
+          max={20}
+          step={1}
           value={globalParams.size}
           onChange={(e) => {
             const v = Number(e.target.value);
@@ -42,7 +42,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
           }}
           className="w-full"
         />
-        <div className="text-xs opacity-75">{globalParams.size.toFixed(2)}</div>
+        <div className="text-xs opacity-75">{globalParams.size.toFixed(0)}</div>
       </div>
 
       <div className="space-y-2">
@@ -59,6 +59,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
               ...prev,
               resolution: v,
             }));
+            rendererRef.current?.setMeshUniforms(globalParams.size, v);
           }}
           className="w-full"
         />

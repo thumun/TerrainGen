@@ -299,6 +299,7 @@ export class TerrainRenderer implements IRenderer {
 
   setMeshUniforms(size: number, resolution: number) {
     // TODO: update pipeline with terrain's size and resolution
-    console.log(size, resolution);
+    this.mesh.updateUniforms(this.device, size, resolution);
+
   }
 }
