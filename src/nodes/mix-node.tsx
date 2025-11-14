@@ -125,7 +125,7 @@ function MixNode({ data }: NodeProps<MixNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val3-in"
+          id="float-val3-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex items-center justify-between">
