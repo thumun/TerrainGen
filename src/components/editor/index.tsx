@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { MemoizedNodeGraphCanvas } from './node-graph-canvas';
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import { MemoizedTerrainCanvas } from './terrain-canvas';
+import TerrainSliders from './terrain-sliders';
 
 import NodeGraph from '@/components/node-graph';
 
@@ -26,7 +27,8 @@ export default function Editor() {
     resolution: 10,
   });
 
-  const rendererRef = useRef<TerrainRenderer>(undefined);
+  // global reference to the renderer
+  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
@@ -48,55 +50,12 @@ export default function Editor() {
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <MemoizedTerrainCanvas sceneGraph={sceneGraph} />
+            <MemoizedTerrainCanvas sceneGraph={sceneGraph} rendererRef={rendererRef} />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <div className="mt-6 space-y-10 text-zinc-300">
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Terrain Size</label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={globalParams.size}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setGlobalParams(prev => ({
-                        ...prev,
-                        size: v,
-                      }));
-                      rendererRef.current!.setUniforms(1, 2);
-                    }}
-                    className="w-full"
-                  />
-                  <div className="text-xs opacity-75">{globalParams.size.toFixed(2)}</div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Terrain Resolution</label>
-                  <input
-                    type="range"
-                    min={1}
-                    max={100}
-                    step={1}
-                    value={globalParams.resolution}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setGlobalParams(prev => ({
-                        ...prev,
-                        resolution: v,
-                      }));
-                    }}
-                    className="w-full"
-                  />
-                  <div className="text-xs opacity-75">{globalParams.resolution}</div>
-                </div>
-
-              </div>
+              <TerrainSliders globalParams={globalParams} setGlobalParams={setGlobalParams} rendererRef={rendererRef}/>
             </div>
           </div>
         </div>

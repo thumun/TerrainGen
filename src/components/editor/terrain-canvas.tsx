@@ -7,10 +7,11 @@ import type { SceneGraph } from '@/lib/scene';
 
 export type TerrainCanvasProps = {
   sceneGraph: SceneGraph;
+  rendererRef: React.RefObject<TerrainRenderer | undefined>;
 };
 
-export default function TerrainCanvas({ sceneGraph }: TerrainCanvasProps) {
-  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
+export default function TerrainCanvas({ sceneGraph, rendererRef}: TerrainCanvasProps) {
+  //const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
   // Update pipelines etc when scene graph changes
   useEffect(() => {
@@ -19,7 +20,11 @@ export default function TerrainCanvas({ sceneGraph }: TerrainCanvasProps) {
 
   return (
     <WebGPUCanvas
-      createRenderer={(webGPU, stage) => new TerrainRenderer(webGPU, stage)}
+      createRenderer={(webGPU, stage) => {
+        const renderer = new TerrainRenderer(webGPU, stage)
+        rendererRef.current = renderer;
+        return renderer;
+      }}
       rendererRef={rendererRef}
       divClassName="absolute inset-0 bg-zinc-900"
     />

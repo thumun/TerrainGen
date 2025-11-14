@@ -297,8 +297,8 @@ export class TerrainRenderer implements IRenderer {
     console.log(scene);
   }
 
-  setUniforms(size: number, resolution: number) {
+  setMeshUniforms(size: number, resolution: number) {
     // TODO: update pipeline with terrain's size and resolution
-    console.log("setting uniforms");
+    console.log(size, resolution);
   }
 }
