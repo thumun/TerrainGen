@@ -299,5 +299,21 @@ export class TerrainRenderer implements IRenderer {
 
   setMeshUniforms(size: number, resolution: number) {
     this.mesh.updateUniforms(this.device, size, resolution);
+
+    // re-bind buffers
+    this.terrainComputeBindGroup = this.device.createBindGroup({
+      label: 'terrain compute bind group',
+      layout: this.terrainComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+      ],
+    });
+
+    this.terrainComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'terrain compute uniform bind group',
+      layout: this.terrainComputeUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+    });
   }
 }

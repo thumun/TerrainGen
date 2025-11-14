@@ -38,6 +38,19 @@ export abstract class Mesh {
   }
 
   writeBuffers(device: GPUDevice) {
+    this.createVertexIndexBuffers(device);
+
+    // create some uniform buffer for size & resolution
+    this.uniformsBuffer = device.createBuffer({
+      label: 'uniforms',
+      size: this.uniforms.buffer.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+
+    this.updateUniforms(device, this.size, this.resolution);
+  }
+
+  createVertexIndexBuffers(device: GPUDevice) {
     this.vertexBuffer = device.createBuffer({
       label: 'triangle vertex buffer',
       size: this.numVertices * 32,
@@ -64,22 +77,20 @@ export abstract class Mesh {
       usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
     device.queue.writeBuffer(this.indirectBuffer, 0, indirectData.buffer);
-
-    // create some uniform buffer for size & resolution
-    this.uniformsBuffer = device.createBuffer({
-      label: 'uniforms',
-      size: this.uniforms.buffer.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-
-    this.updateUniforms(device, this.size, this.resolution);
   }
 
   updateUniforms(device: GPUDevice, size = 1, resolution = 2) {
+    // update uniform buffer
     this.uniforms.setSize = size;
     this.uniforms.setResolution = resolution;
-
     device.queue.writeBuffer(this.uniformsBuffer!, 0, this.uniforms.buffer);
+
+    // recalculate counts
+    this.numVertices = (resolution + 1) * (resolution + 1);
+    this.numIndices = resolution * resolution * 6;
+
+    // recreate index & vertex buffers
+    this.createVertexIndexBuffers(device);
   }
 }
 
