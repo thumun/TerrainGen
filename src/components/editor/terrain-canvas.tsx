@@ -1,6 +1,5 @@
 import { useEffect, memo } from 'react';
 
-
 import WebGPUCanvas from '@/components/webgpu-canvas';
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import type { SceneGraph } from '@/lib/scene';
@@ -11,7 +10,6 @@ export type TerrainCanvasProps = {
 };
 
 export default function TerrainCanvas({ sceneGraph, rendererRef }: TerrainCanvasProps) {
-
   // Update pipelines etc when scene graph changes
   useEffect(() => {
     rendererRef.current?.setSceneGraph(sceneGraph);
@@ -20,7 +18,7 @@ export default function TerrainCanvas({ sceneGraph, rendererRef }: TerrainCanvas
   return (
     <WebGPUCanvas
       createRenderer={(webGPU, stage) => {
-        const renderer = new TerrainRenderer(webGPU, stage)
+        const renderer = new TerrainRenderer(webGPU, stage);
         rendererRef.current = renderer;
         return renderer;
       }}
@@ -33,5 +31,5 @@ export default function TerrainCanvas({ sceneGraph, rendererRef }: TerrainCanvas
 export const MemoizedTerrainCanvas = memo(
   TerrainCanvas,
   (prevProps: TerrainCanvasProps, nextProps: TerrainCanvasProps) =>
-    prevProps.sceneGraph === nextProps.sceneGraph
+    prevProps.sceneGraph === nextProps.sceneGraph,
 );

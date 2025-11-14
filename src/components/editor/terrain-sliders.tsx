@@ -1,29 +1,32 @@
 import { useEffect } from 'react';
 
-
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export type TerrainSliderProps = {
   globalParams: {
-    size: number,
-    resolution: number
-  }
-  setGlobalParams: React.Dispatch<React.SetStateAction<{
     size: number;
     resolution: number;
-    }>>
+  };
+  setGlobalParams: React.Dispatch<
+    React.SetStateAction<{
+      size: number;
+      resolution: number;
+    }>
+  >;
   rendererRef: React.RefObject<TerrainRenderer | undefined>;
 };
 
-export default function TerrainSliders({ globalParams, setGlobalParams, rendererRef }: TerrainSliderProps) {
-
+export default function TerrainSliders({
+  globalParams,
+  setGlobalParams,
+  rendererRef,
+}: TerrainSliderProps) {
   useEffect(() => {
     rendererRef.current?.setMeshUniforms(globalParams.size, globalParams.resolution);
   }, [globalParams, setGlobalParams, rendererRef]);
 
   return (
     <div className="mt-6 space-y-10 text-zinc-300">
-
       <div className="space-y-2">
         <label className="text-sm font-medium">Terrain Size</label>
         <input
@@ -34,7 +37,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
           value={globalParams.size}
           onChange={(e) => {
             const v = Number(e.target.value);
-            setGlobalParams(prev => ({
+            setGlobalParams((prev) => ({
               ...prev,
               size: v,
             }));
@@ -55,7 +58,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
           value={globalParams.resolution}
           onChange={(e) => {
             const v = Number(e.target.value);
-            setGlobalParams(prev => ({
+            setGlobalParams((prev) => ({
               ...prev,
               resolution: v,
             }));
@@ -65,7 +68,6 @@ export default function TerrainSliders({ globalParams, setGlobalParams, renderer
         />
         <div className="text-xs opacity-75">{globalParams.resolution}</div>
       </div>
-
     </div>
   );
 }

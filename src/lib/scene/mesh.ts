@@ -64,7 +64,7 @@ export abstract class Mesh {
       usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
     device.queue.writeBuffer(this.indirectBuffer, 0, indirectData.buffer);
-  
+
     // create some uniform buffer for size & resolution
     this.uniformsBuffer = device.createBuffer({
       label: 'uniforms',

@@ -1,5 +1,4 @@
-import { useState, useRef  } from 'react';
-
+import { useState, useRef } from 'react';
 
 import { MemoizedNodeGraphCanvas } from './node-graph-canvas';
 import { MemoizedTerrainCanvas } from './terrain-canvas';
@@ -21,7 +20,7 @@ export default function Editor() {
   // This "preview nodes" data should be computed from the scene graph.
 
   // states for size and resolution...
-   
+
   const [globalParams, setGlobalParams] = useState({
     size: 10,
     resolution: 100,
@@ -55,7 +54,11 @@ export default function Editor() {
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <TerrainSliders globalParams={globalParams} setGlobalParams={setGlobalParams} rendererRef={rendererRef}/>
+              <TerrainSliders
+                globalParams={globalParams}
+                setGlobalParams={setGlobalParams}
+                rendererRef={rendererRef}
+              />
             </div>
           </div>
         </div>
