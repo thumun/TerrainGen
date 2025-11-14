@@ -66,14 +66,18 @@ export abstract class Mesh {
     device.queue.writeBuffer(this.indirectBuffer, 0, indirectData.buffer);
 
     // create some uniform buffer for size & resolution
+    this.updateUniforms(device, this.size, this.resolution);
+  }
+
+  updateUniforms(device: GPUDevice, size = 1, resolution = 2) {
     this.uniformsBuffer = device.createBuffer({
       label: 'uniforms',
       size: this.uniforms.buffer.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
 
-    this.uniforms.setSize = this.size;
-    this.uniforms.setResolution = this.resolution;
+    this.uniforms.setSize = size;
+    this.uniforms.setResolution = resolution;
 
     device.queue.writeBuffer(this.uniformsBuffer, 0, this.uniforms.buffer);
   }

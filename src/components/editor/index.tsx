@@ -17,6 +17,13 @@ export default function Editor() {
   const [previewNodes, setPreviewNodes] = useState([{ bar: 'foo' }]);
   // This "preview nodes" data should be computed from the scene graph.
 
+  // states for size and resolution...
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [globalParams, setGlobalParams] = useState({
+    size: 0.5,
+    resolution: 10,
+  });
+
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
       <header className="bg-zinc-700 px-8 py-4">
@@ -42,18 +49,49 @@ export default function Editor() {
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <div className="mt-6 space-y-4">
-                <p>parameter 1</p>
-                <p>parameter 2</p>
-                <p>parameter 3</p>
-                <p>parameter 4</p>
-                <p>parameter 5</p>
+              <div className="mt-6 space-y-10 text-zinc-300">
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Terrain Size</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={globalParams.size}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setGlobalParams(prev => ({
+                      ...prev,
+                      size: v
+                    }));
+                  }}
+                  className="w-full"
+                />
+                <div className="text-xs opacity-75">size: {globalParams.size.toFixed(2)}</div>
               </div>
-              <h2 className="mt-12 text-xl font-medium">Import/Export</h2>
-              <div className="mt-6 space-y-4">
-                <p>import</p>
-                <p>export</p>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Terrain Resolution</label>
+                <input
+                  type="range"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={globalParams.resolution}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setGlobalParams(prev => ({
+                      ...prev,
+                      resolution: v,
+                    }));
+                  }}
+                  className="w-full"
+                />
+                <div className="text-xs opacity-75">resolution: {globalParams.resolution}</div>
               </div>
+
+            </div>
             </div>
           </div>
         </div>

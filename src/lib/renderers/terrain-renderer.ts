@@ -296,4 +296,9 @@ export class TerrainRenderer implements IRenderer {
     // TODO: update pipeline with new scene content
     console.log(scene);
   }
+
+  setUniforms(size: number, resolution: number) {
+    // TODO: update pipeline with terrain's size and resolution
+    console.log(size, resolution);
+  }
 }
