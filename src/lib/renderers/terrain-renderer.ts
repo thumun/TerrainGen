@@ -253,7 +253,7 @@ export class TerrainRenderer implements IRenderer {
       compute: {
         module: this.device.createShaderModule({
           label: 'normals compute shader',
-          code: shaders.terrainComputeSrc,
+          code: shaders.normalsComputeSrc,
         }),
         entryPoint: 'main',
       },
