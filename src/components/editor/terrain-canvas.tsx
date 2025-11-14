@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import React from 'react';
 
 import WebGPUCanvas from '@/components/webgpu-canvas';
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
@@ -24,3 +25,9 @@ export default function TerrainCanvas({ sceneGraph }: TerrainCanvasProps) {
     />
   );
 }
+
+export const MemoizedTerrainCanvas = React.memo(
+  TerrainCanvas,
+  (prevProps: TerrainCanvasProps, nextProps: TerrainCanvasProps) =>
+    prevProps.sceneGraph === nextProps.sceneGraph
+);

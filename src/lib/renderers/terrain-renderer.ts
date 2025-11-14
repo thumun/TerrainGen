@@ -10,7 +10,7 @@ import type { WebGPUContext } from '@/lib/webgpu-context';
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
-  protected mesh: Mesh;
+  mesh: Mesh;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -299,6 +299,6 @@ export class TerrainRenderer implements IRenderer {
 
   setUniforms(size: number, resolution: number) {
     // TODO: update pipeline with terrain's size and resolution
-    console.log(size, resolution);
+    console.log("setting uniforms");
   }
 }
