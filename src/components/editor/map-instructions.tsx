@@ -15,7 +15,7 @@ export const useNodeMapping = () => {
   );
 
   const mapNodeToUniform = useCallback(
-    (node: Node, bindingNum: number, groupNum: number): util.Uniform | null => {
+    (node: Node, bindingNum: number, groupNum: number): util.UniformConfig | null => {
       const { type, data } = node;
 
       switch (type) {
@@ -26,7 +26,7 @@ export const useNodeMapping = () => {
             group: groupNum,
             binding: bindingNum,
             value: data.vecInfo,
-          } as util.Uniform;
+          } as util.UniformConfig;
         default:
           return null;
       }

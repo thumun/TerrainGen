@@ -11,7 +11,11 @@ interface UsePipelineProps {
   mapNodeToInstruction: (node: Node) => instructions.All | null;
   getFinalOutputKey: (pipeline: Node[]) => util.ReferenceKey;
   generateReferenceKey: (nodeId: string, suffix: string) => util.ReferenceKey;
-  mapNodeToUniform: (node: Node, bindingNum: number, groupNum: number) => util.Uniform | null;
+  mapNodeToUniform: (
+    node: Node,
+    bindingNum: number,
+    groupNum: number,
+  ) => util.UniformConfig | null;
 }
 
 export const usePipeline = ({
@@ -25,7 +29,7 @@ export const usePipeline = ({
 
       // Collect all instructions and uniforms
       const instructionSet: instructions.All[] = [];
-      const uniforms: util.Uniform[] = [];
+      const uniforms: util.UniformConfig[] = [];
       const uniformBindings = new Map<string, { group: number; binding: number }>();
 
       const currentGroup = 1;

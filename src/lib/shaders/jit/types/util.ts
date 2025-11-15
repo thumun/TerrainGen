@@ -1,6 +1,6 @@
 export type ReferenceKey = string;
 
-export type Uniform = {
+export type UniformConfig = {
   type: 'f32' | 'u32' | 'vec3f';
   key: ReferenceKey;
   group: number;

@@ -29,7 +29,7 @@ export interface MenuPosition {
 
 export interface PipelineResult {
   instructionSet: instructions.All[];
-  uniforms: util.Uniform[];
+  uniforms: util.UniformConfig[];
   shaderConfig: shaders.VertexShaderConfig;
 }
 
