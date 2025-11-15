@@ -10,6 +10,7 @@ describe('generateUniform', () => {
       type: 'f32',
       group: 1,
       binding: 2,
+      value: null,
     });
     expect(result).toBe(`@group(1) @binding(2) var<uniform> unif1 : f32;`);
   });

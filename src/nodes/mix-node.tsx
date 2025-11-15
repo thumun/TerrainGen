@@ -1,10 +1,22 @@
-import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useCallback, useState, useEffect } from 'react';
+import { Handle, Position, type NodeProps } from 'reactflow';
 
-function MathNode() {
+interface MixNodeData {
+  operationVal: string;
+  outputType: string;
+}
+
+function MixNode({ data }: NodeProps<MixNodeData>) {
+  const outputType = data.outputType;
+
   const [value1, setValue1] = useState(0.5);
   const [value2, setValue2] = useState(0.5);
   const [value3, setValue3] = useState(0.5);
+  const [outType, setMode] = useState(outputType);
+
+  useEffect(() => {
+    setMode(outputType);
+  }, [outputType]);
 
   const onChange1 = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(evt.target.value);
@@ -21,13 +33,34 @@ function MathNode() {
     setValue3(newValue);
   }, []);
 
+  const onModeChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+    setMode(evt.target.value);
+  }, []);
+
+  const getOutputHandleConfig = () => {
+    switch (outType) {
+      case 'Vec3':
+        return {
+          id: 'vec3-out',
+          className: '!bg-green-500',
+        };
+      default:
+        return {
+          id: 'float-out',
+          className: '!bg-blue-500',
+        };
+    }
+  };
+
+  const outputHandle = getOutputHandleConfig();
+
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
-        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
+        id={outputHandle.id}
+        className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 ${outputHandle.className}`}
       />
 
       {/* Node Title */}
@@ -86,12 +119,13 @@ function MathNode() {
           className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
         />
       </div>
+
       {/* Third Value Section */}
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val3-in"
+          id="float-val3-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex items-center justify-between">
@@ -110,8 +144,29 @@ function MathNode() {
           className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
         />
       </div>
+
+      {/* output Type */}
+      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Output Type</label>
+          <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
+            <select
+              value={outType}
+              onChange={onModeChange}
+              className="bg-transparent font-bold focus:outline-none"
+            >
+              <option value="Float" className="bg-slate-800 text-white">
+                Float
+              </option>
+              <option value="Vec3" className="bg-slate-800 text-white">
+                Vec3
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default MathNode;
+export default MixNode;

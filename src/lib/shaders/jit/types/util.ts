@@ -5,4 +5,5 @@ export type Uniform = {
   key: ReferenceKey;
   group: number;
   binding: number;
+  value: number | [number, number, number] | null;
 };
