@@ -324,16 +324,16 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
-    // run the compute pass
+    // first compute pass: create terrain
     const computePass = encoder.beginComputePass();
     computePass.setPipeline(this.terrainComputePipeline);
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
     computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
-    // CUSTOM COMPUTE GOES HERE
+    // TODO: custom compute pass: displace terrain
 
-    // run third compute pass to calculate normals
+    // third compute pass: calculate terrain normals
     computePass.setPipeline(this.normalsComputePipeline);
     computePass.setBindGroup(0, this.normalsComputeBindGroup);
     computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
@@ -388,21 +388,5 @@ export class TerrainRenderer implements IRenderer {
 
   setMeshUniforms(size: number, resolution: number) {
     this.mesh.updateUniforms(this.device, size, resolution);
-
-    // re-bind buffers
-    this.terrainComputeBindGroup = this.device.createBindGroup({
-      label: 'terrain compute bind group',
-      layout: this.terrainComputeBindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
-        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
-      ],
-    });
-
-    this.terrainComputeUniformBindGroup = this.device.createBindGroup({
-      label: 'terrain compute uniform bind group',
-      layout: this.terrainComputeUniformBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
-    });
   }
 }

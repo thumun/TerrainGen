@@ -15,6 +15,11 @@ class MeshUniforms {
 
 // template class
 export abstract class Mesh {
+
+  maxResolution = 100;
+  maxVertices = (this.maxResolution + 1) * (this.maxResolution + 1);
+  maxIndices = this.maxResolution * this.maxResolution * 6;
+
   size = 0;
   resolution = 0;
   numVertices = 0;
@@ -38,31 +43,20 @@ export abstract class Mesh {
   }
 
   writeBuffers(device: GPUDevice) {
-    this.createVertexIndexBuffers(device);
-
-    // create some uniform buffer for size & resolution
-    this.uniformsBuffer = device.createBuffer({
-      label: 'uniforms',
-      size: this.uniforms.buffer.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-
-    this.updateUniforms(device, this.size, this.resolution);
-  }
-
-  createVertexIndexBuffers(device: GPUDevice) {
+    // create vertex & indirect buffers
     this.vertexBuffer = device.createBuffer({
       label: 'triangle vertex buffer',
-      size: this.numVertices * 32,
+      size: this.maxVertices * 32,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
 
     this.indexBuffer = device.createBuffer({
       label: 'triangle index buffer',
-      size: this.numIndices * 4,
+      size: this.maxIndices * 4,
       usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
 
+    // create indirect buffer
     const indirectData = new Uint32Array([
       this.numIndices, // indexCount
       1, // instanceCount
@@ -77,6 +71,15 @@ export abstract class Mesh {
       usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
     });
     device.queue.writeBuffer(this.indirectBuffer, 0, indirectData.buffer);
+
+    // create some uniform buffer for size & resolution
+    this.uniformsBuffer = device.createBuffer({
+      label: 'uniforms',
+      size: this.uniforms.buffer.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+
+    this.updateUniforms(device, this.size, this.resolution);
   }
 
   updateUniforms(device: GPUDevice, size = 1, resolution = 2) {
@@ -85,12 +88,12 @@ export abstract class Mesh {
     this.uniforms.setResolution = resolution;
     device.queue.writeBuffer(this.uniformsBuffer!, 0, this.uniforms.buffer);
 
-    // recalculate counts
-    this.numVertices = (resolution + 1) * (resolution + 1);
+    // recalculate numIndices
     this.numIndices = resolution * resolution * 6;
 
-    // recreate index & vertex buffers
-    this.createVertexIndexBuffers(device);
+    // reset indirect buffer
+    const indirectData = new Uint32Array([ this.numIndices, 1, 0, 0, 0 ]);
+    device.queue.writeBuffer(this.indirectBuffer!, 0, indirectData.buffer);
   }
 }
 
