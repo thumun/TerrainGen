@@ -104,10 +104,8 @@ export default function WebGPUCanvas({
 
     // setup scene
     const camera = new Camera(webGPUContext);
-    const mesh = new Plane(10, 100);
+    const mesh = new Plane(20, 100);
     const stage = new Stage(camera, mesh);
-
-    // TODO: Generate shader code from nodes here
 
     const controller = new AbortController();
     const init = async () => {

@@ -10,8 +10,10 @@ struct FragmentInput
 @fragment
 fn main(in: FragmentInput) -> @location(0) vec4f
 {
-  let x = (in.nor.x + 5.0) / 10.0;
-  let z = (in.nor.z + 5.0) / 10.0;
+  // do lambertian shading
+  let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
+  let diffuse = max(dot(in.nor, lightDir), 0.0);
+  let color = vec3f(0.5, 0.5, 0.5) * diffuse;
 
-  return vec4f(x, z, in.nor.y, 1.0);
+  return vec4f(color, 1.0);
 }

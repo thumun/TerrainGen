@@ -1,16 +1,34 @@
-import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useCallback } from 'react';
+import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
 
-function VectorNode() {
-  const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
+interface VectorNodeData {
+  vecInfo: [number, number, number];
+}
+
+function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  const vecInfo = data.vecInfo || [0, 0, 0];
+
+  // const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
 
   // how this works:
   // attach to our box, based on param, str->float & update above state
-  const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
-    const numValue = parseFloat(value) || 0;
+  const onTranslateChange = useCallback(
+    (axis: 'x' | 'y' | 'z', value: string) => {
+      const numValue = parseFloat(value) || 0;
 
-    setTranslate((prev) => ({ ...prev, [axis]: numValue }));
-  }, []);
+      //setTranslate((prev) => ({ ...prev, [axis]: numValue }));
+      const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+      const newVecInfo: [number, number, number] = [...vecInfo];
+      newVecInfo[axisIndex] = numValue;
+
+      // eslint-disable-next-line react-hooks/immutability
+      data.vecInfo = newVecInfo;
+      updateNodeInternals(id);
+    },
+    [vecInfo, data, updateNodeInternals, id],
+  );
 
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
@@ -35,7 +53,7 @@ function VectorNode() {
             <span className="text-xs text-slate-300">X</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.x}
+              value={vecInfo[0]}
               onChange={(e) => onTranslateChange('x', e.target.value)}
               type="number"
             />
@@ -44,7 +62,7 @@ function VectorNode() {
             <span className="text-xs text-slate-300">Y</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.y}
+              value={vecInfo[1]}
               onChange={(e) => onTranslateChange('y', e.target.value)}
               type="number"
             />
@@ -53,7 +71,7 @@ function VectorNode() {
             <span className="text-xs text-slate-300">Z</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.z}
+              value={vecInfo[2]}
               onChange={(e) => onTranslateChange('z', e.target.value)}
               type="number"
             />

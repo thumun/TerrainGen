@@ -25,8 +25,8 @@ function NoiseNode() {
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
-        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
+        id="float-out"
+        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
       />
 
       <div className="mb-2 text-center">
