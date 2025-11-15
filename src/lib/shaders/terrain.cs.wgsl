@@ -57,14 +57,14 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         let z = -size / 2.0 + f32(row) * step;
 
         let vOffset = vertexOffset(id.x);
-        vertices[vOffset + 0] = x; // pos.x
-        vertices[vOffset + 1] = noise2d(x, z);  // pos.y
-        vertices[vOffset + 2] = z; // pos.z
-        vertices[vOffset + 3] = x;  // nor.x
-        vertices[vOffset + 4] = 1.0;  // nor.y
-        vertices[vOffset + 5] = z;  // nor.z
-        vertices[vOffset + 6] = 0.0;  // uv.x
-        vertices[vOffset + 7] = 0.0;  // uv.y
+        vertices[vOffset + 0] = x;               // pos.x
+        vertices[vOffset + 1] = noise2d(x, z);   // pos.y
+        vertices[vOffset + 2] = z;               // pos.z
+        vertices[vOffset + 3] = 0.0;             // nor.x
+        vertices[vOffset + 4] = 1.0;             // nor.y
+        vertices[vOffset + 5] = 0.0;             // nor.z
+        vertices[vOffset + 6] = 0.0;             // uv.x
+        vertices[vOffset + 7] = 0.0;             // uv.y
     }
 
     // generate indices
@@ -80,9 +80,9 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         let baseIndex: u32 = id.x * 6u;
         indices[baseIndex + 0u] = topLeft;
         indices[baseIndex + 1u] = bottomLeft;
-        indices[baseIndex + 2u] = bottomRight;
+        indices[baseIndex + 2u] = topRight;
 
-        indices[baseIndex + 3u] = topLeft;
+        indices[baseIndex + 3u] = bottomLeft;
         indices[baseIndex + 4u] = bottomRight;
         indices[baseIndex + 5u] = topRight;
     }
