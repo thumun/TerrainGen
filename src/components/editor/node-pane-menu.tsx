@@ -20,7 +20,7 @@ const initialNodes: Node[] = [
   },
   {
     id: '3',
-    type: 'math',
+    type: 'mathVec3',
     position: { x: 200, y: 50 },
     data: {
       isOutput: false,
@@ -30,7 +30,7 @@ const initialNodes: Node[] = [
   },
   {
     id: '4',
-    type: 'mix',
+    type: 'mixVec3',
     position: { x: 300, y: 50 },
     data: { isOutput: false, outputType: 'vec3' },
   },
@@ -57,6 +57,18 @@ const initialNodes: Node[] = [
     type: 'vector',
     position: { x: 100, y: 50 },
     data: { isOutput: false },
+  },
+  {
+    id: '9',
+    type: 'mathFloat',
+    position: { x: 300, y: 50 },
+    data: { isOutput: false, outputType: 'vec3' },
+  },
+  {
+    id: '10',
+    type: 'mixFloat',
+    position: { x: 300, y: 50 },
+    data: { isOutput: false, outputType: 'float' },
   },
 ];
 

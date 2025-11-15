@@ -12,8 +12,10 @@ import type {
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as shaders from '@/lib/shaders/jit/types/shaders';
 import type * as util from '@/lib/shaders/jit/types/util';
-import MathNode from '@/nodes/math-node';
-import MixNode from '@/nodes/mix-node';
+import MathNodeFloat from '@/nodes/math-node-float';
+import MathNodeVec3 from '@/nodes/math-node-vec3';
+import MixNodeFloat from '@/nodes/mix-node-float';
+import MixNodeVec3 from '@/nodes/mix-node-vec3';
 import NoiseNode from '@/nodes/noise-node';
 import TerrainNode from '@/nodes/terrain-node';
 import TransformNode from '@/nodes/transform-node';
@@ -49,8 +51,10 @@ export interface NodeGraphHook {
 export const nodeTypes: NodeTypes = {
   transform: TransformNode,
   noise: NoiseNode,
-  math: MathNode,
-  mix: MixNode,
+  mathVec3: MathNodeVec3,
+  mathFloat: MathNodeFloat,
+  mixVec3: MixNodeVec3,
+  mixFloat: MixNodeFloat,
   terrain: TerrainNode,
   vector: VectorNode,
 };

@@ -35,16 +35,15 @@ const baseNodes: NodeType[] = [
     data: { isOutput: false },
   },
   {
-    type: 'math', // 2
+    type: 'mathVec3', // 2
     data: {
       isOutput: false,
       operationVal: 'add',
-      outputType: 'float',
     },
   },
   {
-    type: 'mix', // 3
-    data: { isOutput: false, outputType: 'float' },
+    type: 'mixVec3', // 3
+    data: { isOutput: false },
   },
   {
     type: 'terrain', // 4
@@ -52,6 +51,17 @@ const baseNodes: NodeType[] = [
   },
   {
     type: 'vector', // 5
+    data: { isOutput: false },
+  },
+  {
+    type: 'mathFloat', // 6
+    data: {
+      isOutput: false,
+      operationVal: 'add',
+    },
+  },
+  {
+    type: 'mixFloat', // 7
     data: { isOutput: false },
   },
 ];
@@ -111,13 +121,13 @@ export default function ContextMenu({
         onClick={() => duplicateNode(2)}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
-        Math
+        Math (Vec3)
       </button>
       <button
         onClick={() => duplicateNode(3)}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
-        Mix
+        Mix (Vec3)
       </button>
       <button
         onClick={() => duplicateNode(4)}
@@ -130,6 +140,18 @@ export default function ContextMenu({
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Vector
+      </button>
+      <button
+        onClick={() => duplicateNode(6)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Math (Float)
+      </button>
+      <button
+        onClick={() => duplicateNode(7)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Mix (Float)
       </button>
     </div>
   );
