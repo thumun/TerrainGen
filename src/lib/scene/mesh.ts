@@ -15,7 +15,6 @@ class MeshUniforms {
 
 // template class
 export abstract class Mesh {
-
   maxResolution = 100;
   maxVertices = (this.maxResolution + 1) * (this.maxResolution + 1);
   maxIndices = this.maxResolution * this.maxResolution * 6;
@@ -92,7 +91,7 @@ export abstract class Mesh {
     this.numIndices = resolution * resolution * 6;
 
     // reset indirect buffer
-    const indirectData = new Uint32Array([ this.numIndices, 1, 0, 0, 0 ]);
+    const indirectData = new Uint32Array([this.numIndices, 1, 0, 0, 0]);
     device.queue.writeBuffer(this.indirectBuffer!, 0, indirectData.buffer);
   }
 }
