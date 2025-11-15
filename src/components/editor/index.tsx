@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
+import TerrainSliders from './terrain-sliders';
 
 import NodeGraph from '@/components/node-graph';
+import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export default function Editor() {
   // @ts-expect-error not setting this yet
@@ -16,6 +18,16 @@ export default function Editor() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewNodes, setPreviewNodes] = useState([{ bar: 'foo' }]);
   // This "preview nodes" data should be computed from the scene graph.
+
+  // states for size and resolution...
+
+  const [globalParams, setGlobalParams] = useState({
+    size: 10,
+    resolution: 100,
+  });
+
+  // global reference to the renderer
+  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
@@ -37,23 +49,16 @@ export default function Editor() {
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <TerrainCanvas sceneGraph={sceneGraph} />
+            <TerrainCanvas sceneGraph={sceneGraph} globalParams={globalParams} />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <div className="mt-6 space-y-4">
-                <p>parameter 1</p>
-                <p>parameter 2</p>
-                <p>parameter 3</p>
-                <p>parameter 4</p>
-                <p>parameter 5</p>
-              </div>
-              <h2 className="mt-12 text-xl font-medium">Import/Export</h2>
-              <div className="mt-6 space-y-4">
-                <p>import</p>
-                <p>export</p>
-              </div>
+              <TerrainSliders
+                globalParams={globalParams}
+                setGlobalParams={setGlobalParams}
+                rendererRef={rendererRef}
+              />
             </div>
           </div>
         </div>

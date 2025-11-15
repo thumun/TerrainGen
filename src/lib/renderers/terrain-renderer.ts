@@ -7,10 +7,15 @@ import { Mesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
+export type TerrainRendererGlobalParameters = {
+  size: number;
+  resolution: number;
+};
+
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
-  protected mesh: Mesh;
+  mesh: Mesh;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -319,16 +324,16 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
-    // run the compute pass
+    // first compute pass: create terrain
     const computePass = encoder.beginComputePass();
     computePass.setPipeline(this.terrainComputePipeline);
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
     computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
-    // CUSTOM COMPUTE GOES HERE
+    // TODO: custom compute pass: displace terrain
 
-    // run third compute pass to calculate normals
+    // third compute pass: calculate terrain normals
     computePass.setPipeline(this.normalsComputePipeline);
     computePass.setBindGroup(0, this.normalsComputeBindGroup);
     computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
@@ -379,5 +384,9 @@ export class TerrainRenderer implements IRenderer {
   setSceneGraph(scene: SceneGraph) {
     // TODO: update pipeline with new scene content
     console.log(scene);
+  }
+
+  setMeshUniforms(size: number, resolution: number) {
+    this.mesh.updateUniforms(this.device, size, resolution);
   }
 }
