@@ -11,17 +11,13 @@ interface UsePipelineProps {
   mapNodeToInstruction: (node: Node) => instructions.All | null;
   getFinalOutputKey: (pipeline: Node[]) => util.ReferenceKey;
   generateReferenceKey: (nodeId: string, suffix: string) => util.ReferenceKey;
-  mapNodeToUniform: (
-    node: Node,
-    bindingNum: number,
-    groupNum: number,
-  ) => util.UniformConfig | null;
+  mapNodeToUniform: (node: Node) => util.UniformConfig;
 }
 
 export const usePipeline = ({
   mapNodeToInstruction,
   getFinalOutputKey,
-  generateReferenceKey,
+  mapNodeToUniform,
 }: UsePipelineProps) => {
   const executePipeline = useCallback(
     (pipeline: Node[]): PipelineResult => {
@@ -30,28 +26,11 @@ export const usePipeline = ({
       // Collect all instructions and uniforms
       const instructionSet: instructions.All[] = [];
       const uniforms: util.UniformConfig[] = [];
-      const uniformBindings = new Map<string, { group: number; binding: number }>();
-
-      const currentGroup = 1;
-      let currentBinding = 0;
 
       // First pass: identify all input nodes that need uniforms
       pipeline.forEach((node) => {
-        if (node.type === 'vector' || node.type === 'noise') {
-          const uniformKey = generateReferenceKey(node.id, 'value');
-
-          if (!uniformBindings.has(uniformKey)) {
-            uniforms.push({
-              key: uniformKey,
-              type: 'vec3f',
-              group: currentGroup,
-              binding: currentBinding,
-              value: 0,
-            });
-            uniformBindings.set(uniformKey, { group: currentGroup, binding: currentBinding });
-            currentBinding++;
-          }
-        }
+        const uniformInfo = mapNodeToUniform(node);
+        uniforms.push(uniformInfo);
       });
 
       // Second pass: create instructions
@@ -82,7 +61,7 @@ export const usePipeline = ({
         shaderConfig,
       };
     },
-    [mapNodeToInstruction, getFinalOutputKey, generateReferenceKey],
+    [mapNodeToInstruction, getFinalOutputKey, mapNodeToUniform],
   );
 
   return {

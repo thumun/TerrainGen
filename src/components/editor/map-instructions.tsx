@@ -15,18 +15,17 @@ export const useNodeMapping = () => {
   );
 
   const mapNodeToUniform = useCallback(
-    (node: Node, bindingNum: number, groupNum: number): util.UniformConfig | null => {
+    (node: Node): util.UniformConfig | null => {
       const { type, data } = node;
+      const uniformKey = generateReferenceKey(node.id, 'value');
 
       switch (type) {
         case 'vector':
           return {
+            key: uniformKey,
             type: 'vec3f',
-            key: generateReferenceKey(node.id, 'test'),
-            group: groupNum,
-            binding: bindingNum,
             value: data.vecInfo,
-          } as util.UniformConfig;
+          } as unknown as util.UniformConfig;
         default:
           return null;
       }
