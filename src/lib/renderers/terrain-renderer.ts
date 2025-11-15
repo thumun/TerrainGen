@@ -7,6 +7,11 @@ import { Mesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
+export type TerrainRendererGlobalParameters = {
+  size: number;
+  resolution: number;
+};
+
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;

@@ -1,12 +1,15 @@
-import { memo, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
-import WebGPUCanvas from '@/components/webgpu-canvas';
+import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/webgpu-canvas';
 import { NodeGraphRenderer } from '@/lib/renderers/node-graph-renderer';
 import type { PreviewNode } from '@/lib/scene';
 
 export type NodeGraphCanvasProps = {
   previewNodes: Array<PreviewNode>;
 };
+
+const createRenderer: WebGPUCanvasProps['createRenderer'] = (webGPU) =>
+  new NodeGraphRenderer(webGPU);
 
 export default function NodeGraphCanvas({ previewNodes }: NodeGraphCanvasProps) {
   const rendererRef = useRef<NodeGraphRenderer | undefined>(undefined);
@@ -18,15 +21,9 @@ export default function NodeGraphCanvas({ previewNodes }: NodeGraphCanvasProps) 
 
   return (
     <WebGPUCanvas
-      createRenderer={(webGPU) => new NodeGraphRenderer(webGPU)}
+      createRenderer={createRenderer}
       rendererRef={rendererRef}
       divClassName="absolute inset-0"
     />
   );
 }
-
-export const MemoizedNodeGraphCanvas = memo(
-  NodeGraphCanvas,
-  (prevProps: NodeGraphCanvasProps, nextProps: NodeGraphCanvasProps) =>
-    prevProps.previewNodes === nextProps.previewNodes,
-);
