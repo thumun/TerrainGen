@@ -11,7 +11,7 @@ interface UsePipelineProps {
   mapNodeToInstruction: (node: Node) => instructions.All | null;
   getFinalOutputKey: (pipeline: Node[]) => util.ReferenceKey;
   generateReferenceKey: (nodeId: string, suffix: string) => util.ReferenceKey;
-  mapNodeToUniform: (node: Node) => util.UniformConfig;
+  mapNodeToUniform: (node: Node) => util.UniformConfig | null;
 }
 
 export const usePipeline = ({
@@ -30,10 +30,14 @@ export const usePipeline = ({
       // First pass: identify all input nodes that need uniforms
       pipeline.forEach((node) => {
         const uniformInfo = mapNodeToUniform(node);
-        uniforms.push(uniformInfo);
+        if (uniformInfo != null) {
+          uniforms.push(uniformInfo);
+        }
       });
 
-      // Second pass: create instructions
+      // Second pass: traverse and set up uniform input/output
+
+      // Third pass: create instructions
       pipeline.forEach((node, index) => {
         console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
 
@@ -43,7 +47,7 @@ export const usePipeline = ({
         }
       });
 
-      // Create the final shader config
+      // Fourth pass: Create the final shader config
       const shaderConfig: shaders.VertexShaderConfig = {
         type: 'vertex',
         uniforms,
