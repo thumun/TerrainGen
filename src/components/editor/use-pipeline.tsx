@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Node } from 'reactflow';
+import type { Node, Edge } from 'reactflow';
 
 import type { PipelineResult } from './type';
 
@@ -8,19 +8,24 @@ import type * as shaders from '@/lib/shaders/jit/types/shaders';
 import type * as util from '@/lib/shaders/jit/types/util';
 
 interface UsePipelineProps {
-  mapNodeToInstruction: (node: Node) => instructions.All | null;
-  getFinalOutputKey: (pipeline: Node[]) => util.ReferenceKey;
-  generateReferenceKey: (nodeId: string, suffix: string) => util.ReferenceKey;
+  mapNodeToInstruction: (
+    node: Node,
+    edges: Edge[],
+    nodeKeyMap: Map<string, Map<string, string>>,
+  ) => instructions.All | null;
+  getFinalOutputKey: (nodeTypes: Node[]) => util.ReferenceKey;
   mapNodeToUniform: (node: Node) => util.UniformConfig | null;
+  mapNodesToKeys: (nodes: Node[], edges: Edge[]) => Map<string, Map<string, string>>;
 }
 
 export const usePipeline = ({
   mapNodeToInstruction,
   getFinalOutputKey,
   mapNodeToUniform,
+  mapNodesToKeys,
 }: UsePipelineProps) => {
   const executePipeline = useCallback(
-    (pipeline: Node[]): PipelineResult => {
+    (pipeline: Node[], edges: Edge[]): PipelineResult => {
       console.log('Executing pipeline with steps:');
 
       // Collect all instructions and uniforms
@@ -28,7 +33,7 @@ export const usePipeline = ({
       const uniforms: util.UniformConfig[] = [];
 
       // First pass: identify all input nodes that need uniforms
-      pipeline.forEach((node) => {
+      pipeline.forEach((node: Node) => {
         const uniformInfo = mapNodeToUniform(node);
         if (uniformInfo != null) {
           uniforms.push(uniformInfo);
@@ -36,12 +41,13 @@ export const usePipeline = ({
       });
 
       // Second pass: traverse and set up uniform input/output
+      const nodeKeyMap = mapNodesToKeys(pipeline, edges);
 
       // Third pass: create instructions
       pipeline.forEach((node, index) => {
         console.log(`Step ${index + 1}: ${node.type} (${node.id})`);
 
-        const instruction = mapNodeToInstruction(node);
+        const instruction = mapNodeToInstruction(node, edges, nodeKeyMap);
         if (instruction) {
           instructionSet.push(instruction);
         }
@@ -65,7 +71,7 @@ export const usePipeline = ({
         shaderConfig,
       };
     },
-    [mapNodeToInstruction, getFinalOutputKey, mapNodeToUniform],
+    [mapNodeToInstruction, getFinalOutputKey, mapNodeToUniform, mapNodesToKeys],
   );
 
   return {
