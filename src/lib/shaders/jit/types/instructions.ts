@@ -34,9 +34,12 @@ export type CombineXYZ = {
   };
 };
 
+// TODO: ideally, all nodes will have uniforms for any non-plugged-in input plug.
+//   This will have to do for now as a way of discretely creating uniforms.
 export type Vector = {
   type: 'vector';
   references: {
+    // TODO: add read inputs (uniform keys)
     write: util.ReferenceKey;
   };
 };

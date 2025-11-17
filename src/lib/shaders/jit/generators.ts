@@ -52,6 +52,12 @@ export function generateCombineXYZCode(
   return { code: `let ${write} = vec3f(${readX}, ${readY}, ${readZ});` };
 }
 
+export function generateVectorCode(instruction: instructions.Vector): GenerateCodeResult {
+  const { write } = instruction.references;
+  // TODO: figure out what this should spit out
+  return { code: `// write param: ${write}` };
+}
+
 export function generateNoiseCode(instruction: instructions.Noise): GenerateCodeResult {
   const { pos, scale, numOctaves, write } = instruction.references;
   return {
@@ -68,11 +74,9 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateSeparateXYZCode(instruction);
     case 'combine-xyz':
       return generateCombineXYZCode(instruction);
+    case 'vector':
+      return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
-    default:
-      throw new Error(
-        `Unknown instruction type "${instruction.type}" passed into generateCode`,
-      );
   }
 }

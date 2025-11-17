@@ -20,6 +20,7 @@ export const useNodeMapping = () => {
       console.log(`Mapping node to uniform: ${node.id} (type: ${node.type})`);
       const { type, data } = node;
 
+      /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
       switch (type) {
         case 'vector': {
           const returnedEdges = edges.filter((edge) => edge.targetHandle === 'vec3-out');
@@ -37,6 +38,7 @@ export const useNodeMapping = () => {
         default:
           return null;
       }
+      /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
     },
     [],
   );
