@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/webgpu-canvas';
+import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/common/webgpu-canvas';
 import { NodeGraphRenderer } from '@/lib/renderers/node-graph-renderer';
 import type { PreviewNode } from '@/lib/scene';
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -11,52 +11,43 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import ContextMenu from './editor/context-menu';
-import { useNodeMapping } from './editor/map-instructions';
-import { useNodeTraversal } from './editor/node-graph-traversal';
-import { useNodeGraph } from './editor/node-pane-menu';
-import { nodeTypes } from './editor/type';
-import { usePipeline } from './editor/use-pipeline';
+import ContextMenu from './context-menu';
+
+import { nodeTypes } from '@/components/nodes';
+import { useContextMenu } from '@/hooks/use-context-menu';
+import { useNodeGraph } from '@/hooks/use-node-graph';
+import * as graph from '@/lib/graph';
+import * as traversal from '@/lib/graph/traversal';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
 export default function NodeGraph() {
-  const {
-    nodes,
-    edges,
-    menu,
-    onNodesChange,
-    onEdgesChange,
-    setEdges,
-    reactFlowWrapper,
-    onPaneContextMenu,
-    onPaneClick,
-  } = useNodeGraph();
+  /** Ref pointing to div wrapping ReactFlow element. */
+  const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
-  const { getNodeGraph, isValidConnection } = useNodeTraversal();
-  const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
-    useNodeMapping();
-  const { executePipeline } = usePipeline({
-    mapNodeToInstruction,
-    getFinalOutputKey,
-    mapNodesToKeys,
-    mapNodeToUniform,
-  });
+  // hook owning node + edge state, and react flow
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } = useNodeGraph();
 
+  // hook to manage context menu state + position
+  const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
+
+  // TODO: this should be expanded to trigger whenever ANY node connection is updated
+  //   that is upstream to an output node.
+  //
+  /** Callback triggered upon the connection of an edge to an "output" node. */
   const onOutputNodeConnected = useCallback(
     (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
       const pipeline = [...connectedNodes, outputNode];
-      executePipeline(pipeline, edges);
+      graph.executePipeline(pipeline, edges);
     },
-    [executePipeline],
+    [],
   );
 
+  /** Callback triggered upon the connection of ANY edge to ANY node. */
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      // setEdges((eds) => addEdge(params, eds));
-
       // Create the updated edges first
       const updatedEdges = addEdge(params, edges);
 
@@ -68,19 +59,16 @@ export default function NodeGraph() {
 
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
-          const connectedNodes = getNodeGraph(targetNode.id, nodes, updatedEdges);
+          const connectedNodes = traversal.getNodeGraph(targetNode.id, nodes, updatedEdges);
           onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
         }
       }
     },
-    [setEdges, nodes, edges, getNodeGraph, onOutputNodeConnected],
+    [setEdges, nodes, edges, onOutputNodeConnected],
   );
 
   return (
-    <div
-      ref={reactFlowWrapper}
-      style={{ width: '100%', height: '100vh', position: 'relative' }}
-    >
+    <div ref={reactFlowWrapper} className="relative h-screen w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -92,7 +80,7 @@ export default function NodeGraph() {
         onPaneClick={onPaneClick}
         fitView
         fitViewOptions={fitViewOptions}
-        isValidConnection={(connection) => isValidConnection(connection, nodes)}
+        isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
       >
         <Background />
         <Controls />

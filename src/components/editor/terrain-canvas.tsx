@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/webgpu-canvas';
+import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/common/webgpu-canvas';
 import {
   TerrainRenderer,
   type TerrainRendererGlobalParameters,

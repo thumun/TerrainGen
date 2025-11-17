@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 
+import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
-import NodeGraph from '@/components/node-graph';
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export default function Editor() {
@@ -26,6 +26,10 @@ export default function Editor() {
     resolution: 100,
   });
 
+  // TODO: this is unnecessary, should be ok to just pass `globalParams` and `setGlobalParams`
+  //       into the sliders, and have the `<TerrainRenderer />` automatically trigger the
+  //       renderer methods when `globalParams` change at all
+  //
   // global reference to the renderer
   const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 

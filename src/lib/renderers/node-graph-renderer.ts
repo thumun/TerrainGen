@@ -1,4 +1,4 @@
-import type { IRenderer } from '@/components/webgpu-canvas';
+import type { IRenderer } from '@/components/common/webgpu-canvas';
 import type { PreviewNode } from '@/lib/scene';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
