@@ -7,6 +7,12 @@ import type * as graph from './types';
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as util from '@/lib/shaders/jit/types/util';
 
+/**
+ * Generates a reference key for a given node.
+ *
+ * @todo Notably, variables can't begin with numbers in WGSL. This should add a prefix or
+ *       somehow otherwise ensure that the var name doesn't start with a number.
+ */
 const generateReferenceKey = (nodeId: string, suffix: string): util.ReferenceKey => {
   console.log(`Generating reference key for node ${nodeId} with suffix: ${suffix}`);
   return `${nodeId}_${suffix}`;
@@ -19,6 +25,7 @@ export function mapNodeToUniform(
   console.log(`Mapping node to uniform: ${node.id} (type: ${node.type})`);
   const { type, data } = node;
 
+  /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
   switch (type) {
     case 'vector': {
       const returnedEdges = edges.filter((edge) => edge.targetHandle === 'vec3-out');
@@ -39,6 +46,7 @@ export function mapNodeToUniform(
     default:
       return null;
   }
+  /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
 }
 
 export function getNodeFieldData(
@@ -95,6 +103,7 @@ export function mapNodeToInstruction(
   console.log(`Mapping node to instruction: ${node.id} (type: ${node.type})`);
   const { type, data } = node;
 
+  /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
   switch (type) {
     case 'math': {
       const mathInstruction = {
@@ -138,6 +147,7 @@ export function mapNodeToInstruction(
     default:
       return null;
   }
+  /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
 }
 
 export function mapNodesToKeys(
@@ -198,10 +208,12 @@ export function getFinalOutputKey(pipeline: graph.Node[]): util.ReferenceKey {
   const lastNode = pipeline[pipeline.length - 1];
 
   // Determine output key based on last node type
+  /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
   switch (lastNode.type) {
     case 'terrain':
       return generateReferenceKey(lastNode.id, 'height');
     default:
       return generateReferenceKey(lastNode.id, 'output');
   }
+  /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
 }

@@ -12,13 +12,13 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import ContextMenu from './editor/context-menu';
-import { useNodeMapping } from './editor/map-instructions';
 import { nodeTypes } from './editor/type';
 import { usePipeline } from './editor/use-pipeline';
 
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
-import { getNodeGraph, isValidConnection } from '@/lib/graph/traversal';
+import * as nodeMapping from '@/lib/graph/node-mapping';
+import * as traversal from '@/lib/graph/traversal';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
@@ -34,13 +34,12 @@ export default function NodeGraph() {
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
 
-  const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
-    useNodeMapping();
+  // TODO: move this into `@/lib/graph/index.ts`
   const { executePipeline } = usePipeline({
-    mapNodeToInstruction,
-    getFinalOutputKey,
-    mapNodesToKeys,
-    mapNodeToUniform,
+    mapNodeToInstruction: nodeMapping.mapNodeToInstruction,
+    getFinalOutputKey: nodeMapping.getFinalOutputKey,
+    mapNodesToKeys: nodeMapping.mapNodesToKeys,
+    mapNodeToUniform: nodeMapping.mapNodeToUniform,
   });
 
   // TODO: this should be expanded to trigger whenever ANY node connection is updated
@@ -69,7 +68,7 @@ export default function NodeGraph() {
 
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
-          const connectedNodes = getNodeGraph(targetNode.id, nodes, updatedEdges);
+          const connectedNodes = traversal.getNodeGraph(targetNode.id, nodes, updatedEdges);
           onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
         }
       }
@@ -90,7 +89,7 @@ export default function NodeGraph() {
         onPaneClick={onPaneClick}
         fitView
         fitViewOptions={fitViewOptions}
-        isValidConnection={(connection) => isValidConnection(connection, nodes)}
+        isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
       >
         <Background />
         <Controls />

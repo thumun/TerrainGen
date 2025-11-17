@@ -1,6 +1,6 @@
 export interface Node {
   id: string;
-  type: string;
+  type?: string;
   data: unknown;
 }
 
@@ -8,8 +8,8 @@ export interface Edge {
   id: string;
   source: string;
   target: string;
-  sourceHandle: string;
-  targetHandle: string;
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
 }
 
 /**
