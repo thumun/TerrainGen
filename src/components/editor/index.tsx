@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 
-import NodeGraphCanvas from './node-graph-canvas';
+import NodeGraphCanvas from './node-graph/node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
-import NodeGraph from '@/components/node-graph';
+import NodeGraph from '@/components/editor/node-graph';
 import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export default function Editor() {

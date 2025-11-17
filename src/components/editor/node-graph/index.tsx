@@ -11,7 +11,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import ContextMenu from './editor/context-menu';
+import ContextMenu from './context-menu';
 
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
