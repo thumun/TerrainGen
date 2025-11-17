@@ -13,11 +13,11 @@ import 'reactflow/dist/style.css';
 
 import ContextMenu from './context-menu';
 
+import { nodeTypes } from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
-import { nodeTypes } from '@/nodes/node-types';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
