@@ -1,7 +1,3 @@
-import { useEffect } from 'react';
-
-import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
-
 export type TerrainSliderProps = {
   globalParams: {
     size: number;
@@ -13,18 +9,9 @@ export type TerrainSliderProps = {
       resolution: number;
     }>
   >;
-  rendererRef: React.RefObject<TerrainRenderer | undefined>;
 };
 
-export default function TerrainSliders({
-  globalParams,
-  setGlobalParams,
-  rendererRef,
-}: TerrainSliderProps) {
-  useEffect(() => {
-    rendererRef.current?.setMeshUniforms(globalParams.size, globalParams.resolution);
-  }, [globalParams, setGlobalParams, rendererRef]);
-
+export default function TerrainSliders({ globalParams, setGlobalParams }: TerrainSliderProps) {
   return (
     <div className="mt-6 space-y-10 text-zinc-300">
       <div className="space-y-2">
@@ -41,7 +28,6 @@ export default function TerrainSliders({
               ...prev,
               size: v,
             }));
-            rendererRef.current?.setMeshUniforms(v, globalParams.resolution);
           }}
           className="w-full"
         />
@@ -62,7 +48,6 @@ export default function TerrainSliders({
               ...prev,
               resolution: v,
             }));
-            rendererRef.current?.setMeshUniforms(globalParams.size, v);
           }}
           className="w-full"
         />

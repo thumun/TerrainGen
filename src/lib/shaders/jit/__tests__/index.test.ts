@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as jit from '..';
 import type * as shaders from '../types/shaders';
 
-const mockVertexTemplate: shaders.VertexShaderTemplate = {
+const mockDisplaceTemplate: shaders.DisplaceShaderTemplate = {
   content: ({ uniforms, utils, body, heightKey }) => `> UNIFORMS
 ${uniforms}
 
@@ -19,8 +19,7 @@ ${heightKey}
   localKeys: { terrainPos: 'test_terrain_pos' },
 };
 
-const mockVertexShaderConfig: shaders.VertexShaderConfig = {
-  type: 'vertex',
+const mockDisplaceShaderConfig: shaders.DisplaceShaderConfig = {
   uniforms: [
     {
       key: 'unif1',
@@ -44,9 +43,12 @@ const mockVertexShaderConfig: shaders.VertexShaderConfig = {
   outputs: { height: 'height_out' },
 };
 
-describe('generateVertexShaderCode', () => {
+describe('generateDisplaceShaderCode', () => {
   it('matches the snapshot with mock vertex template', () => {
-    const value = jit.generateVertexShaderCode(mockVertexShaderConfig, mockVertexTemplate);
+    const value = jit.generateDisplaceShaderCode(
+      mockDisplaceShaderConfig,
+      mockDisplaceTemplate,
+    );
 
     expect(value).toMatchSnapshot();
   });

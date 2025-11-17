@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generateVertexShaderCode > matches the snapshot with mock vertex template 1`] = `
+exports[`generateDisplaceShaderCode > matches the snapshot with mock vertex template 1`] = `
 "> UNIFORMS
 @group(0) @binding(0) var<uniform> unif1 : f32;
 @group(0) @binding(1) var<uniform> unif2 : vec3f;

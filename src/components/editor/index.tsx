@@ -1,18 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 
 import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
-import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
+import * as scene from '@/lib/scene';
 
 export default function Editor() {
-  // @ts-expect-error not setting this yet
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [sceneGraph, setSceneGraph] = useState({ foo: 'bar' });
-
-  // the above state could come from a number of places... we could store it in the URL even!
+  const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
+    scene.DisplacePipeline | undefined
+  >(undefined);
 
   // @ts-expect-error not setting this yet
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,13 +23,6 @@ export default function Editor() {
     size: 10,
     resolution: 100,
   });
-
-  // TODO: this is unnecessary, should be ok to just pass `globalParams` and `setGlobalParams`
-  //       into the sliders, and have the `<TerrainRenderer />` automatically trigger the
-  //       renderer methods when `globalParams` change at all
-  //
-  // global reference to the renderer
-  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
@@ -46,23 +37,22 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            <NodeGraph />
+            <NodeGraph onDisplacePipelineUpdate={setDisplacePipelineConfig} />
           </div>
         </div>
 
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <TerrainCanvas sceneGraph={sceneGraph} globalParams={globalParams} />
+            <TerrainCanvas
+              displacePipeline={displacePipelineConfig}
+              globalParams={globalParams}
+            />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">
               <h2 className="text-xl font-medium">Global Parameters</h2>
-              <TerrainSliders
-                globalParams={globalParams}
-                setGlobalParams={setGlobalParams}
-                rendererRef={rendererRef}
-              />
+              <TerrainSliders globalParams={globalParams} setGlobalParams={setGlobalParams} />
             </div>
           </div>
         </div>

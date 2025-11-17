@@ -1,14 +1,15 @@
 import * as nodeMapping from './node-mapping';
 import type * as types from './types';
 
+import type * as scene from '@/lib/scene';
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
-import type * as shaders from '@/lib/shaders/jit/types/shaders';
 import type * as util from '@/lib/shaders/jit/types/util';
 
 export type PipelineResult = {
+  // TODO: these two below are unnecessary I think
   instructionSet: instructions.All[];
   uniforms: util.UniformConfig[];
-  shaderConfig: shaders.VertexShaderConfig;
+  shaderConfig: scene.DisplacePipeline;
 };
 
 export function executePipeline(pipeline: types.Node[], edges: types.Edge[]): PipelineResult {
@@ -40,8 +41,7 @@ export function executePipeline(pipeline: types.Node[], edges: types.Edge[]): Pi
   });
 
   // Fourth pass: Create the final shader config
-  const shaderConfig: shaders.VertexShaderConfig = {
-    type: 'vertex',
+  const shaderConfig: scene.DisplacePipeline = {
     uniforms,
     instructionSet,
     outputs: {

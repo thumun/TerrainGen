@@ -6,23 +6,22 @@ type ShaderConfigBase = {
   instructionSet: Array<instructions.All>;
 };
 
-export type VertexShaderConfig = ShaderConfigBase & {
-  type: 'vertex';
+export type DisplaceShaderConfig = ShaderConfigBase & {
   outputs: {
     height: util.ReferenceKey;
   };
 };
 
-type VertexShaderTemplateValues = {
+type DisplaceShaderTemplateValues = {
   uniforms: string;
   utils: string;
   body: string;
   heightKey: string;
 };
 
-export type VertexShaderTemplate = {
-  content: (values: VertexShaderTemplateValues) => string;
-  /** Can be used as `ReferenceKey`s in `VertexShaderConfig`s to refer to certain in-scope variables */
+export type DisplaceShaderTemplate = {
+  content: (values: DisplaceShaderTemplateValues) => string;
+  /** Can be used as `ReferenceKey`s in `DisplaceShaderConfig`s to refer to certain in-scope variables */
   localKeys: {
     /** `vec3f` - the terrain position for any given vertex */
     terrainPos: util.ReferenceKey;

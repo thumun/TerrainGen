@@ -3,9 +3,9 @@ import * as shaders from './types/shaders';
 
 // TODO: helper to inject utils like noise functions
 
-export function generateVertexShaderCode(
-  shaderConfig: shaders.VertexShaderConfig,
-  template: shaders.VertexShaderTemplate,
+export function generateDisplaceShaderCode(
+  shaderConfig: shaders.DisplaceShaderConfig,
+  template: shaders.DisplaceShaderTemplate,
 ) {
   // TODO: this will likely have to change to use a struct instead
   const uniforms = shaderConfig.uniforms

@@ -18,12 +18,17 @@ import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
+import type * as scene from '@/lib/scene';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-export default function NodeGraph() {
+type NodeGraphProps = {
+  onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
+};
+
+export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
@@ -41,8 +46,17 @@ export default function NodeGraph() {
     (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
       const pipeline = [...connectedNodes, outputNode];
       graph.executePipeline(pipeline, edges);
+      if (onDisplacePipelineUpdate) {
+        // TODO: we should return something from `executePipeline` and call the below method
+        //       with the result
+        onDisplacePipelineUpdate({
+          uniforms: [],
+          instructionSet: [],
+          outputs: { height: 'foo' },
+        });
+      }
     },
-    [],
+    [onDisplacePipelineUpdate],
   );
 
   /** Callback triggered upon the connection of ANY edge to ANY node. */
