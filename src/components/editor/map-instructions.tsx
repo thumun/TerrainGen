@@ -92,19 +92,29 @@ export const useNodeMapping = () => {
           } as instructions.All;
 
         case 'vector': {
-          // set up connecting node
-
           return {
             type: 'separate-xyz',
             references: {
-              read: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
+              read: getNodeFieldData('vec3-out', true, node, edges, nodeKeyMap),
               writeX: data.outputX ? generateReferenceKey(node.id, 'vec3-out') : undefined,
               writeY: data.outputY ? generateReferenceKey(node.id, 'vec3-out') : undefined,
               writeZ: data.outputZ ? generateReferenceKey(node.id, 'vec3-out') : undefined,
             },
           } as instructions.All;
         }
-        // Add cases for other node types
+
+        case 'noise': {
+          return {
+            type: 'noise',
+            references: {
+              pos: getNodeFieldData('vec3-pos-in', true, node, edges, nodeKeyMap),
+              scale: getNodeFieldData('vec3-scale-in', true, node, edges, nodeKeyMap),
+              numOctaves: getNodeFieldData('vec3-numOctaves-in', true, node, edges, nodeKeyMap),
+              write: getNodeFieldData('float-out', false, node, edges, nodeKeyMap),
+            },
+          } as instructions.All;
+        }
+
         default:
           return null;
       }
