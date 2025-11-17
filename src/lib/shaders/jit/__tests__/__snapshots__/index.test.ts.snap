@@ -2,8 +2,8 @@
 
 exports[`generateVertexShaderCode > matches the snapshot with mock vertex template 1`] = `
 "> UNIFORMS
-@group(1) @binding(0) var<uniform> unif1 : f32;
-@group(1) @binding(1) var<uniform> unif2 : vec3f;
+@group(0) @binding(0) var<uniform> unif1 : f32;
+@group(0) @binding(1) var<uniform> unif2 : vec3f;
 
 > UTILS
 

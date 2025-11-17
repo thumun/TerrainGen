@@ -2,8 +2,12 @@ import * as shaderUtils from './shader-utils';
 import * as instructions from './types/instructions';
 import type * as util from './types/util';
 
-export function generateUniform(uniform: util.UniformConfig) {
-  return `@group(${uniform.group}) @binding(${uniform.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
+// TODO: this will likely have to change to use a struct instead
+export function generateUniform(
+  uniform: util.UniformConfig,
+  opts: { group: number; binding: number },
+) {
+  return `@group(${opts.group}) @binding(${opts.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
 
 type ShaderUtil = () => string;
