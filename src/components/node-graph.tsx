@@ -36,11 +36,13 @@ export default function NodeGraph() {
   } = useNodeGraph();
 
   const { getNodeGraph, isValidConnection } = useNodeTraversal();
-  const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys } = useNodeMapping();
+  const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
+    useNodeMapping();
   const { executePipeline } = usePipeline({
     mapNodeToInstruction,
     getFinalOutputKey,
     mapNodesToKeys,
+    mapNodeToUniform,
   });
 
   const onOutputNodeConnected = useCallback(

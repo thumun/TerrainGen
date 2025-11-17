@@ -15,26 +15,31 @@ export const useNodeMapping = () => {
     [],
   );
 
-  // const mapNodeToUniform = useCallback(
-  //   (node: Node): util.UniformConfig | null => {
-  //     console.log(`Mapping node to uniform: ${node.id} (type: ${node.type})`);
-  //     const { type, data } = node;
-  //     const uniformKey = generateReferenceKey(node.id, 'value');
+  const mapNodeToUniform = useCallback(
+    (node: Node, edges: Edge[]): util.UniformConfig | null => {
+      console.log(`Mapping node to uniform: ${node.id} (type: ${node.type})`);
+      const { type, data } = node;
 
-  //     switch (type) {
-  //       case 'vector':
-  //         console.log(`Creating vector uniform with key: ${uniformKey}`, data.vecInfo);
-  //         return {
-  //           key: uniformKey,
-  //           type: 'vec3f',
-  //           value: data.vecInfo,
-  //         } as unknown as util.UniformConfig;
-  //       default:
-  //         return null;
-  //     }
-  //   },
-  //   [generateReferenceKey],
-  // );
+      switch (type) {
+        case 'vector': {
+          const returnedEdges = edges.filter((edge) => edge.targetHandle === 'vec3-out');
+          console.log(`returned edges count: ${returnedEdges.length}`);
+          const uniformKey = 0;
+          //const uniformKey = generateReferenceKey(node.id, returnedEdges[0].id || '');
+
+          console.log(`Creating vector uniform with key: ${uniformKey}`, data.vecInfo);
+          return {
+            key: uniformKey,
+            type: 'vec3f',
+            value: data.vecInfo,
+          } as unknown as util.UniformConfig;
+        }
+        default:
+          return null;
+      }
+    },
+    [generateReferenceKey],
+  );
 
   const getNodeFieldData = (
     handleName: string,
@@ -215,5 +220,6 @@ export const useNodeMapping = () => {
     mapNodeToInstruction,
     getFinalOutputKey,
     mapNodesToKeys,
+    mapNodeToUniform,
   };
 };

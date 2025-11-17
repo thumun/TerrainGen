@@ -6,18 +6,18 @@ import type { MenuPosition, NodeGraphHook } from './type';
 
 // nodes on start up
 const initialNodes: Node[] = [
-  {
-    id: '1',
-    type: 'transform',
-    position: { x: 50, y: 50 },
-    data: { isOutput: false },
-  },
-  {
-    id: '2',
-    type: 'noise',
-    position: { x: 100, y: 50 },
-    data: { isOutput: false },
-  },
+  // {
+  //   id: '1',
+  //   type: 'transform',
+  //   position: { x: 50, y: 50 },
+  //   data: { isOutput: false },
+  // },
+  // {
+  //   id: '2',
+  //   type: 'noise',
+  //   position: { x: 100, y: 50 },
+  //   data: { isOutput: false },
+  // },
   {
     id: '3',
     type: 'math',
@@ -28,24 +28,24 @@ const initialNodes: Node[] = [
       outputType: 'vec3',
     },
   },
-  {
-    id: '4',
-    type: 'mix',
-    position: { x: 300, y: 50 },
-    data: { isOutput: false, outputType: 'vec3' },
-  },
+  // {
+  //   id: '4',
+  //   type: 'mix',
+  //   position: { x: 300, y: 50 },
+  //   data: { isOutput: false, outputType: 'vec3' },
+  // },
   {
     id: '5',
     type: 'terrain',
     position: { x: 400, y: 50 },
     data: { isOutput: true },
   },
-  {
-    id: '6',
-    type: 'noise',
-    position: { x: 100, y: 50 },
-    data: { isOutput: false },
-  },
+  // {
+  //   id: '6',
+  //   type: 'noise',
+  //   position: { x: 100, y: 50 },
+  //   data: { isOutput: false },
+  // },
   {
     id: '7',
     type: 'vector',
