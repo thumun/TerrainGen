@@ -38,7 +38,7 @@ export const useNodeMapping = () => {
           return null;
       }
     },
-    [generateReferenceKey],
+    [],
   );
 
   const getNodeFieldData = (
