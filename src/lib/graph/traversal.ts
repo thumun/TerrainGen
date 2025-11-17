@@ -27,16 +27,16 @@ export function getNodeGraph<TNode extends types.Node>(
       return;
     }
 
-    if (currentNodeId !== nodeId) {
-      result.push(currentNode);
-    }
-
     // Get all the input edges for current node
     const incomingEdges = edges.filter((edge) => edge.target === currentNodeId);
 
     incomingEdges.forEach((edge) => {
       traverse(edge.source);
     });
+
+    if (currentNodeId !== nodeId) {
+      result.push(currentNode);
+    }
   };
 
   traverse(nodeId);
