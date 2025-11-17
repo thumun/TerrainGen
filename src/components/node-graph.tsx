@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -25,8 +25,11 @@ export const fitViewOptions: FitViewOptions = {
 };
 
 export default function NodeGraph() {
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, reactFlowWrapper } =
-    useNodeGraph();
+  /** Ref pointing to div wrapping ReactFlow element. */
+  const reactFlowWrapper = useRef<HTMLDivElement>(null!);
+
+  // hook owning node + edge state, and react flow
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } = useNodeGraph();
 
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
@@ -71,10 +74,7 @@ export default function NodeGraph() {
   );
 
   return (
-    <div
-      ref={reactFlowWrapper}
-      style={{ width: '100%', height: '100vh', position: 'relative' }}
-    >
+    <div ref={reactFlowWrapper} className="relative h-screen w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}

@@ -65,7 +65,6 @@ const initialEdges: Edge[] = [];
 export const useNodeGraph = () => {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
   return {
     nodes,
@@ -73,6 +72,5 @@ export const useNodeGraph = () => {
     onNodesChange,
     onEdgesChange,
     setEdges,
-    reactFlowWrapper,
   };
 };
