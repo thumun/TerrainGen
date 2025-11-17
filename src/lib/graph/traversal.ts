@@ -1,4 +1,4 @@
-import type { Node, Edge, Connection } from './types';
+import type * as types from './types';
 
 /**
  * Runs DFS through node graph. Spits out an array of nodes in reverse order.
@@ -7,10 +7,10 @@ import type { Node, Edge, Connection } from './types';
  *       on to the next... we should prob chat about how this works and go through a whiteboard
  *       example to make sure we all agree on it
  * */
-export function getNodeGraph<TNode extends Node>(
+export function getNodeGraph<TNode extends types.Node>(
   nodeId: string,
   nodes: TNode[],
-  edges: Edge[],
+  edges: types.Edge[],
 ): TNode[] {
   const visited = new Set<string>();
   const result: TNode[] = [];
@@ -44,7 +44,7 @@ export function getNodeGraph<TNode extends Node>(
 }
 
 // only allow connections between nodes if types match
-export function isValidConnection(connection: Connection, nodes: Node[]) {
+export function isValidConnection(connection: types.Connection, nodes: types.Node[]) {
   const sourceNode = nodes.find((node) => node.id === connection.source);
   const targetNode = nodes.find((node) => node.id === connection.target);
 

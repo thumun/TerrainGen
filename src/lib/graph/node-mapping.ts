@@ -2,7 +2,7 @@
  * This file implements methods to convert node graph nodes into the types accepted by `@/lib/shaders/jit`.
  */
 
-import type * as graph from './types';
+import type * as types from './types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as util from '@/lib/shaders/jit/types/util';
@@ -19,8 +19,8 @@ const generateReferenceKey = (nodeId: string, suffix: string): util.ReferenceKey
 };
 
 export function mapNodeToUniform(
-  node: graph.Node,
-  edges: graph.Edge[],
+  node: types.Node,
+  edges: types.Edge[],
 ): util.UniformConfig | null {
   console.log(`Mapping node to uniform: ${node.id} (type: ${node.type})`);
   const { type, data } = node;
@@ -52,8 +52,8 @@ export function mapNodeToUniform(
 export function getNodeFieldData(
   handleName: string,
   isInput: boolean,
-  node: graph.Node,
-  edges: graph.Edge[],
+  node: types.Node,
+  edges: types.Edge[],
   nodeKeyMap: Map<string, Map<string, string>>,
 ): string | undefined {
   console.log(
@@ -96,8 +96,8 @@ export function getNodeFieldData(
 // based on the node type, we create the instruction
 // hard-code-y for now..
 export function mapNodeToInstruction(
-  node: graph.Node,
-  edges: graph.Edge[],
+  node: types.Node,
+  edges: types.Edge[],
   nodeKeyMap: Map<string, Map<string, string>>,
 ): instructions.All | null {
   console.log(`Mapping node to instruction: ${node.id} (type: ${node.type})`);
@@ -151,12 +151,12 @@ export function mapNodeToInstruction(
 }
 
 export function mapNodesToKeys(
-  nodes: graph.Node[],
-  edges: graph.Edge[],
+  nodes: types.Node[],
+  edges: types.Edge[],
 ): Map<string, Map<string, string>> {
   console.log('Starting mapNodesToKeys');
   const nodeKeyMap = new Map<string, Map<string, string>>();
-  const outgoingEdges: graph.Edge[] = [];
+  const outgoingEdges: types.Edge[] = [];
 
   // get each outgoing edge, generate ket based on node id & src handle (edge id name)
   // store each outgoing edge in dict with key in node id info
@@ -204,7 +204,7 @@ export function mapNodesToKeys(
   return nodeKeyMap;
 }
 
-export function getFinalOutputKey(pipeline: graph.Node[]): util.ReferenceKey {
+export function getFinalOutputKey(pipeline: types.Node[]): util.ReferenceKey {
   const lastNode = pipeline[pipeline.length - 1];
 
   // Determine output key based on last node type

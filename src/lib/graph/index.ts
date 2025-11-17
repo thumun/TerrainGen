@@ -1,5 +1,5 @@
 import * as nodeMapping from './node-mapping';
-import type * as graph from './types';
+import type * as types from './types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as shaders from '@/lib/shaders/jit/types/shaders';
@@ -11,7 +11,7 @@ export type PipelineResult = {
   shaderConfig: shaders.VertexShaderConfig;
 };
 
-export function executePipeline(pipeline: graph.Node[], edges: graph.Edge[]): PipelineResult {
+export function executePipeline(pipeline: types.Node[], edges: types.Edge[]): PipelineResult {
   console.log('Executing pipeline with steps:');
 
   // Collect all instructions and uniforms
@@ -19,7 +19,7 @@ export function executePipeline(pipeline: graph.Node[], edges: graph.Edge[]): Pi
   const uniforms: util.UniformConfig[] = [];
 
   // First pass: identify all input nodes that need uniforms
-  pipeline.forEach((node: graph.Node) => {
+  pipeline.forEach((node: types.Node) => {
     const uniformInfo = nodeMapping.mapNodeToUniform(node, edges);
     if (uniformInfo != null) {
       uniforms.push(uniformInfo);
