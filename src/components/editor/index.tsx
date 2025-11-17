@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
+import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
-import NodeGraph from '@/components/node-graph';
 import * as jitShaders from '@/lib/shaders/jit/types/shaders';
 
 export default function Editor() {

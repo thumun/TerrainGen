@@ -1,4 +1,4 @@
-import type { IRenderer } from '@/components/webgpu-canvas';
+import type { IRenderer } from '@/components/common/webgpu-canvas';
 import type * as scene from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
 import { Mesh } from '@/lib/scene/mesh';
