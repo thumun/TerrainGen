@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
 
