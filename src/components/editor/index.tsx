@@ -37,9 +37,7 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            <NodeGraph
-              onDisplacePipelineUpdate={(newConfig) => setDisplacePipelineConfig(newConfig)}
-            />
+            <NodeGraph onDisplacePipelineUpdate={setDisplacePipelineConfig} />
           </div>
         </div>
 
