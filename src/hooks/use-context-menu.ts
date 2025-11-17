@@ -1,8 +1,14 @@
 import { useCallback, useState } from 'react';
 
-import type { MenuPosition } from '@/components/editor/type';
+export type MenuPosition = {
+  id: string | null;
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
+};
 
-type UseContextMenuOptions = {
+export type UseContextMenuOptions = {
   reactFlowWrapper: React.RefObject<HTMLElement>;
 };
 
