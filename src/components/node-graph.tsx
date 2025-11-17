@@ -44,6 +44,10 @@ export default function NodeGraph() {
     mapNodeToUniform,
   });
 
+  // TODO: this should be expanded to trigger whenever ANY node connection is updated
+  //   that is upstream to an output node.
+  //
+  /** Callback triggered upon the connection of an edge to an "output" node. */
   const onOutputNodeConnected = useCallback(
     (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
       const pipeline = [...connectedNodes, outputNode];
@@ -52,6 +56,7 @@ export default function NodeGraph() {
     [executePipeline],
   );
 
+  /** Callback triggered upon the connection of ANY edge to ANY node. */
   const onConnect = useCallback(
     (params: Edge | Connection) => {
       // Create the updated edges first
