@@ -18,14 +18,14 @@ import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
-import type * as shaders from '@/lib/shaders/jit/types/shaders';
+import type * as scene from '@/lib/scene';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
 type NodeGraphProps = {
-  onDisplacePipelineUpdate?: (newPipeline: shaders.DisplaceShaderConfig) => void;
+  onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
 };
 
 export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {

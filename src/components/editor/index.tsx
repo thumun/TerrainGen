@@ -5,11 +5,11 @@ import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 
-import * as jitShaders from '@/lib/shaders/jit/types/shaders';
+import * as scene from '@/lib/scene';
 
 export default function Editor() {
   const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
-    jitShaders.DisplaceShaderConfig | undefined
+    scene.DisplacePipeline | undefined
   >(undefined);
 
   // @ts-expect-error not setting this yet
