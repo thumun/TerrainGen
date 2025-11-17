@@ -96,6 +96,7 @@ export const useNodeMapping = () => {
       console.log(`Mapping node to instruction: ${node.id} (type: ${node.type})`);
       const { type, data } = node;
 
+      /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
       switch (type) {
         case 'math': {
           const mathInstruction = {
@@ -139,6 +140,7 @@ export const useNodeMapping = () => {
         default:
           return null;
       }
+      /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
     },
     [],
   );
@@ -206,12 +208,14 @@ export const useNodeMapping = () => {
       const lastNode = pipeline[pipeline.length - 1];
 
       // Determine output key based on last node type
+      /* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
       switch (lastNode.type) {
         case 'terrain':
           return generateReferenceKey(lastNode.id, 'height');
         default:
           return generateReferenceKey(lastNode.id, 'output');
       }
+      /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
     },
     [generateReferenceKey],
   );

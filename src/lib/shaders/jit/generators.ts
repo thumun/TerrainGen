@@ -70,5 +70,9 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateCombineXYZCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
+    default:
+      throw new Error(
+        `Unknown instruction type "${instruction.type}" passed into generateCode`,
+      );
   }
 }
