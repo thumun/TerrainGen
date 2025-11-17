@@ -15,7 +15,8 @@ export interface Edge {
 /**
  * Connection event from `source node` -> `edge` -> `target node`
  *
- * note: for `sourceTarget` and `targetHandle`, using prefix `type-handleName` allows type enforcement
+ * note: for `sourceTarget` and `targetHandle`, using prefix `type-handleName` allows type
+ *       enforcement when connecting nodes
  */
 export interface Connection {
   source: string | null;
