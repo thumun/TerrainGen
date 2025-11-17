@@ -93,12 +93,9 @@ export const useNodeMapping = () => {
 
         case 'vector': {
           return {
-            type: 'separate-xyz',
+            type: 'vector',
             references: {
-              read: getNodeFieldData('vec3-out', true, node, edges, nodeKeyMap),
-              writeX: data.outputX ? generateReferenceKey(node.id, 'vec3-out') : undefined,
-              writeY: data.outputY ? generateReferenceKey(node.id, 'vec3-out') : undefined,
-              writeZ: data.outputZ ? generateReferenceKey(node.id, 'vec3-out') : undefined,
+              write: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
             },
           } as instructions.All;
         }

@@ -34,6 +34,13 @@ export type CombineXYZ = {
   };
 };
 
+export type Vector = {
+  type: 'vector';
+  references: {
+    write: util.ReferenceKey;
+  };
+};
+
 // --------------------------------------------------------------------------------------------
 // ------ Noise
 // --------------------------------------------------------------------------------------------
@@ -49,4 +56,4 @@ export type Noise = {
   };
 };
 
-export type All = Math | SeparateXYZ | CombineXYZ | Noise;
+export type All = Math | SeparateXYZ | CombineXYZ | Noise | Vector;
