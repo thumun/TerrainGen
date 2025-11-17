@@ -9,9 +9,6 @@ import type {
   OnEdgesChange,
 } from 'reactflow';
 
-import type * as instructions from '@/lib/shaders/jit/types/instructions';
-import type * as shaders from '@/lib/shaders/jit/types/shaders';
-import type * as util from '@/lib/shaders/jit/types/util';
 import MathNode from '@/nodes/math-node';
 import MixNode from '@/nodes/mix-node';
 import NoiseNode from '@/nodes/noise-node';
@@ -19,18 +16,14 @@ import TerrainNode from '@/nodes/terrain-node';
 import TransformNode from '@/nodes/transform-node';
 import VectorNode from '@/nodes/vector-node';
 
+// TODO: move all these types into appropriate locations
+
 export interface MenuPosition {
   id: string | null;
   top?: number;
   left?: number;
   right?: number;
   bottom?: number;
-}
-
-export interface PipelineResult {
-  instructionSet: instructions.All[];
-  uniforms: util.UniformConfig[];
-  shaderConfig: shaders.VertexShaderConfig;
 }
 
 export interface UseNodeGraphResult {

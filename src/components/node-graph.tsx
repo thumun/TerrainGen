@@ -13,11 +13,10 @@ import 'reactflow/dist/style.css';
 
 import ContextMenu from './editor/context-menu';
 import { nodeTypes } from './editor/type';
-import { usePipeline } from './editor/use-pipeline';
 
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
-import * as nodeMapping from '@/lib/graph/node-mapping';
+import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
 
 export const fitViewOptions: FitViewOptions = {
@@ -34,14 +33,6 @@ export default function NodeGraph() {
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
 
-  // TODO: move this into `@/lib/graph/index.ts`
-  const { executePipeline } = usePipeline({
-    mapNodeToInstruction: nodeMapping.mapNodeToInstruction,
-    getFinalOutputKey: nodeMapping.getFinalOutputKey,
-    mapNodesToKeys: nodeMapping.mapNodesToKeys,
-    mapNodeToUniform: nodeMapping.mapNodeToUniform,
-  });
-
   // TODO: this should be expanded to trigger whenever ANY node connection is updated
   //   that is upstream to an output node.
   //
@@ -49,9 +40,9 @@ export default function NodeGraph() {
   const onOutputNodeConnected = useCallback(
     (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
       const pipeline = [...connectedNodes, outputNode];
-      executePipeline(pipeline, edges);
+      graph.executePipeline(pipeline, edges);
     },
-    [executePipeline],
+    [],
   );
 
   /** Callback triggered upon the connection of ANY edge to ANY node. */
