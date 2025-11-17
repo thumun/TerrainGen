@@ -1,11 +1,4 @@
-export interface Node {
-  id: string;
-}
-
-export interface Edge {
-  source: string;
-  target: string;
-}
+import type { Node, Edge, Connection } from './types';
 
 /**
  * Runs DFS through node graph. Spits out an array of nodes in reverse order.
@@ -48,18 +41,6 @@ export function getNodeGraph<TNode extends Node>(
 
   traverse(nodeId);
   return result.reverse();
-}
-
-/**
- * Connection event from `source node` -> `edge` -> `target node`
- *
- * note: for `sourceTarget` and `targetHandle`, using prefix `type-handleName` allows type enforcement
- */
-export interface Connection {
-  source: string | null;
-  target: string | null;
-  sourceHandle: string | null;
-  targetHandle: string | null;
 }
 
 // only allow connections between nodes if types match
