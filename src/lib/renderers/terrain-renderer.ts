@@ -141,7 +141,9 @@ export class TerrainRenderer implements IRenderer {
 
     this.pipeline = this.createRenderPipeline();
 
-    // ---------- terrain compute pipeline -----------
+    // ----------------------------------------------------------------------------------------
+    // --------------------  TERRAIN COMPUTE PIPELINE
+    // ----------------------------------------------------------------------------------------
     this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [
@@ -356,6 +358,25 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
+
+    // create terrain
+    const encoder = this.device.createCommandEncoder();
+
+    // first compute pass: create terrain
+    const computePass = encoder.beginComputePass();
+    computePass.setPipeline(this.terrainComputePipeline);
+    computePass.setBindGroup(0, this.terrainComputeBindGroup);
+    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+
+    // second compute pass: calculate terrain normals
+    computePass.setPipeline(this.normalsComputePipeline);
+    computePass.setBindGroup(0, this.normalsComputeBindGroup);
+    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+    computePass.end();
+
+    this.device.queue.submit([encoder.finish()]);
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -416,36 +437,6 @@ export class TerrainRenderer implements IRenderer {
     // run the pipeline
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
-
-    // first compute pass: create terrain
-    const computePass = encoder.beginComputePass();
-    computePass.setPipeline(this.terrainComputePipeline);
-    computePass.setBindGroup(0, this.terrainComputeBindGroup);
-    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
-    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
-
-    // TODO: custom compute pass: displace terrain
-
-    // third compute pass: calculate terrain normals
-    computePass.setPipeline(this.normalsComputePipeline);
-    computePass.setBindGroup(0, this.normalsComputeBindGroup);
-    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
-    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
-    computePass.end();
-
-    // run second compute pass (custom shader that we generate) only if setup
-    if (this.displacePipelineConfigured) {
-      const computeEncoder = this.device.createCommandEncoder();
-
-      const customComputePass = computeEncoder.beginComputePass();
-      customComputePass.setPipeline(this.customComputePipeline);
-      customComputePass.setBindGroup(0, this.customComputeBindGroup);
-      customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
-      customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
-      customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
-
-      customComputePass.end();
-    }
 
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
@@ -576,5 +567,39 @@ export class TerrainRenderer implements IRenderer {
 
   setMeshUniforms(size: number, resolution: number) {
     this.mesh.updateUniforms(this.device, size, resolution);
+
+    const encoder = this.device.createCommandEncoder();
+
+    // re run compute
+
+    // first compute pass: create terrain
+    const computePass = encoder.beginComputePass();
+    computePass.setPipeline(this.terrainComputePipeline);
+    computePass.setBindGroup(0, this.terrainComputeBindGroup);
+    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+
+    // run second compute pass (custom shader that we generate) only if setup
+    if (this.displacePipelineConfigured) {
+      const computeEncoder = this.device.createCommandEncoder();
+
+      const customComputePass = computeEncoder.beginComputePass();
+      customComputePass.setPipeline(this.customComputePipeline);
+      customComputePass.setBindGroup(0, this.customComputeBindGroup);
+      customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
+      customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
+      customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+
+      customComputePass.end();
+    }
+
+    // third compute pass: calculate terrain normals
+    computePass.setPipeline(this.normalsComputePipeline);
+    computePass.setBindGroup(0, this.normalsComputeBindGroup);
+    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+    computePass.end();
+
+    this.device.queue.submit([encoder.finish()]);
   }
 }
