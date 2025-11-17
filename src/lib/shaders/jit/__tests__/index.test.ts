@@ -25,16 +25,12 @@ const mockVertexShaderConfig: shaders.VertexShaderConfig = {
     {
       key: 'unif1',
       type: 'f32',
-      group: 1,
-      binding: 0,
-      value: null,
+      initialValue: null,
     },
     {
       key: 'unif2',
       type: 'vec3f',
-      group: 1,
-      binding: 1,
-      value: null,
+      initialValue: null,
     },
   ],
   instructionSet: [

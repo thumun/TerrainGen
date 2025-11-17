@@ -36,34 +36,40 @@ export default function NodeGraph() {
   } = useNodeGraph();
 
   const { getNodeGraph, isValidConnection } = useNodeTraversal();
-  const { mapNodeToInstruction, getFinalOutputKey, generateReferenceKey, mapNodeToUniform } =
+  const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
     useNodeMapping();
   const { executePipeline } = usePipeline({
     mapNodeToInstruction,
     getFinalOutputKey,
-    generateReferenceKey,
+    mapNodesToKeys,
     mapNodeToUniform,
   });
 
   const onOutputNodeConnected = useCallback(
-    (outputNode: Node, connectedNodes: Node[]) => {
+    (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
       const pipeline = [...connectedNodes, outputNode];
-      executePipeline(pipeline);
+      executePipeline(pipeline, edges);
     },
     [executePipeline],
   );
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      setEdges((eds) => addEdge(params, eds));
+      // setEdges((eds) => addEdge(params, eds));
+
+      // Create the updated edges first
+      const updatedEdges = addEdge(params, edges);
+
+      // Then set the state
+      setEdges(updatedEdges);
 
       if (params.target) {
         const targetNode = nodes.find((node) => node.id === params.target);
 
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
-          const connectedNodes = getNodeGraph(targetNode.id, nodes, addEdge(params, edges));
-          onOutputNodeConnected(targetNode, connectedNodes);
+          const connectedNodes = getNodeGraph(targetNode.id, nodes, updatedEdges);
+          onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
         }
       }
     },

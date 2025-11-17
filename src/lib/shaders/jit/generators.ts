@@ -2,8 +2,12 @@ import * as shaderUtils from './shader-utils';
 import * as instructions from './types/instructions';
 import type * as util from './types/util';
 
-export function generateUniform(uniform: util.Uniform) {
-  return `@group(${uniform.group}) @binding(${uniform.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
+// TODO: this will likely have to change to use a struct instead
+export function generateUniform(
+  uniform: util.UniformConfig,
+  opts: { group: number; binding: number },
+) {
+  return `@group(${opts.group}) @binding(${opts.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
 
 type ShaderUtil = () => string;
@@ -48,6 +52,12 @@ export function generateCombineXYZCode(
   return { code: `let ${write} = vec3f(${readX}, ${readY}, ${readZ});` };
 }
 
+export function generateVectorCode(instruction: instructions.Vector): GenerateCodeResult {
+  const { write } = instruction.references;
+  // TODO: figure out what this should spit out
+  return { code: `// write param: ${write}` };
+}
+
 export function generateNoiseCode(instruction: instructions.Noise): GenerateCodeResult {
   const { pos, scale, numOctaves, write } = instruction.references;
   return {
@@ -64,6 +74,8 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateSeparateXYZCode(instruction);
     case 'combine-xyz':
       return generateCombineXYZCode(instruction);
+    case 'vector':
+      return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
   }
