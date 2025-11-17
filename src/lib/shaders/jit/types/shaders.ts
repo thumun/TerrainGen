@@ -2,7 +2,7 @@ import type * as instructions from './instructions';
 import type * as util from './util';
 
 type ShaderConfigBase = {
-  uniforms: Array<util.Uniform>;
+  uniforms: Array<util.UniformConfig>;
   instructionSet: Array<instructions.All>;
 };
 

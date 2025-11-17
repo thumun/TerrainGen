@@ -30,7 +30,7 @@ export interface IRenderer {
   dispose: () => void;
 }
 
-interface WebGPUCanvasProps {
+export type WebGPUCanvasProps = {
   createRenderer: PossiblyAwaitable<[WebGPUContext, Stage], IRenderer>;
   /**
    * By taking rendererRef from a prop, we allow higher-level components to own and communicate
@@ -38,7 +38,7 @@ interface WebGPUCanvasProps {
    */
   rendererRef: RefObject<IRenderer | undefined>;
   divClassName?: string;
-}
+};
 
 /**
  * Reusable component to set up a `canvas` component and its context for usage with WebGPU.
@@ -104,10 +104,8 @@ export default function WebGPUCanvas({
 
     // setup scene
     const camera = new Camera(webGPUContext);
-    const mesh = new Plane(10, 100);
+    const mesh = new Plane(20, 100);
     const stage = new Stage(camera, mesh);
-
-    // TODO: Generate shader code from nodes here
 
     const controller = new AbortController();
     const init = async () => {

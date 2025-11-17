@@ -21,8 +21,16 @@ ${heightKey}
 
 const mockDisplaceShaderConfig: shaders.DisplaceShaderConfig = {
   uniforms: [
-    { key: 'unif1', type: 'f32', group: 1, binding: 0 },
-    { key: 'unif2', type: 'vec3f', group: 1, binding: 1 },
+    {
+      key: 'unif1',
+      type: 'f32',
+      initialValue: null,
+    },
+    {
+      key: 'unif2',
+      type: 'vec3f',
+      initialValue: null,
+    },
   ],
   instructionSet: [
     { type: 'separate-xyz', references: { read: 'unif2', writeX: 'unif2_y' } },

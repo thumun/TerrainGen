@@ -8,10 +8,15 @@ import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displ
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
+export type TerrainRendererGlobalParameters = {
+  size: number;
+  resolution: number;
+};
+
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
-  protected mesh: Mesh;
+  mesh: Mesh;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -53,6 +58,15 @@ export class TerrainRenderer implements IRenderer {
   customComputeNodeGraphUniformsBindGroup: GPUBindGroup;
 
   customComputePipeline: GPUComputePipeline;
+
+  // normals pipeline
+  normalsComputeBindGroupLayout: GPUBindGroupLayout;
+  normalsComputeBindGroup: GPUBindGroup;
+
+  normalsComputeUniformBindGroupLayout: GPUBindGroupLayout;
+  normalsComputeUniformBindGroup: GPUBindGroup;
+
+  normalsComputePipeline: GPUComputePipeline;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -127,7 +141,7 @@ export class TerrainRenderer implements IRenderer {
 
     this.pipeline = this.createRenderPipeline();
 
-    // ---------- compute pipeline stuff -----------
+    // ---------- terrain compute pipeline -----------
     this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [
@@ -197,6 +211,10 @@ export class TerrainRenderer implements IRenderer {
       },
     });
 
+    // ----------------------------------------------------------------------------------------
+    // --------------------  CUSTOM COMPUTE PIPELINE
+    // ----------------------------------------------------------------------------------------
+
     this.customComputeBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom compute bind group layout',
       entries: [
@@ -265,6 +283,79 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'main',
       },
     });
+
+    // ----------------------------------------------------------------------------------------
+    // --------------------  NORMALS COMPUTE PIPELINE
+    // ----------------------------------------------------------------------------------------
+
+    this.normalsComputeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'normals compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          // indices
+          binding: 1,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.normalsComputeBindGroup = this.device.createBindGroup({
+      label: 'normals compute bind group',
+      layout: this.normalsComputeBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
+        { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
+      ],
+    });
+
+    this.normalsComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'normals compute uniform bind group layout',
+      entries: [
+        {
+          // uniform containing mesh size and resolution
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.normalsComputeUniformBindGroup = this.device.createBindGroup({
+      label: 'normals compute uniform bind group',
+      layout: this.normalsComputeUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+    });
+
+    this.normalsComputePipeline = this.device.createComputePipeline({
+      label: 'normals compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'normals compute pipeline layout',
+        bindGroupLayouts: [
+          this.normalsComputeBindGroupLayout,
+          this.normalsComputeUniformBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'normals compute shader',
+          code: shaders.normalsComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -326,14 +417,19 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
 
-    // run the compute pass
+    // first compute pass: create terrain
     const computePass = encoder.beginComputePass();
     computePass.setPipeline(this.terrainComputePipeline);
     computePass.setBindGroup(0, this.terrainComputeBindGroup);
     computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
-    // what's the optimal amount of workgroups to dispatch?
-    // i guess this should depend on the vertex count
+    // TODO: custom compute pass: displace terrain
+
+    // third compute pass: calculate terrain normals
+    computePass.setPipeline(this.normalsComputePipeline);
+    computePass.setBindGroup(0, this.normalsComputeBindGroup);
+    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
 
@@ -476,5 +572,9 @@ export class TerrainRenderer implements IRenderer {
 
   disableDisplacePipeline() {
     this.displacePipelineConfigured = false;
+  }
+
+  setMeshUniforms(size: number, resolution: number) {
+    this.mesh.updateUniforms(this.device, size, resolution);
   }
 }

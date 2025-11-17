@@ -25,8 +25,8 @@ function NoiseNode() {
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
-        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
+        id="float-out"
+        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
       />
 
       <div className="mb-2 text-center">
@@ -40,10 +40,10 @@ function NoiseNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-in"
+          id="vec3-pos-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
         />
-        <label className="flex-1 text-sm font-medium">Input</label>
+        <label className="flex-1 text-sm font-medium">Position</label>
       </div>
 
       {/* Scale Section */}
@@ -76,11 +76,11 @@ function NoiseNode() {
         <Handle
           type="target"
           position={Position.Left}
-          id="float-density-in"
+          id="float-numOctaves-in"
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Density</label>
+          <label className="text-sm font-medium">NumOctaves</label>
           <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
             {density.toFixed(2)}
           </span>

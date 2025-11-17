@@ -26,6 +26,10 @@ const importRules = {
   ],
 };
 
+const typescriptRules = {
+  '@typescript-eslint/switch-exhaustiveness-check': 'warn',
+};
+
 export default defineConfig([
   {
     name: 'ignores',
@@ -67,6 +71,6 @@ export default defineConfig([
         ...globals.browser,
       },
     },
-    rules: { ...importRules },
+    rules: { ...importRules, ...typescriptRules },
   },
 ]);

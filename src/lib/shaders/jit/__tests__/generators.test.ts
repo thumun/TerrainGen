@@ -5,12 +5,14 @@ import * as shaderUtils from '../shader-utils';
 
 describe('generateUniform', () => {
   it('generates uniform input code', () => {
-    const result = generators.generateUniform({
-      key: 'unif1',
-      type: 'f32',
-      group: 1,
-      binding: 2,
-    });
+    const result = generators.generateUniform(
+      {
+        key: 'unif1',
+        type: 'f32',
+        initialValue: 0,
+      },
+      { group: 1, binding: 2 },
+    );
     expect(result).toBe(`@group(1) @binding(2) var<uniform> unif1 : f32;`);
   });
 });
