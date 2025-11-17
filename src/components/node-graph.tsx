@@ -13,12 +13,12 @@ import 'reactflow/dist/style.css';
 
 import ContextMenu from './editor/context-menu';
 import { useNodeMapping } from './editor/map-instructions';
-import { useNodeTraversal } from './editor/node-graph-traversal';
 import { nodeTypes } from './editor/type';
 import { usePipeline } from './editor/use-pipeline';
 
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { useNodeGraph } from '@/hooks/use-node-graph';
+import { getNodeGraph, isValidConnection } from '@/lib/graph/traversal';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
@@ -34,7 +34,6 @@ export default function NodeGraph() {
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
 
-  const { getNodeGraph, isValidConnection } = useNodeTraversal();
   const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
     useNodeMapping();
   const { executePipeline } = usePipeline({
@@ -75,7 +74,7 @@ export default function NodeGraph() {
         }
       }
     },
-    [setEdges, nodes, edges, getNodeGraph, onOutputNodeConnected],
+    [setEdges, nodes, edges, onOutputNodeConnected],
   );
 
   return (
