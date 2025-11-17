@@ -1,8 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useNodesState, useEdgesState } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-
-import type { MenuPosition, NodeGraphHook } from './type';
 
 // nodes on start up
 const initialNodes: Node[] = [
@@ -64,43 +62,17 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 // node graph setup / handler
-export const useNodeGraph = (): NodeGraphHook => {
+export const useNodeGraph = () => {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [menu, setMenu] = useState<MenuPosition | null>(null);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-
-  // logic for menu event
-  const onPaneContextMenu = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault();
-
-      if (!reactFlowWrapper.current) return;
-
-      const pane = reactFlowWrapper.current.getBoundingClientRect();
-      setMenu({
-        id: '10',
-        top: event.clientY < pane.height ? event.clientY : undefined,
-        left: event.clientX < pane.width ? event.clientX : undefined,
-        right: event.clientX >= pane.width ? pane.width - event.clientX : undefined,
-        bottom: event.clientY >= pane.height ? pane.height - event.clientY : undefined,
-      });
-    },
-    [setMenu],
-  );
-
-  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
   return {
     nodes,
     edges,
-    menu,
     onNodesChange,
     onEdgesChange,
     setEdges,
-    setMenu,
     reactFlowWrapper,
-    onPaneContextMenu,
-    onPaneClick,
   };
 };

@@ -14,26 +14,22 @@ import 'reactflow/dist/style.css';
 import ContextMenu from './editor/context-menu';
 import { useNodeMapping } from './editor/map-instructions';
 import { useNodeTraversal } from './editor/node-graph-traversal';
-import { useNodeGraph } from './editor/node-pane-menu';
 import { nodeTypes } from './editor/type';
 import { usePipeline } from './editor/use-pipeline';
+
+import { useContextMenu } from '@/hooks/use-context-menu';
+import { useNodeGraph } from '@/hooks/use-node-graph';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
 export default function NodeGraph() {
-  const {
-    nodes,
-    edges,
-    menu,
-    onNodesChange,
-    onEdgesChange,
-    setEdges,
-    reactFlowWrapper,
-    onPaneContextMenu,
-    onPaneClick,
-  } = useNodeGraph();
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, reactFlowWrapper } =
+    useNodeGraph();
+
+  // hook to manage context menu state + position
+  const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
 
   const { getNodeGraph, isValidConnection } = useNodeTraversal();
   const { mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys, mapNodeToUniform } =
@@ -55,8 +51,6 @@ export default function NodeGraph() {
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      // setEdges((eds) => addEdge(params, eds));
-
       // Create the updated edges first
       const updatedEdges = addEdge(params, edges);
 

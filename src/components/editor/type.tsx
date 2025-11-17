@@ -33,7 +33,7 @@ export interface PipelineResult {
   shaderConfig: shaders.VertexShaderConfig;
 }
 
-export interface NodeGraphHook {
+export interface UseNodeGraphResult {
   nodes: Node[];
   edges: Edge[];
   menu: MenuPosition | null;
