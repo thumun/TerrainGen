@@ -53,15 +53,21 @@ export default function NodeGraph() {
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-      setEdges((eds) => addEdge(params, eds));
+      // setEdges((eds) => addEdge(params, eds));
+
+      // Create the updated edges first
+      const updatedEdges = addEdge(params, edges);
+
+      // Then set the state
+      setEdges(updatedEdges);
 
       if (params.target) {
         const targetNode = nodes.find((node) => node.id === params.target);
 
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
-          const connectedNodes = getNodeGraph(targetNode.id, nodes, addEdge(params, edges));
-          onOutputNodeConnected(targetNode, connectedNodes, edges);
+          const connectedNodes = getNodeGraph(targetNode.id, nodes, updatedEdges);
+          onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
         }
       }
     },
