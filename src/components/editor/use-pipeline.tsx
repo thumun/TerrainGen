@@ -14,14 +14,12 @@ interface UsePipelineProps {
     nodeKeyMap: Map<string, Map<string, string>>,
   ) => instructions.All | null;
   getFinalOutputKey: (nodeTypes: Node[]) => util.ReferenceKey;
-  mapNodeToUniform: (node: Node) => util.UniformConfig | null;
   mapNodesToKeys: (nodes: Node[], edges: Edge[]) => Map<string, Map<string, string>>;
 }
 
 export const usePipeline = ({
   mapNodeToInstruction,
   getFinalOutputKey,
-  mapNodeToUniform,
   mapNodesToKeys,
 }: UsePipelineProps) => {
   const executePipeline = useCallback(
@@ -33,12 +31,12 @@ export const usePipeline = ({
       const uniforms: util.UniformConfig[] = [];
 
       // First pass: identify all input nodes that need uniforms
-      pipeline.forEach((node: Node) => {
-        const uniformInfo = mapNodeToUniform(node);
-        if (uniformInfo != null) {
-          uniforms.push(uniformInfo);
-        }
-      });
+      // pipeline.forEach((node: Node) => {
+      //   const uniformInfo = mapNodeToUniform(node);
+      //   if (uniformInfo != null) {
+      //     uniforms.push(uniformInfo);
+      //   }
+      // });
 
       // Second pass: traverse and set up uniform input/output
       const nodeKeyMap = mapNodesToKeys(pipeline, edges);
@@ -71,7 +69,7 @@ export const usePipeline = ({
         shaderConfig,
       };
     },
-    [mapNodeToInstruction, getFinalOutputKey, mapNodeToUniform, mapNodesToKeys],
+    [mapNodeToInstruction, getFinalOutputKey, mapNodesToKeys],
   );
 
   return {
