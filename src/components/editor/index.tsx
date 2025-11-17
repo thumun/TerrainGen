@@ -26,6 +26,10 @@ export default function Editor() {
     resolution: 100,
   });
 
+  // TODO: this is unnecessary, should be ok to just pass `globalParams` and `setGlobalParams`
+  //       into the sliders, and have the `<TerrainRenderer />` automatically trigger the
+  //       renderer methods when `globalParams` change at all
+  //
   // global reference to the renderer
   const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
 
