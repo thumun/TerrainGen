@@ -17,19 +17,18 @@ const initialNodes: Node[] = [
   // },
   {
     id: '3',
-    type: 'math',
+    type: 'mathVec3',
     position: { x: 200, y: 50 },
     data: {
       isOutput: false,
       operationVal: 'add',
-      outputType: 'vec3',
     },
   },
   // {
   //   id: '4',
-  //   type: 'mix',
+  //   type: 'mixVec3',
   //   position: { x: 300, y: 50 },
-  //   data: { isOutput: false, outputType: 'vec3' },
+  //   data: { isOutput: false },
   // },
   {
     id: '5',
