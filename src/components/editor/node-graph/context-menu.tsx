@@ -39,12 +39,11 @@ const baseNodes: NodeType[] = [
     data: {
       isOutput: false,
       operationVal: 'add',
-      outputType: 'float',
     },
   },
   {
     type: 'mixVec3', // 3
-    data: { isOutput: false, outputType: 'float' },
+    data: { isOutput: false },
   },
   {
     type: 'terrain', // 4
@@ -59,12 +58,11 @@ const baseNodes: NodeType[] = [
     data: {
       isOutput: false,
       operationVal: 'add',
-      outputType: 'float',
     },
   },
   {
     type: 'mixFloat', // 7
-    data: { isOutput: false, outputType: 'float' },
+    data: { isOutput: false },
   },
 ];
 
