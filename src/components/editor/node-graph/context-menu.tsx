@@ -64,6 +64,10 @@ const baseNodes: NodeType[] = [
     type: 'mixFloat', // 7
     data: { isOutput: false },
   },
+  {
+    type: 'separate', // 8
+    data: { isOutput: false },
+  },
 ];
 
 export default function ContextMenu({
@@ -152,6 +156,12 @@ export default function ContextMenu({
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Mix (Float)
+      </button>
+      <button
+        onClick={() => duplicateNode(8)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Separate
       </button>
     </div>
   );
