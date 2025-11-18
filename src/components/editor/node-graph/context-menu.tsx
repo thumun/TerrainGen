@@ -68,6 +68,10 @@ const baseNodes: NodeType[] = [
     type: 'separate', // 8
     data: { isOutput: false },
   },
+  {
+    type: 'combine', // 9
+    data: { isOutput: false },
+  },
 ];
 
 export default function ContextMenu({
@@ -162,6 +166,12 @@ export default function ContextMenu({
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Separate
+      </button>
+      <button
+        onClick={() => duplicateNode(9)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Combine
       </button>
     </div>
   );

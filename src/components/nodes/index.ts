@@ -1,5 +1,6 @@
 import type { NodeTypes } from 'reactflow';
 
+import CombineNode from './combine-node';
 import MathNodeFloat from './math-node-float';
 import MathNodeVec3 from './math-node-vec3';
 import MixNodeFloat from './mix-node-float';
@@ -20,4 +21,5 @@ export const nodeTypes: NodeTypes = {
   terrain: TerrainNode,
   vector: VectorNode,
   separate: SeparateNode,
+  combine: CombineNode,
 };
