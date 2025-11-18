@@ -4,7 +4,7 @@ function CombineNode() {
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
       <Handle
-        type="target"
+        type="source"
         position={Position.Right}
         id="vec3-out"
         className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500`}
@@ -20,7 +20,7 @@ function CombineNode() {
       {/* Translate Section */}
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
-          type="source"
+          type="target"
           position={Position.Left}
           id="float-x-in"
           className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
@@ -33,7 +33,7 @@ function CombineNode() {
       </div>
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
-          type="source"
+          type="target"
           position={Position.Left}
           id="float-y-in"
           className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
@@ -46,7 +46,7 @@ function CombineNode() {
       </div>
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
-          type="source"
+          type="target"
           position={Position.Left}
           id="float-z-in"
           className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
