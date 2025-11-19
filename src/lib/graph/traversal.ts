@@ -1,6 +1,37 @@
 import type * as types from './types';
 
 /**
+ * Traverses forward through a node graph, returning a list of all downstream nodes.
+ * Used to collect output nodes which require pipeline regeneration from an event.
+ *
+ * @param nodeId The node ID to start traversal from
+ * @returns A list of node IDs downstream from the starting node
+ */
+export function getDownstreamNodeIds<TNode extends types.Node>(
+  nodeId: string,
+  nodes: TNode[],
+  edges: types.Edge[],
+): string[] {
+  const visitedIds = new Set<string>();
+
+  const traverse = (currentNodeId: string) => {
+    if (visitedIds.has(currentNodeId)) return;
+
+    visitedIds.add(currentNodeId);
+
+    const currentNode = nodes.find((n) => n.id === currentNodeId);
+    if (!currentNode) return;
+
+    const incomingEdges = edges.filter((edge) => edge.source === currentNodeId);
+    incomingEdges.forEach((edge) => traverse(edge.target));
+  };
+
+  traverse(nodeId);
+
+  return [...visitedIds];
+}
+
+/**
  * Runs DFS through node graph. Spits out an array of nodes, ordered such that all dependent
  * nodes occur after their dependencies.
  */

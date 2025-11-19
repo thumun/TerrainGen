@@ -3,6 +3,72 @@ import { describe, expect, it } from 'vitest';
 import * as traversal from '../traversal';
 import type * as types from '../types';
 
+describe('getDownstreamNodeIds', () => {
+  it('gets downstream nodes from simple node structure', () => {
+    const demoNodes: types.Node[] = [
+      { id: 'foo', data: 'silly node 1' },
+      { id: 'bar', data: 'silly node 2' },
+      { id: 'bog', data: 'silly node 3' },
+    ];
+    const demoEdges: types.Edge[] = [
+      { id: 'bug', source: 'foo', target: 'bar' },
+      { id: 'baz', source: 'bar', target: 'bog' },
+    ];
+
+    const resultingNodeIds = traversal.getDownstreamNodeIds('bar', demoNodes, demoEdges);
+    resultingNodeIds.sort();
+    expect(resultingNodeIds).toEqual(['bar', 'bog']);
+  });
+
+  it('gets downstream nodes from complex node structure', () => {
+    const demoNodes: types.Node[] = [
+      { id: 'a', data: 'silly node 1' },
+      { id: 'b', data: 'silly node 2' },
+      { id: 'c', data: 'silly node 3' },
+      { id: 'd', data: 'silly node 3' },
+      { id: 'e', data: 'silly node 3' },
+      { id: 'f', data: 'silly node 3' },
+    ];
+    const demoEdges: types.Edge[] = [
+      { id: '1', source: 'a', target: 'b' },
+      { id: '2', source: 'a', target: 'c' },
+      { id: '3', source: 'b', target: 'd' },
+      { id: '4', source: 'b', target: 'e' },
+      { id: '5', source: 'c', target: 'e' },
+      { id: '6', source: 'd', target: 'f' },
+      { id: '7', source: 'e', target: 'f' },
+    ];
+
+    const resultingNodeIds = traversal.getDownstreamNodeIds('b', demoNodes, demoEdges);
+    resultingNodeIds.sort();
+    expect(resultingNodeIds).toEqual(['b', 'd', 'e', 'f']);
+  });
+
+  it('gets downstream nodes from complex node structure with random order', () => {
+    const demoNodes: types.Node[] = [
+      { id: 'e', data: 'silly node 3' },
+      { id: 'c', data: 'silly node 3' },
+      { id: 'd', data: 'silly node 3' },
+      { id: 'b', data: 'silly node 2' },
+      { id: 'f', data: 'silly node 3' },
+      { id: 'a', data: 'silly node 1' },
+    ];
+    const demoEdges: types.Edge[] = [
+      { id: '7', source: 'e', target: 'f' },
+      { id: '1', source: 'a', target: 'b' },
+      { id: '3', source: 'b', target: 'd' },
+      { id: '4', source: 'b', target: 'e' },
+      { id: '6', source: 'd', target: 'f' },
+      { id: '5', source: 'c', target: 'e' },
+      { id: '2', source: 'a', target: 'c' },
+    ];
+
+    const resultingNodeIds = traversal.getDownstreamNodeIds('b', demoNodes, demoEdges);
+    resultingNodeIds.sort();
+    expect(resultingNodeIds).toEqual(['b', 'd', 'e', 'f']);
+  });
+});
+
 describe('getOrderedNodes', () => {
   it('creates proper ordering of simple node structure', () => {
     const demoNodes: Array<types.Node> = [
