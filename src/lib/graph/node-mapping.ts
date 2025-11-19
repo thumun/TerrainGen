@@ -18,6 +18,19 @@ const generateReferenceKey = (nodeId: string, suffix: string): util.ReferenceKey
   return `${nodeId}_${suffix}`;
 };
 
+/**
+ * Determines if a node is an "output" node (such as "terrain") and should thus trigger some
+ * pipeline reconstruction
+ */
+export function isOutputNode(node: types.Node) {
+  return (node.data as { isOutput?: boolean }).isOutput;
+}
+
+/** Generates a consistent handle key for a specific node's outgoing handle. */
+export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: string }) {
+  return `hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`;
+}
+
 export function mapNodeToUniform(
   node: types.Node,
   edges: types.Edge[],
