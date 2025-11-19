@@ -1,13 +1,10 @@
 import type * as types from './types';
 
 /**
- * Runs DFS through node graph. Spits out an array of nodes in reverse order.
- *
- * @todo Should this be BFS instead? that way each layer is fully "exhausted" before moving
- *       on to the next... we should prob chat about how this works and go through a whiteboard
- *       example to make sure we all agree on it
- * */
-export function getNodeGraph<TNode extends types.Node>(
+ * Runs DFS through node graph. Spits out an array of nodes, ordered such that all dependent
+ * nodes occur after their dependencies.
+ */
+export function getOrderedNodes<TNode extends types.Node>(
   nodeId: string,
   nodes: TNode[],
   edges: types.Edge[],
@@ -34,13 +31,11 @@ export function getNodeGraph<TNode extends types.Node>(
       traverse(edge.source);
     });
 
-    if (currentNodeId !== nodeId) {
-      result.push(currentNode);
-    }
+    result.push(currentNode);
   };
 
   traverse(nodeId);
-  return result.reverse();
+  return result;
 }
 
 // only allow connections between nodes if types match

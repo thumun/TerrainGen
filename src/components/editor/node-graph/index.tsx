@@ -73,7 +73,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
 
         if (targetNode?.data?.isOutput === true) {
           console.log('Connected to output node:', targetNode);
-          const connectedNodes = traversal.getNodeGraph(targetNode.id, nodes, updatedEdges);
+          const connectedNodes = traversal.getOrderedNodes(targetNode.id, nodes, updatedEdges);
           onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
         }
       }
