@@ -13,7 +13,7 @@ function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
 
   const vecInfo = data.vecInfo || [0, 0, 0];
 
-  const onTranslateChange = useCallback(
+  const onVecChange = useCallback(
     (axis: 'x' | 'y' | 'z', value: string) => {
       setNodeData(id, (oldData: VectorNodeData) => {
         const numValue = parseFloat(value) || 0;
@@ -59,7 +59,7 @@ function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
               value={vecInfo[0]}
-              onChange={(e) => onTranslateChange('x', e.target.value)}
+              onChange={(e) => onVecChange('x', e.target.value)}
               type="number"
             />
           </div>
@@ -68,7 +68,7 @@ function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
               value={vecInfo[1]}
-              onChange={(e) => onTranslateChange('y', e.target.value)}
+              onChange={(e) => onVecChange('y', e.target.value)}
               type="number"
             />
           </div>
@@ -77,7 +77,7 @@ function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
               value={vecInfo[2]}
-              onChange={(e) => onTranslateChange('z', e.target.value)}
+              onChange={(e) => onVecChange('z', e.target.value)}
               type="number"
             />
           </div>
