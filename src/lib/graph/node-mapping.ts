@@ -78,14 +78,6 @@ type UniformMapping<TNode extends { type: string }, TUniform> = {
 // ------ NODE MAPPING IMPLEMENTATIONS
 // --------------------------------------------------------------------------------------------
 
-/**
- * Determines if a node is an "output" node (such as "terrain") and should thus trigger some
- * pipeline reconstruction
- */
-export function isOutputNode(node: types.Node) {
-  return (node.data as { isOutput?: boolean }).isOutput;
-}
-
 function formatKey(key: string) {
   return key.replaceAll('-', '_').replaceAll(' ', '');
 }

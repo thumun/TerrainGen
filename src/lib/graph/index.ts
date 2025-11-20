@@ -15,12 +15,10 @@ export function generateUpdatedPipelines(
   edges: types.Edge[],
 ): OutputNodeUpdates {
   const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
-  const downstreamOutputNodes = nodes
-    .filter((node) => downstreamNodeIds.has(node.id))
-    .filter((node) => nodeMapping.isOutputNode(node));
+  const downstreamNodes = nodes.filter((node) => downstreamNodeIds.has(node.id));
 
   // find displace pipeline
-  const terrainNode = downstreamOutputNodes.find((node) => node.type === 'terrain');
+  const terrainNode = downstreamNodes.find((node) => node.type === 'terrain');
   let displacePipeline: scene.DisplacePipeline | undefined = undefined;
   if (terrainNode) {
     const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
