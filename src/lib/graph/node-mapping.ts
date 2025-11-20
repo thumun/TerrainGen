@@ -2,6 +2,7 @@
  * This file implements methods to convert node graph nodes into the types accepted by `@/lib/shaders/jit`.
  */
 
+import type * as nodeTypes from './node-types';
 import type * as types from './types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
@@ -26,65 +27,85 @@ export function isOutputNode(node: types.Node) {
   return (node.data as { isOutput?: boolean }).isOutput;
 }
 
-/** Generates a consistent handle key for a specific node's outgoing handle. */
-export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: string }) {
-  return `hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`;
+function formatKey(key: string) {
+  return key.replaceAll('-', '_').replaceAll(' ', '');
 }
 
-export function getInstruction(node: types.Node, edges: types.Edge[]): instructions.All {
-  // const { type, data } = node;
+/** Generates a consistent handle key for a specific node's outgoing handle. */
+export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: string }) {
+  return formatKey(`hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`);
+}
 
-  return { type: 'math', operation: 'add', references: { readA: '', readB: '', write: '' } };
+const mathOperationMapping: {
+  [key in nodeTypes.MathVec3['data']['operationVal']]: instructions.Math['operation'];
+} = {
+  Add: 'add',
+  Sub: 'sub',
+  Mult: 'mult',
+  Div: 'div',
+};
 
-  // const incomingEdges = Object.fromEntries(
-  //   edges
-  //     .filter((edge) => edge.target === node.id)
-  //     .map((edge) => [edge.targetHandle as string, edge]),
-  // );
+/**
+ * For a given node type, generate an instruction.
+ *
+ * @param node                  The given node
+ * @param getIncomingHandleKey  Callback to get the outgoing handle key from an upstream node,
+ *                              given an incoming handle ID for this current node
+ */
+type InstructionGenerator<
+  TNode extends { type: string },
+  TNodeType extends TNode['type'],
+  TInstruction,
+> = (
+  node: nodeTypes.All & { id: string; type: TNodeType },
+  getIncomingHandleKey: (handle: string) => string,
+) => TInstruction;
 
-  // switch (type) {
-  //   case 'math': {
-  //     const mathInstruction = {
-  //       type: 'math',
-  //       operation: (data as { operationVal: instructions.Math['operation'] }).operationVal,
-  //       references: {
-  //         readA: node,
-  //         readB: getNodeFieldData('vec3-val2-in', true, node, edges, nodeKeyMap),
-  //         write: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
-  //       },
-  //     } as instructions.Math;
-  //     console.log(`Created math instruction:`, mathInstruction);
-  //     return mathInstruction;
-  //   }
+/**
+ * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
+ * based on a given node's content.
+ */
+type InstructionMapping<TNode extends { type: string }, TInstruction> = {
+  [nodeType in TNode['type']]: InstructionGenerator<TNode, nodeType, TInstruction>;
+};
 
-  //   case 'vector': {
-  //     const vecInstruction = {
-  //       type: 'vector',
-  //       references: {
-  //         write: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
-  //       },
-  //     } as instructions.Vector;
-  //     console.log(`Created vector instruction:`, vecInstruction);
-  //     return vecInstruction;
-  //   }
+/**
+ * Implementation of `InstructionMapping` for our node types and instructions
+ */
+const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
+  mathVec3: (node, getIncomingHandleKey): instructions.Math => ({
+    type: 'math',
+    operation: mathOperationMapping[node.data.operationVal],
+    references: {
+      readA: getIncomingHandleKey('vec3-val1-in'),
+      readB: getIncomingHandleKey('vec3-val2-in'),
+      write: getHandleKey({ sourceNodeId: node.id, outgoingHandleId: 'vec3-out' }),
+    },
+  }),
+};
 
-  //   case 'noise': {
-  //     const noiseInstruction = {
-  //       type: 'noise',
-  //       references: {
-  //         pos: getNodeFieldData('vec3-pos-in', true, node, edges, nodeKeyMap),
-  //         scale: getNodeFieldData('vec3-scale-in', true, node, edges, nodeKeyMap),
-  //         numOctaves: getNodeFieldData('vec3-numOctaves-in', true, node, edges, nodeKeyMap),
-  //         write: getNodeFieldData('float-out', false, node, edges, nodeKeyMap),
-  //       },
-  //     } as instructions.Noise;
-  //     console.log(`Created noise instruction:`, noiseInstruction);
-  //     return noiseInstruction;
-  //   }
+export function getInstruction(
+  node: nodeTypes.All & { id: string },
+  edges: types.Edge[],
+): instructions.All {
+  const incomingHandlesToEdges = Object.fromEntries(
+    edges
+      .filter((edge) => edge.target === node.id)
+      .map((edge) => [edge.targetHandle as string, edge]),
+  );
 
-  //   default:
-  //     return null;
-  // }
+  return INSTRUCTION_MAPPING[node.type](
+    node,
+
+    // callback to get output handle key on another node for a given input handle on this node
+    (handle) => {
+      const incomingEdge = incomingHandlesToEdges[handle];
+      return getHandleKey({
+        sourceNodeId: incomingEdge.source,
+        outgoingHandleId: incomingEdge.sourceHandle as string,
+      });
+    },
+  );
 }
 
 export function mapNodeToUniform(

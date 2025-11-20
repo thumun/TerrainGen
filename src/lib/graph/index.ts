@@ -1,4 +1,5 @@
 import * as nodeMapping from './node-mapping';
+import type * as nodeTypes from './node-types';
 import * as traversal from './traversal';
 import type * as types from './types';
 
@@ -10,7 +11,7 @@ export type OutputNodeUpdates = { displacePipeline?: scene.DisplacePipeline };
 
 export function generateUpdatedPipelines(
   nodeId: string,
-  nodes: types.Node[],
+  nodes: (types.Node & nodeTypes.All)[],
   edges: types.Edge[],
 ): OutputNodeUpdates {
   const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
@@ -18,7 +19,7 @@ export function generateUpdatedPipelines(
     .filter((node) => downstreamNodeIds.has(node.id))
     .filter((node) => nodeMapping.isOutputNode(node));
 
-  // displace pipeline
+  // find displace pipeline
   const terrainNode = downstreamOutputNodes.find((node) => node.type === 'terrain');
   let displacePipeline: scene.DisplacePipeline | undefined = undefined;
   if (terrainNode) {
