@@ -1,9 +1,49 @@
 import * as nodeMapping from './node-mapping';
+import * as traversal from './traversal';
 import type * as types from './types';
 
 import type * as scene from '@/lib/scene';
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as util from '@/lib/shaders/jit/types/util';
+
+export type OutputNodeUpdates = { displacePipeline?: scene.DisplacePipeline };
+
+export function generateUpdatedPipelines(
+  nodeId: string,
+  nodes: types.Node[],
+  edges: types.Edge[],
+): OutputNodeUpdates {
+  const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
+  const downstreamOutputNodes = nodes
+    .filter((node) => downstreamNodeIds.has(node.id))
+    .filter((node) => nodeMapping.isOutputNode(node));
+
+  // displace pipeline
+  const terrainNode = downstreamOutputNodes.find((node) => node.type === 'terrain');
+  let displacePipeline: scene.DisplacePipeline | undefined = undefined;
+  if (terrainNode) {
+    const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
+
+    // generate uniforms
+    const uniforms = orderedDependencyNodes
+      .map((node) => {
+        return nodeMapping.mapNodeToUniform(node, edges);
+      })
+      .filter((uniform) => uniform !== null);
+
+    // generate instruction set
+    const instructionSet = orderedDependencyNodes.map((node) => {
+      return nodeMapping.getInstruction(node, edges);
+    });
+
+    // TODO: get height key
+    const outputs: scene.DisplacePipeline['outputs'] = { height: 'TODO' };
+
+    displacePipeline = { instructionSet, uniforms, outputs };
+  }
+
+  return { displacePipeline };
+}
 
 export type PipelineResult = {
   // TODO: these two below are unnecessary I think

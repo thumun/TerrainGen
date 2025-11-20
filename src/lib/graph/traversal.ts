@@ -34,6 +34,8 @@ export function getDownstreamNodeIds<TNode extends types.Node>(
 /**
  * Runs DFS through node graph. Spits out an array of nodes, ordered such that all dependent
  * nodes occur after their dependencies.
+ *
+ * Output does not include the node whose ID is provided as an argument.
  */
 export function getOrderedNodes<TNode extends types.Node>(
   nodeId: string,
@@ -62,7 +64,8 @@ export function getOrderedNodes<TNode extends types.Node>(
       traverse(edge.source);
     });
 
-    result.push(currentNode);
+    // don't add the input node lol
+    if (currentNodeId !== nodeId) result.push(currentNode);
   };
 
   traverse(nodeId);

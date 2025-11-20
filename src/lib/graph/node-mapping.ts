@@ -31,6 +31,62 @@ export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: str
   return `hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`;
 }
 
+export function getInstruction(node: types.Node, edges: types.Edge[]): instructions.All {
+  // const { type, data } = node;
+
+  return { type: 'math', operation: 'add', references: { readA: '', readB: '', write: '' } };
+
+  // const incomingEdges = Object.fromEntries(
+  //   edges
+  //     .filter((edge) => edge.target === node.id)
+  //     .map((edge) => [edge.targetHandle as string, edge]),
+  // );
+
+  // switch (type) {
+  //   case 'math': {
+  //     const mathInstruction = {
+  //       type: 'math',
+  //       operation: (data as { operationVal: instructions.Math['operation'] }).operationVal,
+  //       references: {
+  //         readA: node,
+  //         readB: getNodeFieldData('vec3-val2-in', true, node, edges, nodeKeyMap),
+  //         write: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
+  //       },
+  //     } as instructions.Math;
+  //     console.log(`Created math instruction:`, mathInstruction);
+  //     return mathInstruction;
+  //   }
+
+  //   case 'vector': {
+  //     const vecInstruction = {
+  //       type: 'vector',
+  //       references: {
+  //         write: getNodeFieldData('vec3-out', false, node, edges, nodeKeyMap),
+  //       },
+  //     } as instructions.Vector;
+  //     console.log(`Created vector instruction:`, vecInstruction);
+  //     return vecInstruction;
+  //   }
+
+  //   case 'noise': {
+  //     const noiseInstruction = {
+  //       type: 'noise',
+  //       references: {
+  //         pos: getNodeFieldData('vec3-pos-in', true, node, edges, nodeKeyMap),
+  //         scale: getNodeFieldData('vec3-scale-in', true, node, edges, nodeKeyMap),
+  //         numOctaves: getNodeFieldData('vec3-numOctaves-in', true, node, edges, nodeKeyMap),
+  //         write: getNodeFieldData('float-out', false, node, edges, nodeKeyMap),
+  //       },
+  //     } as instructions.Noise;
+  //     console.log(`Created noise instruction:`, noiseInstruction);
+  //     return noiseInstruction;
+  //   }
+
+  //   default:
+  //     return null;
+  // }
+}
+
 export function mapNodeToUniform(
   node: types.Node,
   edges: types.Edge[],
