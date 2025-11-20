@@ -1,34 +1,80 @@
-import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useCallback } from 'react';
+import { Handle, Position, type NodeProps } from 'reactflow';
 
-function TransformNode() {
-  const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
-  const [rotate, setRotate] = useState({ x: 0, y: 0, z: 0 });
-  const [scale, setScale] = useState({ x: 1, y: 1, z: 1 });
-  const [uniformScale, setUniformScale] = useState(1);
+import { useNodeData } from '@/hooks/use-node-data';
 
-  // how this works:
-  // attach to our box, based on param, str->float & update above state
-  const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
-    const numValue = parseFloat(value) || 0;
+interface TransformNodeData {
+  translate: [number, number, number];
+  rotate: [number, number, number];
+  scale: [number, number, number];
+  uniformScale: number;
+}
 
-    setTranslate((prev) => ({ ...prev, [axis]: numValue }));
-  }, []);
+function TransformNode({ data, id }: NodeProps<TransformNodeData>) {
+  const { setNodeData } = useNodeData();
 
-  const onRotateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setRotate((prev) => ({ ...prev, [axis]: numValue }));
-  }, []);
+  const translate = data.translate || [0, 0, 0];
+  const rotate = data.rotate || [0, 0, 0];
+  const scale = data.scale || [1, 1, 1];
+  const uniformScale = data.uniformScale ?? 1;
 
-  const onScaleChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
-    const numValue = parseFloat(value) || 1;
-    setScale((prev) => ({ ...prev, [axis]: numValue }));
-  }, []);
+  const onUniformScaleChange = useCallback(
+    (value: string) => {
+      const numValue = parseFloat(value) || 1;
 
-  const onUniformScaleChange = useCallback((value: string) => {
-    const numValue = parseFloat(value) || 1;
-    setUniformScale(numValue);
-  }, []);
+      setNodeData(id, (oldData: TransformNodeData) => ({
+        ...oldData,
+        uniformScale: numValue,
+      }));
+    },
+    [id, setNodeData],
+  );
+
+  const onVecChange = useCallback(
+    (axis: 'x' | 'y' | 'z', value: string, type: string) => {
+      setNodeData(id, (oldData: TransformNodeData) => {
+        const numValue = parseFloat(value) || (type === 'scale' ? 1 : 0);
+        const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+
+        switch (type) {
+          case 'translate': {
+            const currentVecInfo = oldData.translate || [0, 0, 0];
+            const newVecInfo: [number, number, number] = [...currentVecInfo];
+            newVecInfo[axisIndex] = numValue;
+
+            return {
+              ...oldData,
+              translate: newVecInfo,
+            };
+          }
+          case 'rotate': {
+            const currentVecInfo = oldData.rotate || [0, 0, 0];
+            const newVecInfo: [number, number, number] = [...currentVecInfo];
+            newVecInfo[axisIndex] = numValue;
+
+            return {
+              ...oldData,
+              rotate: newVecInfo,
+            };
+          }
+          case 'scale': {
+            const currentVecInfo = oldData.scale || [1, 1, 1];
+            const newVecInfo: [number, number, number] = [...currentVecInfo];
+            newVecInfo[axisIndex] = numValue;
+
+            return {
+              ...oldData,
+              scale: newVecInfo,
+            };
+          }
+          default: {
+            return oldData;
+          }
+        }
+      });
+    },
+    [setNodeData, id],
+  );
 
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
@@ -71,8 +117,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">X</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.x}
-              onChange={(e) => onTranslateChange('x', e.target.value)}
+              value={translate[0]}
+              onChange={(e) => onVecChange('x', e.target.value, 'translate')}
               type="number"
             />
           </div>
@@ -80,8 +126,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Y</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.y}
-              onChange={(e) => onTranslateChange('y', e.target.value)}
+              value={translate[1]}
+              onChange={(e) => onVecChange('y', e.target.value, 'translate')}
               type="number"
             />
           </div>
@@ -89,8 +135,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Z</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.z}
-              onChange={(e) => onTranslateChange('z', e.target.value)}
+              value={translate[2]}
+              onChange={(e) => onVecChange('z', e.target.value, 'translate')}
               type="number"
             />
           </div>
@@ -111,8 +157,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">X</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={rotate.x}
-              onChange={(e) => onRotateChange('x', e.target.value)}
+              value={rotate[0]}
+              onChange={(e) => onVecChange('x', e.target.value, 'rotate')}
               type="number"
             />
           </div>
@@ -120,8 +166,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Y</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={rotate.y}
-              onChange={(e) => onRotateChange('y', e.target.value)}
+              value={rotate[1]}
+              onChange={(e) => onVecChange('y', e.target.value, 'rotate')}
               type="number"
             />
           </div>
@@ -129,8 +175,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Z</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={rotate.z}
-              onChange={(e) => onRotateChange('z', e.target.value)}
+              value={rotate[2]}
+              onChange={(e) => onVecChange('z', e.target.value, 'rotate')}
               type="number"
             />
           </div>
@@ -151,8 +197,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">X</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={scale.x}
-              onChange={(e) => onScaleChange('x', e.target.value)}
+              value={scale[0]}
+              onChange={(e) => onVecChange('x', e.target.value, 'scale')}
               type="number"
             />
           </div>
@@ -160,8 +206,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Y</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={scale.y}
-              onChange={(e) => onScaleChange('y', e.target.value)}
+              value={scale[1]}
+              onChange={(e) => onVecChange('y', e.target.value, 'scale')}
               type="number"
             />
           </div>
@@ -169,8 +215,8 @@ function TransformNode() {
             <span className="text-xs text-slate-300">Z</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={scale.z}
-              onChange={(e) => onScaleChange('z', e.target.value)}
+              value={scale[2]}
+              onChange={(e) => onVecChange('z', e.target.value, 'scale')}
               type="number"
             />
           </div>
