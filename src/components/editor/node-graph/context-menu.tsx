@@ -72,6 +72,10 @@ const baseNodes: NodeType[] = [
     type: 'combine', // 9
     data: { isOutput: false },
   },
+  {
+    type: 'float', // 10
+    data: { isOutput: false },
+  },
 ];
 
 export default function ContextMenu({
@@ -172,6 +176,12 @@ export default function ContextMenu({
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Combine
+      </button>
+      <button
+        onClick={() => duplicateNode(10)}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Float
       </button>
     </div>
   );

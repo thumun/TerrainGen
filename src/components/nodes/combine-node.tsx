@@ -17,13 +17,13 @@ function CombineNode() {
         </div>
       </div>
 
-      {/* Translate Section */}
+      {/* Inputs Section */}
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
           type="target"
           position={Position.Left}
           id="float-x-in"
-          className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
+          className="!absolute !top-1/12 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex justify-center space-x-2">
           <div className="flex flex-col items-center space-y-1">
@@ -36,7 +36,7 @@ function CombineNode() {
           type="target"
           position={Position.Left}
           id="float-y-in"
-          className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
+          className="!absolute !top-1/12 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex justify-center space-x-2">
           <div className="flex flex-col items-center space-y-1">
@@ -49,7 +49,7 @@ function CombineNode() {
           type="target"
           position={Position.Left}
           id="float-z-in"
-          className="!absolute !top-1/12 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
+          className="!absolute !top-1/12 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
         />
         <div className="flex justify-center space-x-2">
           <div className="flex flex-col items-center space-y-1">

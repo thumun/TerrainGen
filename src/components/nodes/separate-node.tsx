@@ -16,7 +16,7 @@ function SeparateNode() {
         </div>
       </div>
 
-      {/* Translate Section */}
+      {/* Outputs */}
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <Handle
           type="source"

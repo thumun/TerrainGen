@@ -1,33 +1,38 @@
 import { useCallback } from 'react';
 import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
 
+import { useNodeData } from '@/hooks/use-node-data';
+
 interface VectorNodeData {
   vecInfo: [number, number, number];
 }
 
 function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
+  const { setNodeData } = useNodeData();
   const updateNodeInternals = useUpdateNodeInternals();
 
   const vecInfo = data.vecInfo || [0, 0, 0];
 
-  // const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
-
-  // how this works:
-  // attach to our box, based on param, str->float & update above state
   const onTranslateChange = useCallback(
     (axis: 'x' | 'y' | 'z', value: string) => {
-      const numValue = parseFloat(value) || 0;
+      setNodeData(id, (oldData: VectorNodeData) => {
+        const numValue = parseFloat(value) || 0;
+        const axisIndex = { x: 0, y: 1, z: 2 }[axis];
 
-      //setTranslate((prev) => ({ ...prev, [axis]: numValue }));
-      const axisIndex = { x: 0, y: 1, z: 2 }[axis];
-      const newVecInfo: [number, number, number] = [...vecInfo];
-      newVecInfo[axisIndex] = numValue;
+        const currentVecInfo = oldData.vecInfo || [0, 0, 0];
 
-      // eslint-disable-next-line react-hooks/immutability
-      data.vecInfo = newVecInfo;
+        const newVecInfo: [number, number, number] = [...currentVecInfo];
+        newVecInfo[axisIndex] = numValue;
+
+        return {
+          ...oldData,
+          vecInfo: newVecInfo,
+        };
+      });
+
       updateNodeInternals(id);
     },
-    [vecInfo, data, updateNodeInternals, id],
+    [setNodeData, id, updateNodeInternals],
   );
 
   return (
@@ -46,7 +51,7 @@ function VectorNode({ data, id }: NodeProps<VectorNodeData>) {
         </div>
       </div>
 
-      {/* Translate Section */}
+      {/* Input Section */}
       <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <div className="flex justify-center space-x-2">
           <div className="flex flex-col items-center space-y-1">

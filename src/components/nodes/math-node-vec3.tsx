@@ -1,21 +1,24 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
+
+import { useNodeData } from '@/hooks/use-node-data';
 
 interface MathNodeData {
   operationVal: string;
 }
 
-function MathNodeVec3({ data }: NodeProps<MathNodeData>) {
-  const operationVal = data.operationVal;
-  const [operation, setOperation] = useState(operationVal);
+function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
+  const { setNodeData } = useNodeData();
 
-  useEffect(() => {
-    setOperation(operationVal);
-  }, [operationVal]);
-
-  const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    setOperation(evt.target.value);
-  }, []);
+  const onOperationChange = useCallback(
+    (evt: React.ChangeEvent<HTMLSelectElement>) => {
+      setNodeData(id, (oldData: { operationVal: number }) => ({
+        ...oldData,
+        operationVal: evt.target.value || 'Add',
+      }));
+    },
+    [id, setNodeData],
+  );
 
   return (
     // need to change color & id based on type
@@ -66,7 +69,7 @@ function MathNodeVec3({ data }: NodeProps<MathNodeData>) {
           <label className="text-sm font-medium">Mode</label>
           <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
             <select
-              value={operation}
+              value={data.operationVal}
               onChange={onOperationChange}
               className="bg-transparent font-bold focus:outline-none"
             >
