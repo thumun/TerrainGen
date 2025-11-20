@@ -2,7 +2,7 @@
  * This file implements methods to convert node graph nodes into the types accepted by `@/lib/shaders/jit`.
  */
 
-import type * as nodeTypes from './node-types';
+import * as nodeTypes from './node-types';
 import type * as types from './types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
@@ -18,6 +18,65 @@ const generateReferenceKey = (nodeId: string, suffix: string): util.ReferenceKey
   console.log(`Generating reference key for node ${nodeId} with suffix: ${suffix}`);
   return `${nodeId}_${suffix}`;
 };
+
+// --------------------------------------------------------------------------------------------
+// ------ TYPE DEFINITIONS FOR NODE MAPPING
+// --------------------------------------------------------------------------------------------
+
+/**
+ * For a given node type, generate an instruction.
+ *
+ * @param node                  The given node
+ * @param getIncomingHandleKey  Callback to get the outgoing handle key from an upstream node,
+ *                              given an incoming handle ID for this current node
+ */
+type InstructionGenerator<
+  TNode extends { type: string },
+  THandles extends {
+    [type in TNode['type']]: {
+      in: { [name: string]: string };
+      out: { [name: string]: string };
+    };
+  },
+  TNodeType extends TNode['type'],
+  TInstruction,
+> = (
+  node: nodeTypes.All & { id: string; type: TNodeType },
+  getIncomingHandleKey: (
+    handle: THandles[TNodeType]['in'][keyof THandles[TNodeType]['in']],
+  ) => string,
+) => TInstruction;
+
+/**
+ * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
+ * based on a given node's content.
+ */
+type InstructionMapping<
+  TNode extends { type: string },
+  THandles extends {
+    [type in TNode['type']]: {
+      in: { [name: string]: string };
+      out: { [name: string]: string };
+    };
+  },
+  TInstruction,
+> = {
+  [nodeType in TNode['type']]: InstructionGenerator<TNode, THandles, nodeType, TInstruction>;
+};
+
+type UniformGenerator<
+  TNode extends { type: string },
+  TNodeType extends TNode['type'],
+  TUniform,
+> = (node: nodeTypes.All & { id: string; type: TNodeType }) => TUniform[];
+
+type UniformMapping<TNode extends { type: string }, TUniform> = {
+  [nodeType in TNode['type']]: UniformGenerator<TNode, nodeType, TUniform>;
+};
+
+// --------------------------------------------------------------------------------------------
+// ------ NODE MAPPING IMPLEMENTATIONS
+// --------------------------------------------------------------------------------------------
 
 /**
  * Determines if a node is an "output" node (such as "terrain") and should thus trigger some
@@ -46,42 +105,36 @@ const mathOperationMapping: {
 };
 
 /**
- * For a given node type, generate an instruction.
- *
- * @param node                  The given node
- * @param getIncomingHandleKey  Callback to get the outgoing handle key from an upstream node,
- *                              given an incoming handle ID for this current node
- */
-type InstructionGenerator<
-  TNode extends { type: string },
-  TNodeType extends TNode['type'],
-  TInstruction,
-> = (
-  node: nodeTypes.All & { id: string; type: TNodeType },
-  getIncomingHandleKey: (handle: string) => string,
-) => TInstruction;
-
-/**
- * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
- * based on a given node's content.
- */
-type InstructionMapping<TNode extends { type: string }, TInstruction> = {
-  [nodeType in TNode['type']]: InstructionGenerator<TNode, nodeType, TInstruction>;
-};
-
-/**
  * Implementation of `InstructionMapping` for our node types and instructions
+ *
+ * @todo  for slots which either use a uniform or a
  */
-const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
+const INSTRUCTION_MAPPING: InstructionMapping<
+  nodeTypes.All,
+  nodeTypes.Handles,
+  instructions.All
+> = {
   mathVec3: (node, getIncomingHandleKey): instructions.Math => ({
     type: 'math',
     operation: mathOperationMapping[node.data.operationVal],
     references: {
-      readA: getIncomingHandleKey('vec3-val1-in'),
-      readB: getIncomingHandleKey('vec3-val2-in'),
-      write: getHandleKey({ sourceNodeId: node.id, outgoingHandleId: 'vec3-out' }),
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.b),
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
+      }),
     },
   }),
+};
+
+const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
+  mathVec3: (node) => {
+    // TODO: logical uniform creation based on node data
+    // eslint-disable-next-line no-constant-condition
+    if (true) return [];
+    return [{ key: formatKey(`unif_${node.id}`), type: 'vec3f', initialValue: [0, 0, 0] }];
+  },
 };
 
 export function getInstruction(
@@ -96,7 +149,6 @@ export function getInstruction(
 
   return INSTRUCTION_MAPPING[node.type](
     node,
-
     // callback to get output handle key on another node for a given input handle on this node
     (handle) => {
       const incomingEdge = incomingHandlesToEdges[handle];

@@ -23,6 +23,16 @@ export type MathVec3 = Node<
 
 export type All = MathVec3;
 
+export const HANDLES = {
+  mathVec3: {
+    in: { a: 'vec3-val1-in', b: 'vec3-val2-in' },
+    out: { result: 'vec3-out' },
+  },
+} as const satisfies {
+  [nodeType in All['type']]: { in: Record<string, string>; out: Record<string, string> };
+};
+export type Handles = typeof HANDLES;
+
 export const BASE_NODES: All[] = [
   // {
   //   type: 'transform', // 0
