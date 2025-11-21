@@ -11,6 +11,7 @@ export type Vector = Node<'vector'>;
 export type Transform = Node<'transform'>;
 export type Noise = Node<'noise', { mode: 'FBM' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
+export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' | 'Tan' }>;
 export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type MixFloat = Node<'mixFloat'>;
 export type MixVec3 = Node<'mixVec3'>;
@@ -24,6 +25,7 @@ export type All =
   | Transform
   | Noise
   | MathFloat
+  | TrigMathFloat
   | MathVec3
   | MixFloat
   | MixVec3
@@ -56,6 +58,10 @@ export const HANDLES = {
   },
   mathFloat: {
     in: { a: 'float-val1-in', b: 'float-val2-in' },
+    out: { result: 'float-out' },
+  },
+  trigMathFloat: {
+    in: { input: 'float-in' },
     out: { result: 'float-out' },
   },
   mathVec3: {
@@ -99,18 +105,18 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   noise: { type: 'noise', data: { mode: 'FBM' } },
   mathVec3: {
     type: 'mathVec3',
-    data: {
-      operationVal: 'Add',
-    },
+    data: { operationVal: 'Add' },
   },
   mixVec3: { type: 'mixVec3', data: {} },
   terrain: { type: 'terrain', data: {} },
   vector: { type: 'vector', data: {} },
   mathFloat: {
     type: 'mathFloat',
-    data: {
-      operationVal: 'Add',
-    },
+    data: { operationVal: 'Add' },
+  },
+  trigMathFloat: {
+    type: 'trigMathFloat',
+    data: { operationVal: 'Sin' },
   },
   mixFloat: { type: 'mixFloat', data: {} },
   separate: { type: 'separate', data: {} },
