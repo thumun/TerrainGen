@@ -14,6 +14,15 @@ export type Math = {
   };
 };
 
+export type TrigMath = {
+  type: 'trig-math';
+  operation: 'sin' | 'cos' | 'tan';
+  references: {
+    read: util.ReferenceKey;
+    write: util.ReferenceKey;
+  };
+};
+
 export type SeparateXYZ = {
   type: 'separate-xyz';
   references: {
@@ -59,4 +68,4 @@ export type Noise = {
   };
 };
 
-export type All = Math | SeparateXYZ | CombineXYZ | Noise | Vector;
+export type All = Math | TrigMath | SeparateXYZ | CombineXYZ | Noise | Vector;
