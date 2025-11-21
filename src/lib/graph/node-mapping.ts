@@ -66,6 +66,13 @@ const mathOperationMapping: {
   Mult: 'mult',
   Div: 'div',
 };
+const trigOperationMapping: {
+  [key in nodeTypes.TrigMathFloat['data']['operationVal']]: instructions.TrigMath['operation'];
+} = {
+  Sin: 'sin',
+  Cos: 'cos',
+  Tan: 'tan',
+};
 
 const dummyHandler = () => {
   console.error('Not implemented!');
@@ -118,6 +125,17 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       write: getHandleKey({
         sourceNodeId: node.id,
         outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
+      }),
+    },
+  }),
+  trigMathFloat: (node, getIncomingHandleKey): instructions.TrigMath => ({
+    type: 'trig-math',
+    operation: trigOperationMapping[node.data.operationVal],
+    references: {
+      read: getIncomingHandleKey(nodeTypes.HANDLES.trigMathFloat.in.input),
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.trigMathFloat.out.result,
       }),
     },
   }),
@@ -189,6 +207,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   },
   // TODO: all of the below, or move the logic up into the "instruction mapping"
   mathFloat: dummyUniformHandler,
+  trigMathFloat: dummyUniformHandler,
   mixFloat: dummyUniformHandler,
   mixVec3: dummyUniformHandler,
   noise: dummyUniformHandler,

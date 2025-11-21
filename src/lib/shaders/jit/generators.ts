@@ -26,6 +26,18 @@ export function generateMathCode(instruction: instructions.Math): GenerateCodeRe
   return { code: `let ${write} = ${readA} ${operatorChar} ${readB};`, utils: [] };
 }
 
+const TRIG_FUNCTIONS = {
+  sin: 'sin',
+  cos: 'cos',
+  tan: 'tan',
+};
+export function generateTrigMathCode(instruction: instructions.TrigMath): GenerateCodeResult {
+  const { read, write } = instruction.references;
+  const functionName = TRIG_FUNCTIONS[instruction.operation];
+
+  return { code: `let ${write} = ${functionName}(${read});` };
+}
+
 export function generateSeparateXYZCode(
   instruction: instructions.SeparateXYZ,
 ): GenerateCodeResult {
@@ -70,6 +82,8 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
   switch (instruction.type) {
     case 'math':
       return generateMathCode(instruction);
+    case 'trig-math':
+      return generateTrigMathCode(instruction);
     case 'separate-xyz':
       return generateSeparateXYZCode(instruction);
     case 'combine-xyz':
