@@ -27,10 +27,10 @@ export type All =
   | MathVec3
   | MixFloat
   | MixVec3
-  | Terrain;
-// | Separate
-// | Combine
-// | Float;
+  | Terrain
+  | Separate
+  | Combine
+  | Float;
 
 /**
  * Handle IDs for each node type
@@ -74,6 +74,18 @@ export const HANDLES = {
     in: { height: 'float-trans-in' },
     out: {},
   },
+  separate: {
+    in: { xyz: 'vec3-val1-in' },
+    out: { x: 'float-x-out', y: 'float-y-out', z: 'float-z-out' },
+  },
+  combine: {
+    in: { x: 'float-x-in', y: 'float-y-in', z: 'float-z-in' },
+    out: { xyz: 'vec3-out' },
+  },
+  float: {
+    in: {},
+    out: { result: 'float-out' },
+  },
 } as const satisfies {
   [nodeType in All['type']]: { in: Record<string, string>; out: Record<string, string> };
 };
@@ -101,7 +113,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
     },
   },
   mixFloat: { type: 'mixFloat', data: {} },
-  // separate: { type: 'separate', data: {} },
-  // combine: { type: 'combine', data: {} },
-  // float: { type: 'float', data: {} },
+  separate: { type: 'separate', data: {} },
+  combine: { type: 'combine', data: {} },
+  float: { type: 'float', data: {} },
 };
