@@ -78,6 +78,9 @@ export class TerrainRenderer implements IRenderer {
   instancingPipeline: GPUComputePipeline;
   instancingRenderPipeline: GPURenderPipeline;
 
+  instancingPointsBindGroupLayout: GPUBindGroupLayout;
+  instancingPointsBindGroup: GPUBindGroup;
+
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
     attributes: [
@@ -417,9 +420,13 @@ export class TerrainRenderer implements IRenderer {
       },
     });
 
+
+    // ----------------------------------------------------------------------------------------
+    // --------------------  INSTANCING RENDERER SETUP
+    // ----------------------------------------------------------------------------------------
     const drawArgs = new Uint32Array(4);
     drawArgs[0] = 6; // vertex count for instance
-    drawArgs[1] = this.numInstances; // instance count. setting to 0 for now, will be updated by compute shader
+    drawArgs[1] = this.numInstances; // instance count.
     drawArgs[2] = 0; // First Vertex
     drawArgs[3] = 0; // First Instance
 
@@ -430,11 +437,35 @@ export class TerrainRenderer implements IRenderer {
     });
     this.device.queue.writeBuffer(this.indirectInstanceBuffer, 0, drawArgs);
 
+    this.instancingPointsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'instancing bind group layout 2',
+      entries: [
+        {
+          // buffer of vertices
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+      ],
+    });
+
+    this.instancingPointsBindGroup = this.device.createBindGroup({
+      label: 'instancing bind group 2',
+      layout: this.instancingPointsBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.instancePoints } }],
+    });
+
     // create render pipeline for instancing as well
     this.instancingRenderPipeline = this.device.createRenderPipeline({
+      label: 'instancing render pipeline',
       layout: this.device.createPipelineLayout({
-        label: 'naive pipeline layout',
-        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
+        label: 'instancing pipeline layout',
+        bindGroupLayouts: [
+          this.sceneUniformsBindGroupLayout,
+          this.instancingPointsBindGroupLayout
+        ],
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -443,16 +474,17 @@ export class TerrainRenderer implements IRenderer {
       },
       vertex: {
         module: this.device.createShaderModule({
-          label: 'naive vert shader',
-          code: shaders.naiveVertSrc,
+          label: 'instancing render shader',
+          code: shaders.instanceSrc,
         }),
-        buffers: [TerrainRenderer.VertexBufferLayout],
+        entryPoint: 'vs_main'
       },
       fragment: {
         module: this.device.createShaderModule({
-          label: 'naive frag shader',
-          code: shaders.naiveFragSrc,
+          label: 'instancing render shader',
+          code: shaders.instanceSrc,
         }),
+        entryPoint: 'fs_main',
         targets: [
           {
             format: this.webGPU.canvasFormat,
@@ -575,6 +607,9 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
 
+    renderPass.setPipeline(this.instancingRenderPipeline);
+    renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
+    renderPass.setBindGroup(1, this.instancingPointsBindGroup);
     renderPass.drawIndirect(this.indirectInstanceBuffer, 0);
     renderPass.end();
 
