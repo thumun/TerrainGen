@@ -105,6 +105,30 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
+  logInstancePoints(device: GPUDevice, buffer: GPUBuffer, numInstances: number) {
+    const readback = device.createBuffer({
+      size: numInstances * 8 * 4, // 8 floats per instance, 4 bytes each
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    });
+
+    const encoder = device.createCommandEncoder();
+    encoder.copyBufferToBuffer(buffer, 0, readback, 0, numInstances * 8 * 4);
+    device.queue.submit([encoder.finish()]);
+
+    readback.mapAsync(GPUMapMode.READ).then(() => {
+      const data = new Float32Array(readback.getMappedRange());
+      for (let i = 0; i < numInstances; i++) {
+        const offset = i * 8;
+        console.log({
+          pos: [data[offset + 0], data[offset + 1], data[offset + 2]],
+          nor: [data[offset + 3], data[offset + 4], data[offset + 5]],
+          uv:  [data[offset + 6], data[offset + 7]],
+        });
+      }
+      readback.unmap();
+    });
+  }
+
   constructor(
     private webGPU: WebGPUContext,
     stage: Stage,
@@ -378,7 +402,8 @@ export class TerrainRenderer implements IRenderer {
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
       size: this.numInstances * 32,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | 
+        GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
     });
 
     this.instancingBindGroupLayout = this.device.createBindGroupLayout({
@@ -522,6 +547,8 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
 
     this.device.queue.submit([encoder.finish()]);
+
+    //this.logInstancePoints(this.device, this.instancePoints, this.numInstances);
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
