@@ -9,9 +9,11 @@ import type * as util from '@/lib/shaders/jit/types/util';
 
 export type OutputNodeUpdates = { displacePipeline?: scene.DisplacePipeline };
 
+export type PipelineNode = types.Node & nodeTypes.All;
+
 export function generateUpdatedPipelines(
   nodeId: string,
-  nodes: (types.Node & nodeTypes.All)[],
+  nodes: PipelineNode[],
   edges: types.Edge[],
 ): OutputNodeUpdates {
   const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
