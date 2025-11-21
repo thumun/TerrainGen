@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 import { useReactFlow } from 'reactflow';
 
+import * as nodeTypes from '@/lib/graph/node-types';
+
 // referenced from here
 // https://reactflow.dev/examples/interaction/context-menu
 
 interface ContextMenuProps {
-  id: string | null;
   top?: number;
   left?: number;
   right?: number;
@@ -14,90 +15,17 @@ interface ContextMenuProps {
   className?: string;
 }
 
-type NodeData = {
-  isOutput?: boolean;
-  operationVal?: string;
-  outputType?: string;
-};
-
-interface NodeType {
-  type: string;
-  data: NodeData;
-}
-
-const baseNodes: NodeType[] = [
-  {
-    type: 'transform', // 0
-    data: { isOutput: false },
-  },
-  {
-    type: 'noise', // 1
-    data: { isOutput: false },
-  },
-  {
-    type: 'mathVec3', // 2
-    data: {
-      isOutput: false,
-      operationVal: 'add',
-    },
-  },
-  {
-    type: 'mixVec3', // 3
-    data: { isOutput: false },
-  },
-  {
-    type: 'terrain', // 4
-    data: { isOutput: true },
-  },
-  {
-    type: 'vector', // 5
-    data: { isOutput: false },
-  },
-  {
-    type: 'mathFloat', // 6
-    data: {
-      isOutput: false,
-      operationVal: 'add',
-    },
-  },
-  {
-    type: 'mixFloat', // 7
-    data: { isOutput: false },
-  },
-  {
-    type: 'separate', // 8
-    data: { isOutput: false },
-  },
-  {
-    type: 'combine', // 9
-    data: { isOutput: false },
-  },
-  {
-    type: 'float', // 10
-    data: { isOutput: false },
-  },
-];
-
-export default function ContextMenu({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  id,
-  top,
-  left,
-  right,
-  bottom,
-  ...props
-}: ContextMenuProps) {
+export default function ContextMenu({ top, left, right, bottom, ...props }: ContextMenuProps) {
   const { addNodes } = useReactFlow();
 
   const duplicateNode = useCallback(
-    (nodeNum: number) => {
+    (nodeType: nodeTypes.All['type']) => {
       const position = {
         x: 50,
         y: 50,
       };
 
-      const baseNode = baseNodes[nodeNum];
-      if (!baseNode) return;
+      const baseNode = nodeTypes.NODE_PREFABS[nodeType];
 
       const customNode = {
         id: `custom-node-${Date.now()}`,
@@ -118,71 +46,71 @@ export default function ContextMenu({
       {...props}
     >
       <button
-        onClick={() => duplicateNode(0)}
+        onClick={() => duplicateNode('transform')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Transform
       </button>
       <button
-        onClick={() => duplicateNode(1)}
+        onClick={() => duplicateNode('noise')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Noise
       </button>
       <button
-        onClick={() => duplicateNode(2)}
+        onClick={() => duplicateNode('mathVec3')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Math (Vec3)
       </button>
       <button
-        onClick={() => duplicateNode(3)}
+        onClick={() => duplicateNode('mixVec3')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Mix (Vec3)
       </button>
       <button
-        onClick={() => duplicateNode(4)}
+        onClick={() => duplicateNode('terrain')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Terrain
       </button>
       <button
-        onClick={() => duplicateNode(5)}
+        onClick={() => duplicateNode('vector')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Vector
       </button>
       <button
-        onClick={() => duplicateNode(6)}
+        onClick={() => duplicateNode('mathFloat')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Math (Float)
       </button>
       <button
-        onClick={() => duplicateNode(7)}
+        onClick={() => duplicateNode('mixFloat')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Mix (Float)
       </button>
-      <button
-        onClick={() => duplicateNode(8)}
+      {/* <button
+        onClick={() => duplicateNode('separate')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Separate
       </button>
       <button
-        onClick={() => duplicateNode(9)}
+        onClick={() => duplicateNode('combine')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Combine
       </button>
       <button
-        onClick={() => duplicateNode(10)}
+        onClick={() => duplicateNode('float')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Float
-      </button>
+      </button> */}
     </div>
   );
 }

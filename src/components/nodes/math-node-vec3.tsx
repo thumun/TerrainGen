@@ -2,12 +2,13 @@ import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 
 import { useNodeData } from '@/hooks/use-node-data';
+import * as nodeTypes from '@/lib/graph/node-types';
 
-interface MathNodeData {
-  operationVal: string;
-}
+type MathVec3NodeData = nodeTypes.MathVec3['data'];
+const HANDLES = nodeTypes.HANDLES['mathVec3'];
+// TODO: use these above references in other node components
 
-function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
+function MathNodeVec3({ id, data }: NodeProps<MathVec3NodeData>) {
   const { setNodeData } = useNodeData();
 
   const onOperationChange = useCallback(
@@ -26,7 +27,7 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
+        id={HANDLES.out.result}
         className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500`}
       />
 
@@ -42,7 +43,7 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val1-in"
+          id={HANDLES.in.a}
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
         />
         <div className="flex items-center justify-between">
@@ -55,7 +56,7 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val2-in"
+          id={HANDLES.in.b}
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
         />
         <div className="flex items-center justify-between">
