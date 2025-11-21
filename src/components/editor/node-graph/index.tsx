@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
