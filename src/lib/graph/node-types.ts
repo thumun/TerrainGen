@@ -77,40 +77,22 @@ export type Handles = typeof HANDLES;
  * Node prefabs for when a user wants to add a new node
  */
 export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType } } = {
-  transform: {
-    type: 'transform', // 0
-    data: {},
-  },
-  noise: {
-    type: 'noise', // 1
-    data: { mode: 'FBM' },
-  },
+  transform: { type: 'transform', data: {} },
+  noise: { type: 'noise', data: { mode: 'FBM' } },
   mathVec3: {
-    type: 'mathVec3', // 2
+    type: 'mathVec3',
     data: {
       operationVal: 'Add',
     },
   },
-  mixVec3: {
-    type: 'mixVec3', // 3
-    data: {},
-  },
-  terrain: {
-    type: 'terrain', // 4
-    data: {},
-  },
-  vector: {
-    type: 'vector', // 5
-    data: {},
-  },
+  mixVec3: { type: 'mixVec3', data: {} },
+  terrain: { type: 'terrain', data: {} },
+  vector: { type: 'vector', data: {} },
   mathFloat: {
-    type: 'mathFloat', // 6
+    type: 'mathFloat',
     data: {
       operationVal: 'Add',
     },
   },
-  mixFloat: {
-    type: 'mixFloat', // 7
-    data: {},
-  },
+  mixFloat: { type: 'mixFloat', data: {} },
 };
