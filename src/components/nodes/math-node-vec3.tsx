@@ -1,24 +1,49 @@
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
 
-import { useNodeData } from '@/hooks/use-node-data';
+// import { useNodeData } from '@/hooks/use-node-data';
 
 interface MathNodeData {
   operationVal: string;
 }
 
 function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
-  const { setNodeData } = useNodeData();
+  const { setNodes } = useReactFlow();
 
   const onOperationChange = useCallback(
     (evt: React.ChangeEvent<HTMLSelectElement>) => {
-      setNodeData(id, (oldData: { operationVal: number }) => ({
-        ...oldData,
-        operationVal: evt.target.value || 'Add',
-      }));
+      const newOperationVal = evt.target.value || 'Add';
+
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data: {
+                ...node.data,
+                operationVal: newOperationVal,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
+
+  //   const { setNodeData } = useNodeData();
+
+  //   const onOperationChange = useCallback(
+  //     (evt: React.ChangeEvent<HTMLSelectElement>) => {
+  //       setNodeData(id, (oldData: { operationVal: number }) => ({
+  //         ...oldData,
+  //         operationVal: evt.target.value || 'Add',
+  //       }));
+  //     },
+  //     [id, setNodeData],
+  //   );
 
   return (
     // need to change color & id based on type
