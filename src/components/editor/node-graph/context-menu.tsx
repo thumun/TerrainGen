@@ -45,6 +45,7 @@ export default function ContextMenu({ top, left, right, bottom, ...props }: Cont
       className="context-menu absolute z-50 min-w-32 rounded-md border border-gray-300 bg-white shadow-lg"
       {...props}
     >
+      {/* TODO: generate these using a type-guarded map from node types to full names */}
       <button
         onClick={() => duplicateNode('transform')}
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
@@ -86,6 +87,12 @@ export default function ContextMenu({ top, left, right, bottom, ...props }: Cont
         className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
       >
         Math (Float)
+      </button>
+      <button
+        onClick={() => duplicateNode('trigMathFloat')}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Trig Math (Float)
       </button>
       <button
         onClick={() => duplicateNode('mixFloat')}
