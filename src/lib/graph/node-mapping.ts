@@ -45,7 +45,7 @@ type InstructionGenerator<
   getIncomingHandleKey: (
     handle: THandles[TNodeType]['in'][keyof THandles[TNodeType]['in']],
   ) => string,
-) => TInstruction;
+) => TInstruction | null;
 
 /**
  * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
@@ -96,6 +96,10 @@ const mathOperationMapping: {
   Div: 'div',
 };
 
+const dummyHandler = () => {
+  console.error('Not implemented!');
+  return null;
+};
 /**
  * Implementation of `InstructionMapping` for our node types and instructions
  *
@@ -107,6 +111,47 @@ export const INSTRUCTION_MAPPING: InstructionMapping<
   nodeTypes.Handles,
   instructions.All
 > = {
+  vector: (node): instructions.Vector => ({
+    type: 'vector',
+    references: {
+      // TODO: this needs read references to uniforms
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
+      }),
+    },
+  }),
+
+  // TODO: this transform functionality is not real until we have geometry
+  transform: dummyHandler,
+
+  noise: (node, getIncomingHandleKey): instructions.Noise => ({
+    type: 'noise',
+    method: ({ FBM: 'fbm' } as const)[node.data.mode],
+    references: {
+      // TODO: the noise node needs these inputs
+      pos: 'dummy',
+      numOctaves: 'dummy',
+      scale: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.scale),
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.noise.out.result,
+      }),
+    },
+  }),
+
+  mathFloat: (node, getIncomingHandleKey): instructions.Math => ({
+    type: 'math',
+    operation: mathOperationMapping[node.data.operationVal],
+    references: {
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
+      }),
+    },
+  }),
   mathVec3: (node, getIncomingHandleKey): instructions.Math => ({
     type: 'math',
     operation: mathOperationMapping[node.data.operationVal],
@@ -119,15 +164,37 @@ export const INSTRUCTION_MAPPING: InstructionMapping<
       }),
     },
   }),
+
+  // TODO: these guys need nodes!
+  mixFloat: dummyHandler,
+  mixVec3: dummyHandler,
+
+  terrain: () => null,
 };
 
+const dummyUniformHandler = () => {
+  console.error('Not implemented!');
+  return [];
+};
 export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
   mathVec3: (node) => {
-    // TODO: logical uniform creation based on node data
-    // eslint-disable-next-line no-constant-condition
-    if (true) return [];
+    // TODO: logical uniform creation based on node data. these should match uniforms used in
+    //       references by INSTRUCTION_MAPPING. In fact, this logic could even be combined into
+    //       those methods.
+
+    console.log('Not implemented!');
+    return [];
+
     return [{ key: formatKey(`unif_${node.id}`), type: 'vec3f', initialValue: [0, 0, 0] }];
   },
+  // TODO: all of the below, or move the logic up into the "instruction mapping"
+  mathFloat: dummyUniformHandler,
+  mixFloat: dummyUniformHandler,
+  mixVec3: dummyUniformHandler,
+  noise: dummyUniformHandler,
+  terrain: dummyUniformHandler,
+  transform: dummyUniformHandler,
+  vector: dummyUniformHandler,
 };
 
 // TODO: repurpose/rework code below
