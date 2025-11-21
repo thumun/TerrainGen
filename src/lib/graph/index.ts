@@ -24,9 +24,7 @@ export function generateUpdatedPipelines(
     const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
 
     // generate uniforms
-    const uniforms = orderedDependencyNodes
-      .map((node) => getUniforms(node, edges))
-      .filter((uniform) => uniform !== null);
+    const uniforms = orderedDependencyNodes.flatMap((node) => getUniforms(node, edges));
 
     // generate instruction set
     const instructionSet = orderedDependencyNodes
@@ -52,7 +50,11 @@ function getInstruction(
       .map((edge) => [edge.targetHandle as string, edge]),
   );
 
-  return nodeMapping.INSTRUCTION_MAPPING[node.type](
+  const instructionMapping = nodeMapping.INSTRUCTION_MAPPING[
+    node.type
+  ] as nodeMapping.InstructionGenerator<nodeTypes.All, typeof node.type, instructions.All>;
+
+  return instructionMapping(
     node,
     // callback to get output handle key on another node for a given input handle on this node
     (handle) => {

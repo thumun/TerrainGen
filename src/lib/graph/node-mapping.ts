@@ -30,47 +30,30 @@ const generateReferenceKey = (nodeId: string, suffix: string): util.ReferenceKey
  * @param getIncomingHandleKey  Callback to get the outgoing handle key from an upstream node,
  *                              given an incoming handle ID for this current node
  */
-type InstructionGenerator<
+export type InstructionGenerator<
   TNode extends { type: string },
-  THandles extends {
-    [type in TNode['type']]: {
-      in: { [name: string]: string };
-      out: { [name: string]: string };
-    };
-  },
   TNodeType extends TNode['type'],
   TInstruction,
 > = (
   node: nodeTypes.All & { id: string; type: TNodeType },
-  getIncomingHandleKey: (
-    handle: THandles[TNodeType]['in'][keyof THandles[TNodeType]['in']],
-  ) => string,
+  getIncomingHandleKey: (handle: string) => string,
 ) => TInstruction | null;
 
 /**
  * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
  * based on a given node's content.
  */
-type InstructionMapping<
-  TNode extends { type: string },
-  THandles extends {
-    [type in TNode['type']]: {
-      in: { [name: string]: string };
-      out: { [name: string]: string };
-    };
-  },
-  TInstruction,
-> = {
-  [nodeType in TNode['type']]: InstructionGenerator<TNode, THandles, nodeType, TInstruction>;
+export type InstructionMapping<TNode extends { type: string }, TInstruction> = {
+  [nodeType in TNode['type']]: InstructionGenerator<TNode, nodeType, TInstruction>;
 };
 
-type UniformGenerator<
+export type UniformGenerator<
   TNode extends { type: string },
   TNodeType extends TNode['type'],
   TUniform,
 > = (node: nodeTypes.All & { id: string; type: TNodeType }) => TUniform[];
 
-type UniformMapping<TNode extends { type: string }, TUniform> = {
+export type UniformMapping<TNode extends { type: string }, TUniform> = {
   [nodeType in TNode['type']]: UniformGenerator<TNode, nodeType, TUniform>;
 };
 
@@ -106,11 +89,7 @@ const dummyHandler = () => {
  * @todo  for slots which either take a uniform or an input key, this will probably need some
  *        modification to accommodate
  */
-export const INSTRUCTION_MAPPING: InstructionMapping<
-  nodeTypes.All,
-  nodeTypes.Handles,
-  instructions.All
-> = {
+export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
   vector: (node): instructions.Vector => ({
     type: 'vector',
     references: {
