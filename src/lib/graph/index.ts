@@ -25,15 +25,13 @@ export function generateUpdatedPipelines(
 
     // generate uniforms
     const uniforms = orderedDependencyNodes
-      .map((node) => {
-        return nodeMapping.mapNodeToUniform(node, edges);
-      })
+      .map((node) => getUniforms(node, edges))
       .filter((uniform) => uniform !== null);
 
     // generate instruction set
-    const instructionSet = orderedDependencyNodes.map((node) => {
-      return getInstruction(node, edges);
-    });
+    const instructionSet = orderedDependencyNodes
+      .map((node) => getInstruction(node, edges))
+      .filter((instruction) => instruction !== null);
 
     // TODO: get height key
     const outputs: scene.DisplacePipeline['outputs'] = { height: 'TODO' };
@@ -44,10 +42,10 @@ export function generateUpdatedPipelines(
   return { displacePipeline };
 }
 
-export function getInstruction(
+function getInstruction(
   node: nodeTypes.All & { id: string },
   edges: types.Edge[],
-): instructions.All {
+): instructions.All | null {
   const incomingHandlesToEdges = Object.fromEntries(
     edges
       .filter((edge) => edge.target === node.id)
@@ -65,6 +63,16 @@ export function getInstruction(
       });
     },
   );
+}
+
+function getUniforms(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  node: nodeTypes.All & { id: string },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  edges: types.Edge[],
+): util.UniformConfig[] {
+  // TODO!!!
+  return [];
 }
 
 export type PipelineResult = {
