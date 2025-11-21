@@ -69,13 +69,15 @@ function getInstruction(
   );
 }
 
+// TODO TODO TODO
 function getUniforms(
+  // @ts-expect-error TODO use this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   node: nodeTypes.All & { id: string },
+  // @ts-expect-error TODO use this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   edges: types.Edge[],
 ): util.UniformConfig[] {
-  // TODO!!!
   return [];
 }
 

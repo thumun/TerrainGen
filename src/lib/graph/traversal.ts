@@ -64,8 +64,7 @@ export function getOrderedNodes<TNode extends types.Node>(
       traverse(edge.source);
     });
 
-    // don't add the input node lol
-    if (currentNodeId !== nodeId) result.push(currentNode);
+    result.push(currentNode);
   };
 
   traverse(nodeId);
