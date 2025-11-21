@@ -61,6 +61,18 @@ function getInstruction(
     // callback to get output handle key on another node for a given input handle on this node
     (handle) => {
       const incomingEdge = incomingHandlesToEdges[handle];
+      if (incomingEdge === undefined) {
+        console.error(
+          'incoming edge on',
+          node.type,
+          'node',
+          node.id,
+          'with handle ID',
+          handle,
+          'was not connected!',
+        );
+        return 'error_dummy_key';
+      }
       return nodeMapping.getHandleKey({
         sourceNodeId: incomingEdge.source,
         outgoingHandleId: incomingEdge.sourceHandle as string,

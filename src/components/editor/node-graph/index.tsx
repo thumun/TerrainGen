@@ -52,7 +52,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
       const pipelines = graph.generateUpdatedPipelines(
         params.target,
         nodes as graph.PipelineNode[], // this assertion had better hold true! smile
-        edges,
+        updatedEdges,
       );
 
       if (pipelines.displacePipeline && onDisplacePipelineUpdate) {
