@@ -99,9 +99,10 @@ const mathOperationMapping: {
 /**
  * Implementation of `InstructionMapping` for our node types and instructions
  *
- * @todo  for slots which either use a uniform or a
+ * @todo  for slots which either take a uniform or an input key, this will probably need some
+ *        modification to accommodate
  */
-const INSTRUCTION_MAPPING: InstructionMapping<
+export const INSTRUCTION_MAPPING: InstructionMapping<
   nodeTypes.All,
   nodeTypes.Handles,
   instructions.All
@@ -120,7 +121,7 @@ const INSTRUCTION_MAPPING: InstructionMapping<
   }),
 };
 
-const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
+export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
   mathVec3: (node) => {
     // TODO: logical uniform creation based on node data
     // eslint-disable-next-line no-constant-condition
@@ -129,29 +130,11 @@ const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
   },
 };
 
-export function getInstruction(
-  node: nodeTypes.All & { id: string },
-  edges: types.Edge[],
-): instructions.All {
-  const incomingHandlesToEdges = Object.fromEntries(
-    edges
-      .filter((edge) => edge.target === node.id)
-      .map((edge) => [edge.targetHandle as string, edge]),
-  );
+// TODO: repurpose/rework code below
 
-  return INSTRUCTION_MAPPING[node.type](
-    node,
-    // callback to get output handle key on another node for a given input handle on this node
-    (handle) => {
-      const incomingEdge = incomingHandlesToEdges[handle];
-      return getHandleKey({
-        sourceNodeId: incomingEdge.source,
-        outgoingHandleId: incomingEdge.sourceHandle as string,
-      });
-    },
-  );
-}
-
+/**
+ * @deprecated we should move to using the new "mapping" objects
+ */
 export function mapNodeToUniform(
   node: types.Node,
   edges: types.Edge[],
@@ -183,6 +166,9 @@ export function mapNodeToUniform(
   /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
 }
 
+/**
+ * @deprecated we should move to using the new "mapping" objects
+ */
 export function getNodeFieldData(
   handleName: string,
   isInput: boolean,
@@ -229,6 +215,9 @@ export function getNodeFieldData(
 
 // based on the node type, we create the instruction
 // hard-code-y for now..
+/**
+ * @deprecated we should move to using the new "mapping" objects
+ */
 export function mapNodeToInstruction(
   node: types.Node,
   edges: types.Edge[],
@@ -284,6 +273,9 @@ export function mapNodeToInstruction(
   /* eslint-enable @typescript-eslint/switch-exhaustiveness-check */
 }
 
+/**
+ * @deprecated we should move to using the new "mapping" objects
+ */
 export function mapNodesToKeys(
   nodes: types.Node[],
   edges: types.Edge[],
@@ -338,6 +330,9 @@ export function mapNodesToKeys(
   return nodeKeyMap;
 }
 
+/**
+ * @deprecated we should move to using the new "mapping" objects
+ */
 export function getFinalOutputKey(pipeline: types.Node[]): util.ReferenceKey {
   const lastNode = pipeline[pipeline.length - 1];
 

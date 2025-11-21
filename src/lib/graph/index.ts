@@ -32,7 +32,7 @@ export function generateUpdatedPipelines(
 
     // generate instruction set
     const instructionSet = orderedDependencyNodes.map((node) => {
-      return nodeMapping.getInstruction(node, edges);
+      return getInstruction(node, edges);
     });
 
     // TODO: get height key
@@ -42,6 +42,29 @@ export function generateUpdatedPipelines(
   }
 
   return { displacePipeline };
+}
+
+export function getInstruction(
+  node: nodeTypes.All & { id: string },
+  edges: types.Edge[],
+): instructions.All {
+  const incomingHandlesToEdges = Object.fromEntries(
+    edges
+      .filter((edge) => edge.target === node.id)
+      .map((edge) => [edge.targetHandle as string, edge]),
+  );
+
+  return nodeMapping.INSTRUCTION_MAPPING[node.type](
+    node,
+    // callback to get output handle key on another node for a given input handle on this node
+    (handle) => {
+      const incomingEdge = incomingHandlesToEdges[handle];
+      return nodeMapping.getHandleKey({
+        sourceNodeId: incomingEdge.source,
+        outgoingHandleId: incomingEdge.sourceHandle as string,
+      });
+    },
+  );
 }
 
 export type PipelineResult = {
