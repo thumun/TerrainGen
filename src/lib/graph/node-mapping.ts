@@ -78,6 +78,8 @@ const dummyHandler = () => {
  *        modification to accommodate
  */
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
+  // TODO: this is not a real instruction yet
+  float: dummyHandler,
   vector: (node): instructions.Vector => ({
     type: 'vector',
     references: {
@@ -136,6 +138,37 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   mixFloat: dummyHandler,
   mixVec3: dummyHandler,
 
+  separate: (node, getIncomingHandleKey): instructions.SeparateXYZ => ({
+    type: 'separate-xyz',
+    references: {
+      read: getIncomingHandleKey(nodeTypes.HANDLES.separate.in.xyz),
+      writeX: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.separate.out.x,
+      }),
+      writeY: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.separate.out.y,
+      }),
+      writeZ: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.separate.out.z,
+      }),
+    },
+  }),
+  combine: (node, getIncomingHandleKey): instructions.CombineXYZ => ({
+    type: 'combine-xyz',
+    references: {
+      readX: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.x),
+      readY: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.y),
+      readZ: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.z),
+      write: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.combine.out.xyz,
+      }),
+    },
+  }),
+
   terrain: () => null,
 };
 
@@ -162,4 +195,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   terrain: dummyUniformHandler,
   transform: dummyUniformHandler,
   vector: dummyUniformHandler,
+  combine: dummyUniformHandler,
+  float: dummyUniformHandler,
+  separate: dummyUniformHandler,
 };
