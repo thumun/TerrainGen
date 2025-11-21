@@ -1,12 +1,4 @@
-/**
- * @todo is this being used somewhere?
- */
-export type NodeData = {
-  isOutput?: boolean;
-  operationVal?: string;
-  outputType?: string;
-};
-
+/** Parameterized node type with custom data object! */
 type Node<
   TType extends string,
   TData extends { [key: string]: unknown } = { [key: string]: never },
@@ -81,41 +73,44 @@ export const HANDLES = {
 };
 export type Handles = typeof HANDLES;
 
-export const BASE_NODES: All[] = [
-  {
+/**
+ * Node prefabs for when a user wants to add a new node
+ */
+export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType } } = {
+  transform: {
     type: 'transform', // 0
     data: {},
   },
-  {
+  noise: {
     type: 'noise', // 1
     data: { mode: 'FBM' },
   },
-  {
+  mathVec3: {
     type: 'mathVec3', // 2
     data: {
       operationVal: 'Add',
     },
   },
-  {
+  mixVec3: {
     type: 'mixVec3', // 3
     data: {},
   },
-  {
+  terrain: {
     type: 'terrain', // 4
     data: {},
   },
-  {
+  vector: {
     type: 'vector', // 5
     data: {},
   },
-  {
+  mathFloat: {
     type: 'mathFloat', // 6
     data: {
       operationVal: 'Add',
     },
   },
-  {
+  mixFloat: {
     type: 'mixFloat', // 7
     data: {},
   },
-];
+};
