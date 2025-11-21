@@ -93,6 +93,24 @@ export default function ContextMenu({ top, left, right, bottom, ...props }: Cont
       >
         Mix (Float)
       </button>
+      {/* <button
+        onClick={() => duplicateNode('separate')}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Separate
+      </button>
+      <button
+        onClick={() => duplicateNode('combine')}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Combine
+      </button>
+      <button
+        onClick={() => duplicateNode('float')}
+        className="w-full border-none px-3 py-2 text-left text-red-600 transition-colors hover:bg-gray-100"
+      >
+        Float
+      </button> */}
     </div>
   );
 }

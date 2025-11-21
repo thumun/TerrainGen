@@ -1,14 +1,39 @@
-import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useCallback } from 'react';
+import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
 
-function TerrainNode() {
-  const [translate, setTranslate] = useState({ x: 0, y: 0, z: 0 });
+import { useNodeData } from '@/hooks/use-node-data';
 
-  const onTranslateChange = useCallback((axis: 'x' | 'y' | 'z', value: string) => {
-    const numValue = parseFloat(value) || 0;
+interface VectorNodeData {
+  vecInfo: [number, number, number];
+}
 
-    setTranslate((prev) => ({ ...prev, [axis]: numValue }));
-  }, []);
+function TerrainNode({ data, id }: NodeProps<VectorNodeData>) {
+  const { setNodeData } = useNodeData();
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  const vecInfo = data.vecInfo || [0, 0, 0];
+
+  const onVecChange = useCallback(
+    (axis: 'x' | 'y' | 'z', value: string) => {
+      setNodeData(id, (oldData: VectorNodeData) => {
+        const numValue = parseFloat(value) || 0;
+        const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+
+        const currentVecInfo = oldData.vecInfo || [0, 0, 0];
+
+        const newVecInfo: [number, number, number] = [...currentVecInfo];
+        newVecInfo[axisIndex] = numValue;
+
+        return {
+          ...oldData,
+          vecInfo: newVecInfo,
+        };
+      });
+
+      updateNodeInternals(id);
+    },
+    [setNodeData, id, updateNodeInternals],
+  );
 
   return (
     <div className="transform-node min-w-[260px] space-y-3 rounded-lg bg-slate-800 p-3 text-white shadow-md">
@@ -32,8 +57,8 @@ function TerrainNode() {
             <span className="text-xs text-slate-300">X</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.x}
-              onChange={(e) => onTranslateChange('x', e.target.value)}
+              value={vecInfo[0]}
+              onChange={(e) => onVecChange('x', e.target.value)}
               type="number"
             />
           </div>
@@ -41,8 +66,8 @@ function TerrainNode() {
             <span className="text-xs text-slate-300">Y</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.y}
-              onChange={(e) => onTranslateChange('y', e.target.value)}
+              value={vecInfo[1]}
+              onChange={(e) => onVecChange('y', e.target.value)}
               type="number"
             />
           </div>
@@ -50,8 +75,8 @@ function TerrainNode() {
             <span className="text-xs text-slate-300">Z</span>
             <input
               className="w-12 rounded border border-slate-500 bg-slate-600 p-1 text-center text-white focus:border-blue-400 focus:outline-none"
-              value={translate.z}
-              onChange={(e) => onTranslateChange('z', e.target.value)}
+              value={vecInfo[2]}
+              onChange={(e) => onVecChange('z', e.target.value)}
               type="number"
             />
           </div>

@@ -1,23 +1,25 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 
+import { useNodeData } from '@/hooks/use-node-data';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
 const HANDLES = nodeTypes.HANDLES['mathVec3'];
 // TODO: use these above references in other node components
 
-function MathNodeVec3({ data }: NodeProps<MathVec3NodeData>) {
-  const operationVal = data.operationVal;
-  const [operation, setOperation] = useState(operationVal);
+function MathNodeVec3({ id, data }: NodeProps<MathVec3NodeData>) {
+  const { setNodeData } = useNodeData();
 
-  useEffect(() => {
-    setOperation(operationVal);
-  }, [operationVal]);
-
-  const onOperationChange = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    setOperation(evt.target.value as 'Add' | 'Sub' | 'Mult' | 'Div');
-  }, []);
+  const onOperationChange = useCallback(
+    (evt: React.ChangeEvent<HTMLSelectElement>) => {
+      setNodeData(id, (oldData: { operationVal: number }) => ({
+        ...oldData,
+        operationVal: evt.target.value || 'Add',
+      }));
+    },
+    [id, setNodeData],
+  );
 
   return (
     // need to change color & id based on type
@@ -68,7 +70,7 @@ function MathNodeVec3({ data }: NodeProps<MathVec3NodeData>) {
           <label className="text-sm font-medium">Mode</label>
           <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
             <select
-              value={operation}
+              value={data.operationVal}
               onChange={onOperationChange}
               className="bg-transparent font-bold focus:outline-none"
             >

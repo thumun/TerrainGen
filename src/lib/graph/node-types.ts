@@ -15,6 +15,9 @@ export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' |
 export type MixFloat = Node<'mixFloat'>;
 export type MixVec3 = Node<'mixVec3'>;
 export type Terrain = Node<'terrain'>;
+export type Separate = Node<'separate'>;
+export type Combine = Node<'combine'>;
+export type Float = Node<'float'>;
 
 export type All =
   | Vector
@@ -25,6 +28,9 @@ export type All =
   | MixFloat
   | MixVec3
   | Terrain;
+// | Separate
+// | Combine
+// | Float;
 
 /**
  * Handle IDs for each node type
@@ -95,4 +101,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
     },
   },
   mixFloat: { type: 'mixFloat', data: {} },
+  // separate: { type: 'separate', data: {} },
+  // combine: { type: 'combine', data: {} },
+  // float: { type: 'float', data: {} },
 };

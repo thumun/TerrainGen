@@ -17,6 +17,7 @@ import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
 import type * as scene from '@/lib/scene';
+import { NodeDataProvider } from '@/hooks/use-node-data';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
@@ -31,7 +32,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
   // hook owning node + edge state, and react flow
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } = useNodeGraph();
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, setNodeData } = useNodeGraph();
 
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
@@ -63,23 +64,25 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onEdgesChange={onEdgesChange}
-        onNodesChange={onNodesChange}
-        onConnect={onConnect}
-        onPaneContextMenu={onPaneContextMenu}
-        onPaneClick={onPaneClick}
-        fitView
-        fitViewOptions={fitViewOptions}
-        isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
-      >
-        <Background />
-        <Controls />
-        {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
-      </ReactFlow>
+      <NodeDataProvider value={{ setNodeData }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onEdgesChange={onEdgesChange}
+          onNodesChange={onNodesChange}
+          onConnect={onConnect}
+          onPaneContextMenu={onPaneContextMenu}
+          onPaneClick={onPaneClick}
+          fitView
+          fitViewOptions={fitViewOptions}
+          isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
+        >
+          <Background />
+          <Controls />
+          {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+        </ReactFlow>
+      </NodeDataProvider>
     </div>
   );
 }
