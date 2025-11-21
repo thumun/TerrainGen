@@ -5,6 +5,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
 const HANDLES = nodeTypes.HANDLES['mathVec3'];
+// TODO: use these above references in other node components
 
 function MathNodeVec3({ data }: NodeProps<MathVec3NodeData>) {
   const operationVal = data.operationVal;
