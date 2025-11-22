@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
@@ -7,7 +6,6 @@ import ReactFlow, {
   type FitViewOptions,
   addEdge,
   type Edge,
-  type Node,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -15,11 +13,11 @@ import ContextMenu from './context-menu';
 
 import { nodeTypes } from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
+import { NodeDataProvider } from '@/hooks/use-node-data';
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
 import type * as scene from '@/lib/scene';
-import { NodeDataProvider } from '@/hooks/use-node-data';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
@@ -39,27 +37,6 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
 
-  // TODO: this should be expanded to trigger whenever ANY node connection is updated
-  //   that is upstream to an output node.
-  //
-  /** Callback triggered upon the connection of an edge to an "output" node. */
-  const onOutputNodeConnected = useCallback(
-    (outputNode: Node, connectedNodes: Node[], edges: Edge[]) => {
-      const pipeline = [...connectedNodes, outputNode];
-      graph.executePipeline(pipeline, edges);
-      if (onDisplacePipelineUpdate) {
-        // TODO: we should return something from `executePipeline` and call the below method
-        //       with the result
-        onDisplacePipelineUpdate({
-          uniforms: [],
-          instructionSet: [],
-          outputs: { height: 'foo' },
-        });
-      }
-    },
-    [onDisplacePipelineUpdate],
-  );
-
   /** Callback triggered upon the connection of ANY edge to ANY node. */
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -69,17 +46,20 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
       // Then set the state
       setEdges(updatedEdges);
 
-      if (params.target) {
-        const targetNode = nodes.find((node) => node.id === params.target);
+      if (!params.target) return;
 
-        if (targetNode?.data?.isOutput === true) {
-          console.log('Connected to output node:', targetNode);
-          const connectedNodes = traversal.getNodeGraph(targetNode.id, nodes, updatedEdges);
-          onOutputNodeConnected(targetNode, connectedNodes, updatedEdges);
-        }
+      // Run our big pipeline generator!
+      const pipelines = graph.generateUpdatedPipelines(
+        params.target,
+        nodes as graph.PipelineNode[], // this assertion had better hold true! smile
+        updatedEdges,
+      );
+
+      if (pipelines.displacePipeline && onDisplacePipelineUpdate) {
+        onDisplacePipelineUpdate(pipelines.displacePipeline);
       }
     },
-    [setEdges, nodes, edges, onOutputNodeConnected],
+    [edges, setEdges, nodes, onDisplacePipelineUpdate],
   );
 
   return (

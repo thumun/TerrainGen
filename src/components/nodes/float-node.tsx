@@ -1,26 +1,49 @@
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
 
-import { useNodeData } from '@/hooks/use-node-data';
+// import { useNodeData } from '@/hooks/use-node-data';
 
-interface MathNodeData {
+interface FloatNodeData {
   operationVal: number;
 }
 
-function FloatNode({ id, data }: NodeProps<MathNodeData>) {
-  const { setNodeData } = useNodeData();
+function FloatNode({ id, data }: NodeProps<FloatNodeData>) {
+  const { setNodes } = useReactFlow();
 
   const onOperationChange = useCallback(
-    (value: string) => {
-      const numValue = parseFloat(value) || 0;
+    (evt: React.ChangeEvent<HTMLInputElement>) => {
+      const numValue = parseFloat(evt.target.value) || 0;
 
-      setNodeData(id, (oldData: { operationVal: number }) => ({
-        ...oldData,
-        operationVal: numValue,
-      }));
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data: {
+                ...node.data,
+                operationVal: numValue,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
+
+  // const onOperationChange = useCallback(
+  //   (value: string) => {
+  //     const numValue = parseFloat(value) || 0;
+
+  //     setNodeData(id, (oldData: { operationVal: number }) => ({
+  //       ...oldData,
+  //       operationVal: numValue,
+  //     }));
+  //   },
+  //   [id, setNodeData],
+  // );
 
   return (
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
@@ -41,7 +64,7 @@ function FloatNode({ id, data }: NodeProps<MathNodeData>) {
         <div className="flex items-center justify-between">
           <input
             value={data.operationVal}
-            onChange={(e) => onOperationChange(e.target.value)}
+            onChange={onOperationChange}
             className="bg-transparent font-bold focus:outline-none"
           ></input>
         </div>

@@ -55,6 +55,18 @@ describe('math', () => {
   });
 });
 
+describe('trig math', () => {
+  it('generates sin function', () => {
+    const result = generators.generateTrigMathCode({
+      type: 'trig-math',
+      operation: 'sin',
+      references: { read: 'alpha', write: 'beta' },
+    });
+
+    expect(result.code).toBe('let beta = sin(alpha);');
+  });
+});
+
 describe('separate XYZ', () => {
   it('separates just X component', () => {
     const result = generators.generateSeparateXYZCode({

@@ -10,12 +10,14 @@ import NoiseNode from './noise-node';
 import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
+import TrigMathNodeFloat from './trig-math-node';
 import VectorNode from './vector-node';
 
 export const nodeTypes: NodeTypes = {
   transform: TransformNode,
   noise: NoiseNode,
   mathFloat: MathNodeFloat,
+  trigMathFloat: TrigMathNodeFloat,
   mathVec3: MathNodeVec3,
   mixFloat: MixNodeFloat,
   mixVec3: MixNodeVec3,

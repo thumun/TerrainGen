@@ -1,49 +1,80 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
-
-import { useNodeData } from '@/hooks/use-node-data';
+import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
 
 interface NoiseNodeData {
   scale: number;
   density: number;
-  operationType: number;
+  operationType: string;
 }
 
 function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
-  const { setNodeData } = useNodeData();
+  const { setNodes } = useReactFlow();
 
   const onScaleChange = useCallback(
     (evt: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(evt.target.value);
+      const newValue = parseFloat(evt.target.value) || 0;
 
-      setNodeData(id, (oldData: { density: number }) => ({
-        ...oldData,
-        density: newValue || 0,
-      }));
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                scale: newValue,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
 
   const onDensityChange = useCallback(
     (evt: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(evt.target.value);
+      const newValue = parseFloat(evt.target.value) || 0;
 
-      setNodeData(id, (oldData: { operationVal: number }) => ({
-        ...oldData,
-        operationVal: newValue || 0,
-      }));
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                density: newValue,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
 
   const onOperationChange = useCallback(
     (evt: React.ChangeEvent<HTMLSelectElement>) => {
-      setNodeData(id, (oldData: { operationType: number }) => ({
-        ...oldData,
-        operationType: evt.target.value || 'Simplex',
-      }));
+      const newValue = evt.target.value || 'Simplex';
+
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                operationType: newValue,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
 
   return (
@@ -82,9 +113,9 @@ function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Scale</label>
-          {/* <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
-            {scale.toFixed(2)}
-          </span> */}
+          <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
+            {data.scale.toFixed(2)}
+          </span>
         </div>
         <input
           type="range"
@@ -107,9 +138,9 @@ function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
         />
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">NumOctaves</label>
-          {/* <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
-            {density.toFixed(2)}
-          </span> */}
+          <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
+            {data.density.toFixed(2)}
+          </span>
         </div>
         <input
           type="range"

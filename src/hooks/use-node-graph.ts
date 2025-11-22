@@ -82,8 +82,6 @@ export const useNodeGraph = () => {
     [nodes, setNodes],
   );
 
-  console.log(nodes);
-
   return {
     nodes,
     edges,
