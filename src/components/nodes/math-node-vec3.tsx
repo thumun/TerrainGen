@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
+import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
 
-import { useNodeData } from '@/hooks/use-node-data';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
@@ -9,16 +8,29 @@ const HANDLES = nodeTypes.HANDLES['mathVec3'];
 // TODO: use these above references in other node components
 
 function MathNodeVec3({ id, data }: NodeProps<MathVec3NodeData>) {
-  const { setNodeData } = useNodeData();
+  const { setNodes } = useReactFlow();
 
   const onOperationChange = useCallback(
     (evt: React.ChangeEvent<HTMLSelectElement>) => {
-      setNodeData(id, (oldData: { operationVal: number }) => ({
-        ...oldData,
-        operationVal: evt.target.value || 'Add',
-      }));
+      const newOperationVal = evt.target.value || 'Add';
+
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data: {
+                ...node.data,
+                operationVal: newOperationVal,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
 
   return (

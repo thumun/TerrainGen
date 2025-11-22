@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
-
-import { useNodeData } from '@/hooks/use-node-data';
+import { Handle, Position, type NodeProps, useReactFlow } from 'reactflow';
 
 interface TransformNodeData {
   translate: [number, number, number];
@@ -11,7 +9,7 @@ interface TransformNodeData {
 }
 
 function TransformNode({ data, id }: NodeProps<TransformNodeData>) {
-  const { setNodeData } = useNodeData();
+  const { setNodes } = useReactFlow();
 
   const translate = data.translate || [0, 0, 0];
   const rotate = data.rotate || [0, 0, 0];
@@ -22,58 +20,85 @@ function TransformNode({ data, id }: NodeProps<TransformNodeData>) {
     (value: string) => {
       const numValue = parseFloat(value) || 1;
 
-      setNodeData(id, (oldData: TransformNodeData) => ({
-        ...oldData,
-        uniformScale: numValue,
-      }));
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data: {
+                ...node.data,
+                uniformScale: numValue,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [id, setNodeData],
+    [id, setNodes],
   );
 
   const onVecChange = useCallback(
     (axis: 'x' | 'y' | 'z', value: string, type: string) => {
-      setNodeData(id, (oldData: TransformNodeData) => {
-        const numValue = parseFloat(value) || (type === 'scale' ? 1 : 0);
-        const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+      const numValue = parseFloat(value) || (type === 'scale' ? 1 : 0);
+      const axisIndex = { x: 0, y: 1, z: 2 }[axis];
 
-        switch (type) {
-          case 'translate': {
-            const currentVecInfo = oldData.translate || [0, 0, 0];
-            const newVecInfo: [number, number, number] = [...currentVecInfo];
-            newVecInfo[axisIndex] = numValue;
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            const currentData = node.data as TransformNodeData;
 
-            return {
-              ...oldData,
-              translate: newVecInfo,
-            };
-          }
-          case 'rotate': {
-            const currentVecInfo = oldData.rotate || [0, 0, 0];
-            const newVecInfo: [number, number, number] = [...currentVecInfo];
-            newVecInfo[axisIndex] = numValue;
+            switch (type) {
+              case 'translate': {
+                const currentVecInfo = currentData.translate || [0, 0, 0];
+                const newVecInfo: [number, number, number] = [...currentVecInfo];
+                newVecInfo[axisIndex] = numValue;
 
-            return {
-              ...oldData,
-              rotate: newVecInfo,
-            };
-          }
-          case 'scale': {
-            const currentVecInfo = oldData.scale || [1, 1, 1];
-            const newVecInfo: [number, number, number] = [...currentVecInfo];
-            newVecInfo[axisIndex] = numValue;
+                return {
+                  ...node,
+                  data: {
+                    ...currentData,
+                    translate: newVecInfo,
+                  },
+                };
+              }
+              case 'rotate': {
+                const currentVecInfo = currentData.rotate || [0, 0, 0];
+                const newVecInfo: [number, number, number] = [...currentVecInfo];
+                newVecInfo[axisIndex] = numValue;
 
-            return {
-              ...oldData,
-              scale: newVecInfo,
-            };
+                return {
+                  ...node,
+                  data: {
+                    ...currentData,
+                    rotate: newVecInfo,
+                  },
+                };
+              }
+              case 'scale': {
+                const currentVecInfo = currentData.scale || [1, 1, 1];
+                const newVecInfo: [number, number, number] = [...currentVecInfo];
+                newVecInfo[axisIndex] = numValue;
+
+                return {
+                  ...node,
+                  data: {
+                    ...currentData,
+                    scale: newVecInfo,
+                  },
+                };
+              }
+              default: {
+                return node;
+              }
+            }
           }
-          default: {
-            return oldData;
-          }
-        }
-      });
+          return node;
+        }),
+      );
     },
-    [setNodeData, id],
+    [id, setNodes],
   );
 
   return (

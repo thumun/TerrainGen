@@ -1,39 +1,71 @@
 import { useCallback } from 'react';
-import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
-
-import { useNodeData } from '@/hooks/use-node-data';
+import { Handle, Position, type NodeProps, useReactFlow } from 'reactflow';
 
 interface VectorNodeData {
   vecInfo: [number, number, number];
 }
 
 function TerrainNode({ data, id }: NodeProps<VectorNodeData>) {
-  const { setNodeData } = useNodeData();
-  const updateNodeInternals = useUpdateNodeInternals();
-
   const vecInfo = data.vecInfo || [0, 0, 0];
+
+  const { setNodes } = useReactFlow();
 
   const onVecChange = useCallback(
     (axis: 'x' | 'y' | 'z', value: string) => {
-      setNodeData(id, (oldData: VectorNodeData) => {
-        const numValue = parseFloat(value) || 0;
-        const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+      const numValue = parseFloat(value) || 0;
+      const axisIndex = { x: 0, y: 1, z: 2 }[axis];
 
-        const currentVecInfo = oldData.vecInfo || [0, 0, 0];
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const currentVecInfo = node.data.vecInfo || [0, 0, 0];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const newVecInfo: [number, number, number] = currentVecInfo;
+            newVecInfo[axisIndex] = numValue;
 
-        const newVecInfo: [number, number, number] = [...currentVecInfo];
-        newVecInfo[axisIndex] = numValue;
-
-        return {
-          ...oldData,
-          vecInfo: newVecInfo,
-        };
-      });
-
-      updateNodeInternals(id);
+            return {
+              ...node,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data: {
+                ...node.data,
+                operationVal: newVecInfo,
+              },
+            };
+          }
+          return node;
+        }),
+      );
     },
-    [setNodeData, id, updateNodeInternals],
+    [id, setNodes],
   );
+
+  // const { setNodeData } = useNodeData();
+  // const updateNodeInternals = useUpdateNodeInternals();
+
+  // const vecInfo = data.vecInfo || [0, 0, 0];
+
+  // const onVecChange = useCallback(
+  //   (axis: 'x' | 'y' | 'z', value: string) => {
+  //     setNodeData(id, (oldData: VectorNodeData) => {
+  //       const numValue = parseFloat(value) || 0;
+  //       const axisIndex = { x: 0, y: 1, z: 2 }[axis];
+
+  //       const currentVecInfo = oldData.vecInfo || [0, 0, 0];
+
+  //       const newVecInfo: [number, number, number] = [...currentVecInfo];
+  //       newVecInfo[axisIndex] = numValue;
+
+  //       return {
+  //         ...oldData,
+  //         vecInfo: newVecInfo,
+  //       };
+  //     });
+
+  //     updateNodeInternals(id);
+  //   },
+  //   [setNodeData, id, updateNodeInternals],
+  // );
 
   return (
     <div className="transform-node min-w-[260px] space-y-3 rounded-lg bg-slate-800 p-3 text-white shadow-md">
