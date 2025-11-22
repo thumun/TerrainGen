@@ -1,5 +1,5 @@
-import { Mesh } from '@/lib/scene/mesh';
 import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
+import { Mesh } from '@/lib/scene/mesh';
 import * as shaders from '@/lib/shaders/shaders';
 
 export class InstancePointsPipeline {

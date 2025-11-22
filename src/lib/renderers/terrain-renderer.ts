@@ -1,4 +1,8 @@
 import type { IRenderer } from '@/components/common/webgpu-canvas';
+import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
+import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
+import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
+import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
 import { Mesh } from '@/lib/scene/mesh';
@@ -8,10 +12,6 @@ import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displ
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
-import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
-import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
-import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
-import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
 
 export type TerrainRendererGlobalParameters = {
   size: number;
