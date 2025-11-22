@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
 
-// import { useNodeData } from '@/hooks/use-node-data';
+import * as nodeTypes from '@/lib/graph/node-types';
 
-interface MathNodeData {
-  operationVal: string;
-}
+type MathVec3NodeData = nodeTypes.MathVec3['data'];
+const HANDLES = nodeTypes.HANDLES['mathVec3'];
+// TODO: use these above references in other node components
 
-function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
+function MathNodeVec3({ id, data }: NodeProps<MathVec3NodeData>) {
   const { setNodes } = useReactFlow();
 
   const onOperationChange = useCallback(
@@ -33,25 +33,13 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
     [id, setNodes],
   );
 
-  //   const { setNodeData } = useNodeData();
-
-  //   const onOperationChange = useCallback(
-  //     (evt: React.ChangeEvent<HTMLSelectElement>) => {
-  //       setNodeData(id, (oldData: { operationVal: number }) => ({
-  //         ...oldData,
-  //         operationVal: evt.target.value || 'Add',
-  //       }));
-  //     },
-  //     [id, setNodeData],
-  //   );
-
   return (
     // need to change color & id based on type
     <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
       <Handle
         type="source"
         position={Position.Right}
-        id="vec3-out"
+        id={HANDLES.out.result}
         className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500`}
       />
 
@@ -67,7 +55,7 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val1-in"
+          id={HANDLES.in.a}
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
         />
         <div className="flex items-center justify-between">
@@ -80,7 +68,7 @@ function MathNodeVec3({ id, data }: NodeProps<MathNodeData>) {
         <Handle
           type="target"
           position={Position.Left}
-          id="vec3-val2-in"
+          id={HANDLES.in.b}
           className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
         />
         <div className="flex items-center justify-between">
