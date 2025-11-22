@@ -53,7 +53,7 @@ export const HANDLES = {
     out: { result: 'geo-out' },
   },
   noise: {
-    in: { scale: 'float-scale', density: 'float-density' },
+    in: { position: 'vec3-position', numOctaves: 'uint-numOctaves', scale: 'float-scale' },
     out: { result: 'float-out' },
   },
   mathFloat: {

@@ -1,179 +1,43 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useCallback } from 'react';
-import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
+import { useReactFlow, type NodeProps } from 'reactflow';
 
-interface NoiseNodeData {
-  scale: number;
-  density: number;
-  operationType: string;
-}
+import * as helpers from './helpers';
+
+import * as TerrainGenNode from '@/components/common/terraingen-node';
+import * as nodeTypes from '@/lib/graph/node-types';
+
+type NoiseNodeData = nodeTypes.Noise['data'];
+const HANDLES = nodeTypes.HANDLES.noise;
 
 function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
   const { setNodes } = useReactFlow();
 
-  const onScaleChange = useCallback(
-    (evt: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(evt.target.value) || 0;
-
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                scale: newValue,
-              },
-            };
-          }
-          return node;
-        }),
-      );
-    },
-    [id, setNodes],
-  );
-
-  const onDensityChange = useCallback(
-    (evt: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(evt.target.value) || 0;
-
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                density: newValue,
-              },
-            };
-          }
-          return node;
-        }),
-      );
-    },
-    [id, setNodes],
-  );
-
-  const onOperationChange = useCallback(
-    (evt: React.ChangeEvent<HTMLSelectElement>) => {
-      const newValue = evt.target.value || 'Simplex';
-
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                operationType: newValue,
-              },
-            };
-          }
-          return node;
-        }),
-      );
-    },
-    [id, setNodes],
-  );
+  const onModeChange = (mode: NoiseNodeData['mode']) => {
+    helpers.updateNodeData<NoiseNodeData>({ id, setNodes, newData: { mode } });
+  };
 
   return (
-    <div className="transform-node min-w-[260px] space-y-3 rounded-lg bg-slate-800 p-3 text-white shadow-md">
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="float-out"
-        className="!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
+    <TerrainGenNode.Root title="Noise">
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
+
+      <TerrainGenNode.HandleInput
+        label="Position"
+        handleId={HANDLES.in.position}
+        valueType="vec3f"
       />
+      <TerrainGenNode.HandleInput
+        label="Octave Count"
+        handleId={HANDLES.in.numOctaves}
+        valueType="u32"
+      />
+      <TerrainGenNode.HandleInput label="Scale" handleId={HANDLES.in.scale} valueType="f32" />
 
-      <div className="mb-2 text-center">
-        <div className="inline-block -translate-y-1 transform rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-bold text-white shadow-sm">
-          Noise
-        </div>
-      </div>
-
-      {/* Input Section */}
-      <div className="relative flex items-center justify-between rounded-md bg-slate-700/50 p-3">
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="vec3-pos-in"
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-        />
-        <label className="flex-1 text-sm font-medium">Position</label>
-      </div>
-
-      {/* Scale Section */}
-      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="float-scale-in"
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
-        />
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Scale</label>
-          <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
-            {data.scale.toFixed(2)}
-          </span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={data.scale}
-          onChange={onScaleChange}
-          className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
-        />
-      </div>
-
-      {/* Density Section */}
-      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="float-numOctaves-in"
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-blue-500"
-        />
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">NumOctaves</label>
-          <span className="min-w-[60px] rounded bg-slate-600 px-2 py-1 text-center text-sm">
-            {data.density.toFixed(2)}
-          </span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={data.density}
-          onChange={onDensityChange}
-          className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-600"
-        />
-      </div>
-
-      {/* Type of Node */}
-      <div className="mb-2 text-center">
-        <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
-          <select
-            value={data.operationType}
-            onChange={onOperationChange}
-            className="bg-transparent font-bold focus:outline-none"
-          >
-            <option value="Simplex" className="bg-slate-800 text-white">
-              Simplex
-            </option>
-            <option value="Perlin" className="bg-slate-800 text-white">
-              Perlin
-            </option>
-            <option value="Worley" className="bg-slate-800 text-white">
-              Worley
-            </option>
-          </select>
-        </div>
-      </div>
-    </div>
+      <TerrainGenNode.SelectInput
+        label="Mode"
+        value={data.mode}
+        onChange={onModeChange}
+        options={[{ label: 'FBM', value: 'FBM' }]}
+      />
+    </TerrainGenNode.Root>
   );
 }
 
