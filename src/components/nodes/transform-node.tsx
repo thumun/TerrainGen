@@ -24,7 +24,7 @@ function TransformNode() {
         valueType="vec3f"
       />
       <TerrainGenNode.HandleInput label="Scale" handleId={HANDLES.in.scale} valueType="vec3f" />
-      {/* TODO: this "uniform scale" thing seems a bid redundant */}
+      {/* TODO: this "uniform scale" thing seems a bit redundant */}
       <TerrainGenNode.HandleInput
         label="Uniform Scale"
         handleId={HANDLES.in.uniformScale}
