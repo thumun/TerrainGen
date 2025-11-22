@@ -107,27 +107,25 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
-  logInstancePoints(device: GPUDevice, buffer: GPUBuffer, numInstances: number) {
-    const readback = device.createBuffer({
-      size: numInstances * 8 * 4, // 8 floats per instance, 4 bytes each
+  readGpuBuffer(
+    device: GPUDevice,
+    buffer: GPUBuffer,
+    byteLength: number,
+    callback: (data: ArrayBuffer) => void,
+  ) {
+    const readBuffer = device.createBuffer({
+      size: byteLength,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     const encoder = device.createCommandEncoder();
-    encoder.copyBufferToBuffer(buffer, 0, readback, 0, numInstances * 8 * 4);
+    encoder.copyBufferToBuffer(buffer, 0, readBuffer, 0, byteLength);
     device.queue.submit([encoder.finish()]);
 
-    readback.mapAsync(GPUMapMode.READ).then(() => {
-      const data = new Float32Array(readback.getMappedRange());
-      for (let i = 0; i < numInstances; i++) {
-        const offset = i * 8;
-        console.log({
-          pos: [data[offset + 0], data[offset + 1], data[offset + 2]],
-          nor: [data[offset + 3], data[offset + 4], data[offset + 5]],
-          uv: [data[offset + 6], data[offset + 7]],
-        });
-      }
-      readback.unmap();
+    readBuffer.mapAsync(GPUMapMode.READ).then(() => {
+      const arrayBuffer = readBuffer.getMappedRange().slice(0);
+      readBuffer.unmap();
+      callback(arrayBuffer); // <-- return results here
     });
   }
 
@@ -464,6 +462,34 @@ export class TerrainRenderer implements IRenderer {
     // ----------------------------------------------------------------------------------------
     // --------------------  INSTANCING RENDERER SETUP
     // ----------------------------------------------------------------------------------------
+
+    // create index and vertex buffers for things we want to instance (for now, plane)
+    // prettier-ignore
+    const vertexArray = new Float32Array([
+      -1.0,  1.0, 0.0,
+       1.0,  1.0, 0.0,
+       1.0, -1.0, 0.0,
+      -1.0, -1.0, 0.0,
+    ]);
+
+    const instanceVertexBuffer = this.device.createBuffer({
+      label: 'instancing vertex buffer',
+      size: vertexArray.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, vertexArray);
+
+    const indexArray = new Uint32Array([0, 1, 2, 0, 2, 3]);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      label: 'instancing index buffer',
+      size: indexArray.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, indexArray);
+
+    // do all the renderer setup here...
+
     const drawArgs = new Uint32Array(4);
     drawArgs[0] = 6; // vertex count for instance
     drawArgs[1] = this.numInstances; // instance count.
@@ -481,8 +507,24 @@ export class TerrainRenderer implements IRenderer {
       label: 'instancing bind group layout 2',
       entries: [
         {
-          // buffer of vertices
+          // buffer of vertices to instance on
           binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+        {
+          // buffer of vertices for thing we're instancing
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+        {
+          // buffer of indices
+          binding: 2,
           visibility: GPUShaderStage.VERTEX,
           buffer: {
             type: 'read-only-storage',
@@ -494,7 +536,11 @@ export class TerrainRenderer implements IRenderer {
     this.instancingPointsBindGroup = this.device.createBindGroup({
       label: 'instancing bind group 2',
       layout: this.instancingPointsBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.instancePoints } }],
+      entries: [
+        { binding: 0, resource: { buffer: this.instancePoints } },
+        { binding: 1, resource: { buffer: instanceVertexBuffer } },
+        { binding: 2, resource: { buffer: instanceIndexBuffer } },
+      ],
     });
 
     // create render pipeline for instancing as well
@@ -562,8 +608,6 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
 
     this.device.queue.submit([encoder.finish()]);
-
-    //this.logInstancePoints(this.device, this.instancePoints, this.numInstances);
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
