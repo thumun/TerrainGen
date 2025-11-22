@@ -7,7 +7,7 @@ type Node<
   data: TData;
 };
 
-export type Vector = Node<'vector'>;
+export type Vector = Node<'vector', { x: number; y: number; z: number }>;
 export type Transform = Node<'transform'>;
 export type Noise = Node<'noise', { mode: 'FBM' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
@@ -18,7 +18,7 @@ export type MixVec3 = Node<'mixVec3'>;
 export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
-export type Float = Node<'float'>;
+export type Float = Node<'float', { value: number }>;
 
 export type All =
   | Vector
@@ -53,7 +53,7 @@ export const HANDLES = {
     out: { result: 'geo-out' },
   },
   noise: {
-    in: { scale: 'float-scale', density: 'float-density' },
+    in: { position: 'vec3-position', numOctaves: 'uint-numOctaves', scale: 'float-scale' },
     out: { result: 'float-out' },
   },
   mathFloat: {
@@ -109,7 +109,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   },
   mixVec3: { type: 'mixVec3', data: {} },
   terrain: { type: 'terrain', data: {} },
-  vector: { type: 'vector', data: {} },
+  vector: { type: 'vector', data: { x: 0, y: 0, z: 0 } },
   mathFloat: {
     type: 'mathFloat',
     data: { operationVal: 'Add' },
@@ -121,5 +121,5 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   mixFloat: { type: 'mixFloat', data: {} },
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
-  float: { type: 'float', data: {} },
+  float: { type: 'float', data: { value: 0 } },
 };

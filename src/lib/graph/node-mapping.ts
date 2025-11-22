@@ -96,9 +96,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     type: 'noise',
     method: ({ FBM: 'fbm' } as const)[node.data.mode],
     references: {
-      // TODO: the noise node needs these inputs
-      pos: 'dummy',
-      numOctaves: 'dummy',
+      pos: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.position),
+      numOctaves: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.numOctaves),
       scale: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.scale),
       write: getHandleKey({
         sourceNodeId: node.id,
