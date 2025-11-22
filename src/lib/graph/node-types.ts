@@ -7,7 +7,7 @@ type Node<
   data: TData;
 };
 
-export type Vector = Node<'vector'>;
+export type Vector = Node<'vector', { x: number; y: number; z: number }>;
 export type Transform = Node<'transform'>;
 export type Noise = Node<'noise', { mode: 'FBM' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
@@ -109,7 +109,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   },
   mixVec3: { type: 'mixVec3', data: {} },
   terrain: { type: 'terrain', data: {} },
-  vector: { type: 'vector', data: {} },
+  vector: { type: 'vector', data: { x: 0, y: 0, z: 0 } },
   mathFloat: {
     type: 'mathFloat',
     data: { operationVal: 'Add' },
