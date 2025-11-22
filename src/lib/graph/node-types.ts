@@ -18,7 +18,7 @@ export type MixVec3 = Node<'mixVec3'>;
 export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
-export type Float = Node<'float'>;
+export type Float = Node<'float', { value: number }>;
 
 export type All =
   | Vector
@@ -121,5 +121,5 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   mixFloat: { type: 'mixFloat', data: {} },
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
-  float: { type: 'float', data: {} },
+  float: { type: 'float', data: { value: 0 } },
 };
