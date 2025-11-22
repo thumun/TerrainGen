@@ -11,6 +11,12 @@ export type OutputNodeUpdates = { displacePipeline?: scene.DisplacePipeline };
 
 export type PipelineNode = types.Node & nodeTypes.All;
 
+/**
+ * Main entrypoint for regenerating pipelines.
+ *
+ * @param nodeId  The ID of the node at which changes have been made (i.e. a connection is made)
+ * @returns       An object containing any updated pipelines downstream from the provided node
+ */
 export function generateUpdatedPipelines(
   nodeId: string,
   nodes: PipelineNode[],
@@ -26,14 +32,14 @@ export function generateUpdatedPipelines(
     const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
 
     // generate uniforms
-    const uniforms = orderedDependencyNodes.flatMap((node) => getUniforms(node, edges));
+    const uniforms = orderedDependencyNodes.flatMap(getUniforms);
 
     // generate instruction set
     const instructionSet = orderedDependencyNodes
       .map((node) => getInstruction(node, edges))
       .filter((instruction) => instruction !== null);
 
-    // TODO: get height key
+    // TODO: get height key from the incoming edge of the terrain node
     const outputs: scene.DisplacePipeline['outputs'] = { height: 'TODO' };
 
     displacePipeline = { instructionSet, uniforms, outputs };
@@ -46,6 +52,7 @@ function getInstruction(
   node: nodeTypes.All & { id: string },
   edges: types.Edge[],
 ): instructions.All | null {
+  /** A mapping from incoming handles on our node to the incoming edge */
   const incomingHandlesToEdges = Object.fromEntries(
     edges
       .filter((edge) => edge.target === node.id)
@@ -81,14 +88,12 @@ function getInstruction(
   );
 }
 
-// TODO TODO TODO
-function getUniforms(
-  // @ts-expect-error TODO use this
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  node: nodeTypes.All & { id: string },
-  // @ts-expect-error TODO use this
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  edges: types.Edge[],
-): util.UniformConfig[] {
-  return [];
+function getUniforms(node: nodeTypes.All & { id: string }): util.UniformConfig[] {
+  const uniformMapping = nodeMapping.UNIFORM_MAPPING[node.type] as nodeMapping.UniformGenerator<
+    nodeTypes.All,
+    typeof node.type,
+    util.UniformConfig
+  >;
+
+  return uniformMapping(node);
 }

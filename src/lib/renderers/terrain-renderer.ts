@@ -565,6 +565,18 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
+  /**
+   * Set a uniform's value for the displace pipeline.
+   *
+   * @param uniformKey  The key given to the uniform in `configureDisplacePipeline`
+   * @param value       New value to assign to the uniform
+   */
+  // @ts-expect-error TODO
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setDisplacePipelineUniform(uniformKey: string, value: number | [number, number, number]) {
+    console.warn('setDisplacePipelineUniform is not implemented!');
+  }
+
   setMeshUniforms(size: number, resolution: number) {
     this.mesh.updateUniforms(this.device, size, resolution);
 

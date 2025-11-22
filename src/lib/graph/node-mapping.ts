@@ -87,16 +87,7 @@ const dummyHandler = () => {
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
   // TODO: this is not a real instruction yet
   float: dummyHandler,
-  vector: (node): instructions.Vector => ({
-    type: 'vector',
-    references: {
-      // TODO: this needs read references to uniforms
-      write: getHandleKey({
-        sourceNodeId: node.id,
-        outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
-      }),
-    },
-  }),
+  vector: () => null,
 
   // TODO: this transform functionality is not real until we have geometry
   transform: dummyHandler,
@@ -213,8 +204,26 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   noise: dummyUniformHandler,
   terrain: dummyUniformHandler,
   transform: dummyUniformHandler,
-  vector: dummyUniformHandler,
   combine: dummyUniformHandler,
-  float: dummyUniformHandler,
+  vector: (node) => [
+    {
+      type: 'vec3f',
+      key: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
+      }),
+      initialValue: [0, 0, 0], // TODO: pull from node.data
+    },
+  ],
+  float: (node) => [
+    {
+      type: 'f32',
+      key: getHandleKey({
+        sourceNodeId: node.id,
+        outgoingHandleId: nodeTypes.HANDLES.float.out.result,
+      }),
+      initialValue: 0, // TODO: pull from node.data
+    },
+  ],
   separate: dummyUniformHandler,
 };
