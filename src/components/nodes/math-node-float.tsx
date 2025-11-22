@@ -6,6 +6,7 @@ import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathNodeData = nodeTypes.MathFloat['data'];
+const HANDLES = nodeTypes.HANDLES.mathFloat;
 
 function MathNodeFloat({ id, data }: NodeProps<MathNodeData>) {
   const { setNodes } = useReactFlow();
@@ -16,21 +17,10 @@ function MathNodeFloat({ id, data }: NodeProps<MathNodeData>) {
 
   return (
     <TerrainGenNode.Root title="Math (Float)">
-      <TerrainGenNode.HandleOutput
-        handleId={nodeTypes.HANDLES.mathFloat.out.result}
-        valueType="f32"
-      />
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
 
-      <TerrainGenNode.HandleInput
-        label="Value A"
-        handleId={nodeTypes.HANDLES.mathFloat.in.a}
-        valueType="f32"
-      />
-      <TerrainGenNode.HandleInput
-        label="Value B"
-        handleId={nodeTypes.HANDLES.mathFloat.in.b}
-        valueType="f32"
-      />
+      <TerrainGenNode.HandleInput label="Value A" handleId={HANDLES.in.a} valueType="f32" />
+      <TerrainGenNode.HandleInput label="Value B" handleId={HANDLES.in.b} valueType="f32" />
 
       <TerrainGenNode.SelectInput
         label="Mode"
