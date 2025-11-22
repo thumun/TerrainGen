@@ -5,7 +5,7 @@ const HANDLES = nodeTypes.HANDLES.combine;
 
 function CombineNode() {
   return (
-    <TerrainGenNode.Root title="Combine-XYZ">
+    <TerrainGenNode.Root title="Combine XYZ">
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.xyz} valueType="vec3f" />
 
       <TerrainGenNode.HandleInput label="X" handleId={HANDLES.in.x} valueType="f32" />
