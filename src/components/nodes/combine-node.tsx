@@ -7,6 +7,7 @@ function CombineNode() {
   return (
     <TerrainGenNode.Root title="Combine-XYZ">
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.xyz} valueType="vec3f" />
+
       <TerrainGenNode.HandleInput label="X" handleId={HANDLES.in.x} valueType="f32" />
       <TerrainGenNode.HandleInput label="Y" handleId={HANDLES.in.y} valueType="f32" />
       <TerrainGenNode.HandleInput label="Z" handleId={HANDLES.in.z} valueType="f32" />
