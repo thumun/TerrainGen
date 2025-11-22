@@ -1,1 +1,1 @@
-export type ValueType = 'f32' | 'u32' | 'vec3f';
+export type ValueType = 'f32' | 'u32' | 'vec3f' | 'geometry';
