@@ -48,6 +48,7 @@ export class TerrainRenderer implements IRenderer {
   // TODO: probably convert this into discriminated union with all of the
   //   relevant bindgroups/layouts/buffers, preventing invalid reads
   displacePipelineConfigured: boolean = false;
+  instancingPipelineConfigured: boolean = false;
 
   // custom compute pipeline (hopefully this works lol)
   customBindGroupLayout: GPUBindGroupLayout;
@@ -777,6 +778,16 @@ export class TerrainRenderer implements IRenderer {
 
   disableDisplacePipeline() {
     this.displacePipelineConfigured = false;
+  }
+
+  configureInstancingPipeline() {
+    this.instancingPipelineConfigured = true;
+
+    // TODO: Write this method
+  }
+
+  disableInstancingPipeline() {
+    this.instancingPipelineConfigured = false;
   }
 
   setMeshUniforms(size: number, resolution: number) {
