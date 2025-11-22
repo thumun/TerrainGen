@@ -9,7 +9,10 @@ export default function NumberInput({ value, onChange }: NumberInputProps) {
       <div className="flex items-center justify-between">
         <input
           value={value}
-          onChange={(evt) => onChange(Number.parseFloat(evt.target.value))}
+          type="number"
+          step={0.1}
+          // TODO: better accessibility on this number, like dragging to raise/lower
+          onChange={(evt) => onChange(Number.parseFloat(evt.target.value) || 0)}
           className="bg-transparent font-bold focus:outline-none"
         ></input>
       </div>
