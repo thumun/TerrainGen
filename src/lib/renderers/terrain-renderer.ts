@@ -12,7 +12,6 @@ import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displ
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
-
 export type TerrainRendererGlobalParameters = {
   size: number;
   resolution: number;
