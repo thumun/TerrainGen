@@ -12,6 +12,9 @@ var<uniform> meshUniforms : MeshUniforms;
 @group(2) @binding(0)
 var<storage, read_write> instance_pts: array<f32>;
 
+@group(2) @binding(1)
+var<uniform> instanceCount: u32;
+
 fn vertexOffset(i: u32) -> u32 { 
     return i * 8u; 
 }
@@ -29,10 +32,10 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
     let vertexCount = (subdivisions + 1u) * (subdivisions + 1u); // 25
     let indexCount = subdivisions * subdivisions * 6u; // 16 * 6
-    let instanceCount = 25u; //hardcoded for now...
+    let numInsts = instanceCount; //hardcoded for now...
 
    // do stuff :/
-    if (id.x >= instanceCount) {
+    if (id.x >= numInsts) {
         return;
     }
 
