@@ -18,7 +18,7 @@ export default function HandleInput({ handleId, valueType, label }: HandleInputP
         type="target"
         position={Position.Left}
         id={handleId}
-        className={`absolute! top-1/2! -left-2! h-3! w-3! -translate-y-1/2! ${colorClassName}`}
+        className={`absolute! top-1/2! -left-6! h-3! w-3! -translate-y-1/2! ${colorClassName}`}
       />
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium">{label}</label>
