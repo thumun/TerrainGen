@@ -21,6 +21,8 @@ export class TerrainRenderer implements IRenderer {
   context: GPUCanvasContext;
   device: GPUDevice;
 
+  numInstances = 30;
+
   // ------------------------------------------------------------------------------------------
   // ------ Setup: buffers, layouts, pipeline
   // ------------------------------------------------------------------------------------------
@@ -35,38 +37,52 @@ export class TerrainRenderer implements IRenderer {
   pipeline: GPURenderPipeline;
 
   // compute pipeline yay
-  terrainComputeBindGroupLayout: GPUBindGroupLayout;
-  terrainComputeBindGroup: GPUBindGroup;
+  terrainBindGroupLayout: GPUBindGroupLayout;
+  terrainBindGroup: GPUBindGroup;
 
-  terrainComputeUniformBindGroupLayout: GPUBindGroupLayout;
-  terrainComputeUniformBindGroup: GPUBindGroup;
+  terrainUniformBindGroupLayout: GPUBindGroupLayout;
+  terrainUniformBindGroup: GPUBindGroup;
 
-  terrainComputePipeline: GPUComputePipeline;
+  terrainPipeline: GPUComputePipeline;
 
   // TODO: probably convert this into discriminated union with all of the
   //   relevant bindgroups/layouts/buffers, preventing invalid reads
   displacePipelineConfigured: boolean = false;
+  instancingPipelineConfigured: boolean = false;
 
   // custom compute pipeline (hopefully this works lol)
-  customComputeBindGroupLayout: GPUBindGroupLayout;
-  customComputeBindGroup: GPUBindGroup;
+  customBindGroupLayout: GPUBindGroupLayout;
+  customBindGroup: GPUBindGroup;
 
-  customComputeUniformBindGroupLayout: GPUBindGroupLayout;
-  customComputeUniformBindGroup: GPUBindGroup;
+  customUniformBindGroupLayout: GPUBindGroupLayout;
+  customUniformBindGroup: GPUBindGroup;
 
-  customComputeNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
-  customComputeNodeGraphUniformsBindGroup: GPUBindGroup;
+  customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
+  customNodeGraphUniformsBindGroup: GPUBindGroup;
 
-  customComputePipeline: GPUComputePipeline;
+  customPipeline: GPUComputePipeline;
 
   // normals pipeline
-  normalsComputeBindGroupLayout: GPUBindGroupLayout;
-  normalsComputeBindGroup: GPUBindGroup;
+  normalsBindGroupLayout: GPUBindGroupLayout;
+  normalsBindGroup: GPUBindGroup;
 
-  normalsComputeUniformBindGroupLayout: GPUBindGroupLayout;
-  normalsComputeUniformBindGroup: GPUBindGroup;
+  normalsUniformBindGroupLayout: GPUBindGroupLayout;
+  normalsUniformBindGroup: GPUBindGroup;
 
-  normalsComputePipeline: GPUComputePipeline;
+  normalsPipeline: GPUComputePipeline;
+
+  // instancing things
+  instancePoints: GPUBuffer;
+  indirectInstanceBuffer: GPUBuffer;
+  instanceCountBuffer: GPUBuffer;
+
+  instancingBindGroupLayout: GPUBindGroupLayout;
+  instancingBindGroup: GPUBindGroup;
+  instancingPipeline: GPUComputePipeline;
+  instancingRenderPipeline: GPURenderPipeline;
+
+  instancingPointsBindGroupLayout: GPUBindGroupLayout;
+  instancingPointsBindGroup: GPUBindGroup;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -144,7 +160,7 @@ export class TerrainRenderer implements IRenderer {
     // ----------------------------------------------------------------------------------------
     // --------------------  TERRAIN COMPUTE PIPELINE
     // ----------------------------------------------------------------------------------------
-    this.terrainComputeBindGroupLayout = this.device.createBindGroupLayout({
+    this.terrainBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute bind group layout',
       entries: [
         {
@@ -166,16 +182,16 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.terrainComputeBindGroup = this.device.createBindGroup({
+    this.terrainBindGroup = this.device.createBindGroup({
       label: 'terrain compute bind group',
-      layout: this.terrainComputeBindGroupLayout,
+      layout: this.terrainBindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
         { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
       ],
     });
 
-    this.terrainComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+    this.terrainUniformBindGroupLayout = this.device.createBindGroupLayout({
       label: 'terrain compute uniform bind group layout',
       entries: [
         {
@@ -189,20 +205,17 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.terrainComputeUniformBindGroup = this.device.createBindGroup({
+    this.terrainUniformBindGroup = this.device.createBindGroup({
       label: 'terrain compute uniform bind group',
-      layout: this.terrainComputeUniformBindGroupLayout,
+      layout: this.terrainUniformBindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
     });
 
-    this.terrainComputePipeline = this.device.createComputePipeline({
+    this.terrainPipeline = this.device.createComputePipeline({
       label: 'terrain compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'terrain compute pipeline layout',
-        bindGroupLayouts: [
-          this.terrainComputeBindGroupLayout,
-          this.terrainComputeUniformBindGroupLayout,
-        ],
+        bindGroupLayouts: [this.terrainBindGroupLayout, this.terrainUniformBindGroupLayout],
       }),
       compute: {
         module: this.device.createShaderModule({
@@ -217,7 +230,7 @@ export class TerrainRenderer implements IRenderer {
     // --------------------  CUSTOM COMPUTE PIPELINE
     // ----------------------------------------------------------------------------------------
 
-    this.customComputeBindGroupLayout = this.device.createBindGroupLayout({
+    this.customBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom compute bind group layout',
       entries: [
         {
@@ -231,13 +244,13 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.customComputeBindGroup = this.device.createBindGroup({
+    this.customBindGroup = this.device.createBindGroup({
       label: 'custom compute bind group',
-      layout: this.customComputeBindGroupLayout,
+      layout: this.customBindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: this.mesh.vertexBuffer! } }],
     });
 
-    this.customComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+    this.customUniformBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom compute uniform bind group layout',
       entries: [
         {
@@ -251,31 +264,28 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.customComputeUniformBindGroup = this.device.createBindGroup({
+    this.customUniformBindGroup = this.device.createBindGroup({
       label: 'custom compute uniform bind group',
-      layout: this.customComputeUniformBindGroupLayout,
+      layout: this.customUniformBindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
     });
 
-    this.customComputeNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom compute node graph uniform bind group layout',
       entries: [],
     });
 
-    this.customComputeNodeGraphUniformsBindGroup = this.device.createBindGroup({
+    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
       label: 'custom compute node graph uniforms bind group',
-      layout: this.customComputeNodeGraphUniformsBindGroupLayout,
+      layout: this.customNodeGraphUniformsBindGroupLayout,
       entries: [],
     });
 
-    this.customComputePipeline = this.device.createComputePipeline({
+    this.customPipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'custom compute pipeline layout',
-        bindGroupLayouts: [
-          this.customComputeBindGroupLayout,
-          this.customComputeUniformBindGroupLayout,
-        ],
+        bindGroupLayouts: [this.customBindGroupLayout, this.customUniformBindGroupLayout],
       }),
       compute: {
         module: this.device.createShaderModule({
@@ -290,7 +300,7 @@ export class TerrainRenderer implements IRenderer {
     // --------------------  NORMALS COMPUTE PIPELINE
     // ----------------------------------------------------------------------------------------
 
-    this.normalsComputeBindGroupLayout = this.device.createBindGroupLayout({
+    this.normalsBindGroupLayout = this.device.createBindGroupLayout({
       label: 'normals compute bind group layout',
       entries: [
         {
@@ -312,16 +322,16 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.normalsComputeBindGroup = this.device.createBindGroup({
+    this.normalsBindGroup = this.device.createBindGroup({
       label: 'normals compute bind group',
-      layout: this.normalsComputeBindGroupLayout,
+      layout: this.normalsBindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: this.mesh.vertexBuffer! } },
         { binding: 1, resource: { buffer: this.mesh.indexBuffer! } },
       ],
     });
 
-    this.normalsComputeUniformBindGroupLayout = this.device.createBindGroupLayout({
+    this.normalsUniformBindGroupLayout = this.device.createBindGroupLayout({
       label: 'normals compute uniform bind group layout',
       entries: [
         {
@@ -335,20 +345,17 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.normalsComputeUniformBindGroup = this.device.createBindGroup({
+    this.normalsUniformBindGroup = this.device.createBindGroup({
       label: 'normals compute uniform bind group',
-      layout: this.normalsComputeUniformBindGroupLayout,
+      layout: this.normalsUniformBindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
     });
 
-    this.normalsComputePipeline = this.device.createComputePipeline({
+    this.normalsPipeline = this.device.createComputePipeline({
       label: 'normals compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'normals compute pipeline layout',
-        bindGroupLayouts: [
-          this.normalsComputeBindGroupLayout,
-          this.normalsComputeUniformBindGroupLayout,
-        ],
+        bindGroupLayouts: [this.normalsBindGroupLayout, this.normalsUniformBindGroupLayout],
       }),
       compute: {
         module: this.device.createShaderModule({
@@ -359,21 +366,224 @@ export class TerrainRenderer implements IRenderer {
       },
     });
 
+    // ----------------------------------------------------------------------------------------
+    // --------------------  INSTANCING COMPUTE PIPELINE
+    // ----------------------------------------------------------------------------------------
+    this.instancePoints = this.device.createBuffer({
+      label: 'instancing points vertex buffer',
+      size: this.numInstances * 32,
+      usage:
+        GPUBufferUsage.VERTEX |
+        GPUBufferUsage.COPY_DST |
+        GPUBufferUsage.COPY_SRC |
+        GPUBufferUsage.STORAGE,
+    });
+
+    // buffer for numInstances
+    const numInstances = new Uint32Array(1);
+    numInstances[0] = this.numInstances;
+    this.instanceCountBuffer = this.device.createBuffer({
+      label: 'instance count uniform buffer',
+      size: 4,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+    });
+    this.device.queue.writeBuffer(this.instanceCountBuffer, 0, numInstances);
+
+    this.instancingBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'instancing bind group layout',
+      entries: [
+        {
+          // buffer of vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.instancingBindGroup = this.device.createBindGroup({
+      label: 'instancing bind group',
+      layout: this.instancingBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.instancePoints } },
+        { binding: 1, resource: { buffer: this.instanceCountBuffer } },
+      ],
+    });
+
+    this.instancingPipeline = this.device.createComputePipeline({
+      label: 'instancing compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'instancing compute pipeline layout',
+        bindGroupLayouts: [
+          this.normalsBindGroupLayout,
+          this.normalsUniformBindGroupLayout,
+          this.instancingBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'instancing compute shader',
+          code: shaders.terrainPointsComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
+
+    // ----------------------------------------------------------------------------------------
+    // --------------------  INSTANCING RENDERER SETUP
+    // ----------------------------------------------------------------------------------------
+
+    // create index and vertex buffers for things we want to instance (for now, plane)
+    // prettier-ignore
+    const vertexArray = new Float32Array([
+      -1.0,  1.0, 0.0,
+       1.0,  1.0, 0.0,
+       1.0, -1.0, 0.0,
+      -1.0, -1.0, 0.0,
+    ]);
+
+    const instanceVertexBuffer = this.device.createBuffer({
+      label: 'instancing vertex buffer',
+      size: vertexArray.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, vertexArray);
+
+    const indexArray = new Uint32Array([0, 1, 2, 0, 2, 3]);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      label: 'instancing index buffer',
+      size: indexArray.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, indexArray);
+
+    // do all the renderer setup here...
+
+    const drawArgs = new Uint32Array(4);
+    drawArgs[0] = 6; // vertex count for instance
+    drawArgs[1] = this.numInstances; // instance count.
+    drawArgs[2] = 0; // First Vertex
+    drawArgs[3] = 0; // First Instance
+
+    this.indirectInstanceBuffer = this.device.createBuffer({
+      label: 'indirect render buffer',
+      size: 16,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
+    });
+    this.device.queue.writeBuffer(this.indirectInstanceBuffer, 0, drawArgs);
+
+    this.instancingPointsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'instancing bind group layout 2',
+      entries: [
+        {
+          // buffer of vertices to instance on
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+        {
+          // buffer of vertices for thing we're instancing
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+        {
+          // buffer of indices
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: {
+            type: 'read-only-storage',
+          },
+        },
+      ],
+    });
+
+    this.instancingPointsBindGroup = this.device.createBindGroup({
+      label: 'instancing bind group 2',
+      layout: this.instancingPointsBindGroupLayout,
+      entries: [
+        { binding: 0, resource: { buffer: this.instancePoints } },
+        { binding: 1, resource: { buffer: instanceVertexBuffer } },
+        { binding: 2, resource: { buffer: instanceIndexBuffer } },
+      ],
+    });
+
+    // create render pipeline for instancing as well
+    this.instancingRenderPipeline = this.device.createRenderPipeline({
+      label: 'instancing render pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'instancing pipeline layout',
+        bindGroupLayouts: [
+          this.sceneUniformsBindGroupLayout,
+          this.instancingPointsBindGroupLayout,
+        ],
+      }),
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: 'less',
+        format: 'depth24plus',
+      },
+      vertex: {
+        module: this.device.createShaderModule({
+          label: 'instancing render shader',
+          code: shaders.instanceSrc,
+        }),
+        entryPoint: 'vs_main',
+      },
+      fragment: {
+        module: this.device.createShaderModule({
+          label: 'instancing render shader',
+          code: shaders.instanceSrc,
+        }),
+        entryPoint: 'fs_main',
+        targets: [
+          {
+            format: this.webGPU.canvasFormat,
+          },
+        ],
+      },
+    });
+
+    // ----------------------------------------------------------------------------------------
+    // --------------------  RUNNING COMPUTES
+    // ----------------------------------------------------------------------------------------
     // create terrain
     const encoder = this.device.createCommandEncoder();
 
     // first compute pass: create terrain
     const computePass = encoder.beginComputePass();
-    computePass.setPipeline(this.terrainComputePipeline);
-    computePass.setBindGroup(0, this.terrainComputeBindGroup);
-    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.setPipeline(this.terrainPipeline);
+    computePass.setBindGroup(0, this.terrainBindGroup);
+    computePass.setBindGroup(1, this.terrainUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
     // second compute pass: calculate terrain normals
-    computePass.setPipeline(this.normalsComputePipeline);
-    computePass.setBindGroup(0, this.normalsComputeBindGroup);
-    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
+    computePass.setPipeline(this.normalsPipeline);
+    computePass.setBindGroup(0, this.normalsBindGroup);
+    computePass.setBindGroup(1, this.normalsUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+
+    // temp pass: create points on terrain to instance on
+    computePass.setPipeline(this.instancingPipeline);
+    computePass.setBindGroup(0, this.normalsBindGroup);
+    computePass.setBindGroup(1, this.normalsUniformBindGroup);
+    computePass.setBindGroup(2, this.instancingBindGroup);
+    computePass.dispatchWorkgroups(Math.ceil(this.numInstances / 64));
+
     computePass.end();
 
     this.device.queue.submit([encoder.finish()]);
@@ -461,6 +671,11 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setVertexBuffer(0, this.mesh.vertexBuffer);
     renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
+
+    renderPass.setPipeline(this.instancingRenderPipeline);
+    renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
+    renderPass.setBindGroup(1, this.instancingPointsBindGroup);
+    renderPass.drawIndirect(this.indirectInstanceBuffer, 0);
     renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
@@ -491,7 +706,7 @@ export class TerrainRenderer implements IRenderer {
 
     // also TODO: reuse code between this and our constructor
 
-    this.customComputeNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom nodegraph bind group layout',
       entries: [
         {
@@ -519,9 +734,9 @@ export class TerrainRenderer implements IRenderer {
     // TODO: maybe update these uniforms randomly for testing
     // setInterval(() => {}, 1000);
 
-    this.customComputeNodeGraphUniformsBindGroup = this.device.createBindGroup({
+    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
       label: 'custom nodegraph bind group',
-      layout: this.customComputeNodeGraphUniformsBindGroupLayout,
+      layout: this.customNodeGraphUniformsBindGroupLayout,
       entries: [
         {
           binding: 0,
@@ -541,14 +756,14 @@ export class TerrainRenderer implements IRenderer {
 
     console.log('custom compute shader:', customComputeShader);
 
-    this.customComputePipeline = this.device.createComputePipeline({
+    this.customPipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'custom compute pipeline layout',
         bindGroupLayouts: [
-          this.customComputeBindGroupLayout,
-          this.customComputeUniformBindGroupLayout,
-          this.customComputeNodeGraphUniformsBindGroupLayout,
+          this.customBindGroupLayout,
+          this.customUniformBindGroupLayout,
+          this.customNodeGraphUniformsBindGroupLayout,
         ],
       }),
       compute: {
@@ -565,16 +780,14 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
-  /**
-   * Set a uniform's value for the displace pipeline.
-   *
-   * @param uniformKey  The key given to the uniform in `configureDisplacePipeline`
-   * @param value       New value to assign to the uniform
-   */
-  // @ts-expect-error TODO
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setDisplacePipelineUniform(uniformKey: string, value: number | [number, number, number]) {
-    console.warn('setDisplacePipelineUniform is not implemented!');
+  configureInstancingPipeline() {
+    this.instancingPipelineConfigured = true;
+
+    // TODO: Write this method
+  }
+
+  disableInstancingPipeline() {
+    this.instancingPipelineConfigured = false;
   }
 
   setMeshUniforms(size: number, resolution: number) {
@@ -586,9 +799,9 @@ export class TerrainRenderer implements IRenderer {
 
     // first compute pass: create terrain
     const computePass = encoder.beginComputePass();
-    computePass.setPipeline(this.terrainComputePipeline);
-    computePass.setBindGroup(0, this.terrainComputeBindGroup);
-    computePass.setBindGroup(1, this.terrainComputeUniformBindGroup);
+    computePass.setPipeline(this.terrainPipeline);
+    computePass.setBindGroup(0, this.terrainBindGroup);
+    computePass.setBindGroup(1, this.terrainUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
     // run second compute pass (custom shader that we generate) only if setup
@@ -596,19 +809,19 @@ export class TerrainRenderer implements IRenderer {
       const computeEncoder = this.device.createCommandEncoder();
 
       const customComputePass = computeEncoder.beginComputePass();
-      customComputePass.setPipeline(this.customComputePipeline);
-      customComputePass.setBindGroup(0, this.customComputeBindGroup);
-      customComputePass.setBindGroup(1, this.customComputeUniformBindGroup);
-      customComputePass.setBindGroup(2, this.customComputeNodeGraphUniformsBindGroup);
+      customComputePass.setPipeline(this.customPipeline);
+      customComputePass.setBindGroup(0, this.customBindGroup);
+      customComputePass.setBindGroup(1, this.customUniformBindGroup);
+      customComputePass.setBindGroup(2, this.customNodeGraphUniformsBindGroup);
       customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
 
       customComputePass.end();
     }
 
     // third compute pass: calculate terrain normals
-    computePass.setPipeline(this.normalsComputePipeline);
-    computePass.setBindGroup(0, this.normalsComputeBindGroup);
-    computePass.setBindGroup(1, this.normalsComputeUniformBindGroup);
+    computePass.setPipeline(this.normalsPipeline);
+    computePass.setBindGroup(0, this.normalsBindGroup);
+    computePass.setBindGroup(1, this.normalsUniformBindGroup);
     computePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
     computePass.end();
 
