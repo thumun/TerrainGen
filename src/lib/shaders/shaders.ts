@@ -2,12 +2,12 @@
 // stolen from hw 4
 
 import commonRaw from './common.wgsl?raw';
+import instancePointsComputeRaw from './instance_points.cs.wgsl?raw';
+import instancingRaw from './instancing.wgsl?raw';
 import naiveFragRaw from './naive.fs.wgsl?raw';
 import naiveVertRaw from './naive.vs.wgsl?raw';
 import normalsComputeRaw from './normals.cs.wgsl?raw';
 import terrainComputeRaw from './terrain.cs.wgsl?raw';
-import instancePointsComputeRaw from './instance_points.cs.wgsl?raw';
-import instancingRaw from './instancing.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
 

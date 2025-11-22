@@ -107,28 +107,6 @@ export class TerrainRenderer implements IRenderer {
     ],
   };
 
-  readGpuBuffer(
-    device: GPUDevice,
-    buffer: GPUBuffer,
-    byteLength: number,
-    callback: (data: ArrayBuffer) => void,
-  ) {
-    const readBuffer = device.createBuffer({
-      size: byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    });
-
-    const encoder = device.createCommandEncoder();
-    encoder.copyBufferToBuffer(buffer, 0, readBuffer, 0, byteLength);
-    device.queue.submit([encoder.finish()]);
-
-    readBuffer.mapAsync(GPUMapMode.READ).then(() => {
-      const arrayBuffer = readBuffer.getMappedRange().slice(0);
-      readBuffer.unmap();
-      callback(arrayBuffer); // <-- return results here
-    });
-  }
-
   constructor(
     private webGPU: WebGPUContext,
     stage: Stage,
