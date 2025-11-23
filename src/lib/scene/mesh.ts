@@ -15,45 +15,57 @@ class MeshUniforms {
 
 // template class
 export abstract class Mesh {
+  numVertices = 0;
+  numIndices = 0;
+
+  vertexBuffer: GPUBuffer | undefined;
+  indexBuffer: GPUBuffer | undefined;
+
+  indirectBuffer: GPUBuffer | undefined;
+
+  uniforms: MeshUniforms = new MeshUniforms();
+  uniformsBuffer: GPUBuffer | undefined;
+
+  constructor(numVertices = 1, numIndices = 1) {
+    this.numVertices = numVertices;
+    this.numIndices = numIndices;
+  }
+
+  createBuffers(device: GPUDevice, vertexBufferSize = 1, indexBufferSize = 1) {
+    this.vertexBuffer = device.createBuffer({
+      label: 'triangle vertex buffer',
+      size: vertexBufferSize * 32,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+
+    this.indexBuffer = device.createBuffer({
+      label: 'triangle index buffer',
+      size: indexBufferSize * 4,
+      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+  }
+}
+
+export class Plane extends Mesh {
   maxResolution = 100;
   maxVertices = (this.maxResolution + 1) * (this.maxResolution + 1);
   maxIndices = this.maxResolution * this.maxResolution * 6;
 
   size = 0;
   resolution = 0;
-  numVertices = 0;
-  numIndices = 0;
-
-  vertexBuffer: GPUBuffer | undefined;
-  indexBuffer: GPUBuffer | undefined;
-  indirectBuffer: GPUBuffer | undefined;
-
-  uniforms: MeshUniforms = new MeshUniforms();
-  uniformsBuffer: GPUBuffer | undefined;
 
   constructor(size = 1, resolution = 1) {
     const numVertices = (resolution + 1) * (resolution + 1);
     const numIndices = resolution * resolution * 6;
 
+    super(numVertices, numIndices);
+
     this.size = size;
     this.resolution = resolution;
-    this.numVertices = numVertices;
-    this.numIndices = numIndices;
   }
 
-  writeBuffers(device: GPUDevice) {
-    // create vertex & indirect buffers
-    this.vertexBuffer = device.createBuffer({
-      label: 'triangle vertex buffer',
-      size: this.maxVertices * 32,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-
-    this.indexBuffer = device.createBuffer({
-      label: 'triangle index buffer',
-      size: this.maxIndices * 4,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
+  createBuffers(device: GPUDevice) {
+    super.createBuffers(device, this.maxVertices, this.maxIndices);
 
     // create indirect buffer
     const indirectData = new Uint32Array([
@@ -96,8 +108,48 @@ export abstract class Mesh {
   }
 }
 
-export class Plane extends Mesh {
-  constructor(size = 1, resolution = 1) {
-    super(size, resolution);
+export class OBJ extends Mesh {
+  obj: Mesh | undefined;
+
+  vertices: Float32Array<ArrayBuffer> | undefined;
+  indices: Array<ArrayBuffer> | undefined;
+
+  constructor() {
+    super(1, 1);
+  }
+
+  async loadObj(url: string) {
+    const response = await fetch(url);
+    const text = await response.text();
+
+    const vertices: number[] = [];
+    const normals: number[] = []; // lowk unused for now
+    const indices: number[] = [];
+
+    const lines = text.split('\n');
+
+    for (let line of lines) {
+      const parts = line.trim().split(/\s+/);
+      const type = parts[0];
+
+      // vertex, normals, faces
+      if (type === 'v') {
+        vertices.push(Number(parts[1]));
+        vertices.push(Number(parts[2]));
+        vertices.push(Number(parts[3]));
+      } else if (type === 'vn') {
+        normals.push(Number(parts[1]));
+        normals.push(Number(parts[2]));
+        normals.push(Number(parts[3]));
+      } else if (type === 'f') {
+        for (let i = 1; i <= 3; i++) {
+          const [vIdx, , vnIdx] = parts[i].split('/').map((s) => parseInt(s));
+          indices.push(vIdx);
+        }
+      }
+    }
+
+    this.vertices = new Float32Array(vertices);
+    //this.indices = new Uint32Array(indices);
   }
 }
