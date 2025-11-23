@@ -505,6 +505,8 @@ export class TerrainRenderer implements IRenderer {
     // third compute pass: calculate terrain normals
     this.normalsComputePipeline.runComputePass(computePass);
 
+    computePass.end();
+
     this.device.queue.submit([encoder.finish()]);
   }
 }
