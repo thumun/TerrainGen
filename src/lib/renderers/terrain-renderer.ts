@@ -780,7 +780,7 @@ export class TerrainRenderer implements IRenderer {
     });
   }
 
-   private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
+  private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
     if (!this.nodeGraphUniformBuffer || !this.nodeGraphUniformLayout) return;
 
     for (const uniform of uniforms) {
