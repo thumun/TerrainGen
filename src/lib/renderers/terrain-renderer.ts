@@ -725,7 +725,7 @@ export class TerrainRenderer implements IRenderer {
 
     this.nodeGraphUniformBuffer = this.device.createBuffer({
       label: 'uniform buffer',
-      size: Math.max(totalSize, 16), // Min 16 due to vec3 being 16
+      size: Math.max(totalSize, 16), // WebGPU minimum uniform buffer size
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
