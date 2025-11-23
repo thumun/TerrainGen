@@ -211,7 +211,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
         sourceNodeId: node.id,
         outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
       }),
-      initialValue: [0, 0, 0], // TODO: pull from node.data
+      initialValue: [node.data.x, node.data.y, node.data.z],
     },
   ],
   float: (node) => [
@@ -221,7 +221,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
         sourceNodeId: node.id,
         outgoingHandleId: nodeTypes.HANDLES.float.out.result,
       }),
-      initialValue: 0, // TODO: pull from node.data
+      initialValue: node.data.value,
     },
   ],
   separate: dummyUniformHandler,

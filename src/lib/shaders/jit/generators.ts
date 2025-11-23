@@ -10,6 +10,44 @@ export function generateUniform(
   return `@group(${opts.group}) @binding(${opts.binding}) var<uniform> ${uniform.key} : ${uniform.type};`;
 }
 
+// Calculate the size and offsets for uniform struct members
+export function calculateUniformLayout(uniforms: util.UniformConfig[]): {
+  totalSize: number;
+  offsets: Map<string, number>;
+} {
+  const offsets = new Map<string, number>();
+  let currentOffset = 0;
+
+  for (const uniform of uniforms) {
+    if (uniform.type === 'f32' || uniform.type === 'u32') {
+      currentOffset = Math.ceil(currentOffset / 4) * 4;
+      offsets.set(uniform.key, currentOffset);
+      currentOffset += 4;
+    } else if (uniform.type === 'vec3f') {
+      // Align to 16 bytes
+      currentOffset = Math.ceil(currentOffset / 16) * 16;
+      offsets.set(uniform.key, currentOffset);
+      currentOffset += 16;
+    }
+  }
+
+  const totalSize = Math.ceil(currentOffset / 16) * 16;
+
+  return { totalSize, offsets };
+}
+
+export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
+  if (uniforms.length === 0) {
+    return '';
+  }
+
+  const structFields = uniforms
+    .map((uniform) => `${uniform.key}: ${uniform.type},`)
+    .join('\n');
+
+  return `struct NodeGraphUniforms { ${structFields} } @group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
+}
+
 type ShaderUtil = () => string;
 type GenerateCodeResult = { code: string; utils?: Array<ShaderUtil> };
 
