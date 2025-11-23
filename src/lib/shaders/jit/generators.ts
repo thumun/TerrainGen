@@ -24,7 +24,9 @@ export function calculateUniformLayout(uniforms: util.UniformConfig[]): {
       offsets.set(uniform.key, currentOffset);
       currentOffset += 4;
     } else if (uniform.type === 'vec3f') {
-      // Align to 16 bytes
+      // vec3f is 12 bytes of data, but WGSL uniform buffer layout rules require 16-byte alignment.
+      // The struct member effectively takes 16 bytes due to 4 bytes of padding.
+      // This ensures correct alignment and prevents subtle bugs in uniform data access.
       currentOffset = Math.ceil(currentOffset / 16) * 16;
       offsets.set(uniform.key, currentOffset);
       currentOffset += 16;
