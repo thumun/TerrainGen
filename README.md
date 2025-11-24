@@ -6,15 +6,18 @@ _Final project for CIS5650_
 
 This is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation tool.
 
+### Milestones 
+[Milestone 1 Progress: Click to access our powerpoint presentation!](https://docs.google.com/presentation/d/1IfnNaKhCkMEOW8t8lHOAx6w-G378lC401EXVFlAbnQ0/edit?usp=sharing)
+
 ### Feature checklist
 
-- [ ] 🔌 Node-based description system for procedural terrain
-- [ ] 🏭 Just-in-time WebGPU shader code generation
+- [x] 🔌 Node-based description system for procedural terrain
+- [x] 🏭 Just-in-time WebGPU shader code generation
 - [ ] 🏔️ Real-time terrain rendering
   - [ ] Adjustable tesselation and terrain size
   - [ ] Varied terrain type rendering (grass, rock, snow, etc)
 - [ ] 🔎 Real-time in-editor node previews
-- [ ] 🌲 Mesh instancing across terrain
+- [x] 🌲 Mesh instancing across terrain
   - [ ] Mesh import for instancing
 - [ ] 💾 Export to glTF or similar format
 
