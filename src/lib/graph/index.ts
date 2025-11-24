@@ -36,11 +36,21 @@ export function generateUpdatedPipelines(
 
     // generate instruction set
     const instructionSet = orderedDependencyNodes
-      .map((node) => getInstruction(node, edges))
+      .map((node) => getInstruction(node, orderedDependencyNodes, edges))
       .filter((instruction) => instruction !== null);
 
-    // TODO: get height key from the incoming edge of the terrain node
-    const outputs: scene.DisplacePipeline['outputs'] = { height: 'TODO' };
+    // Get height key from the incoming edge of the terrain node
+    const heightEdge = edges.find((edge) => edge.target === terrainNode.id);
+    const heightEdgeSourceNode = orderedDependencyNodes.find(
+      (node) => node.id === heightEdge?.source,
+    );
+    const outputs: scene.DisplacePipeline['outputs'] = {
+      height: nodeMapping.getHandleKey({
+        // TODO: wow these type assertions are awesome (evil as fuck)
+        sourceNode: heightEdgeSourceNode!,
+        outgoingHandleId: heightEdge!.sourceHandle!,
+      }),
+    };
 
     displacePipeline = { instructionSet, uniforms, outputs };
   }
@@ -50,6 +60,7 @@ export function generateUpdatedPipelines(
 
 function getInstruction(
   node: nodeTypes.All & { id: string },
+  nodes: (nodeTypes.All & { id: string })[],
   edges: types.Edge[],
 ): instructions.All | null {
   /** A mapping from incoming handles on our node to the incoming edge */
@@ -80,8 +91,23 @@ function getInstruction(
         );
         return 'error_dummy_key';
       }
+
+      const incomingNode = nodes.find((node) => node.id === incomingEdge.source);
+      if (incomingNode === undefined) {
+        console.error(
+          'incoming node with id',
+          incomingEdge.source,
+          'connecting via handle ID',
+          handle,
+          'to node',
+          node.id,
+          'was not found in nodes list!',
+        );
+        return 'error_dummy_key';
+      }
+
       return nodeMapping.getHandleKey({
-        sourceNodeId: incomingEdge.source,
+        sourceNode: incomingNode,
         outgoingHandleId: incomingEdge.sourceHandle as string,
       });
     },

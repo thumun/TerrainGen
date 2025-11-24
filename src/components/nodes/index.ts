@@ -13,6 +13,7 @@ import TransformNode from './transform-node';
 import TrigMathNodeFloat from './trig-math-node';
 import VectorNode from './vector-node';
 import ScatterNode from './scatter-node';
+import VertexDataNode from './vertex-data-node';
 
 export const nodeTypes: NodeTypes = {
   transform: TransformNode,
@@ -22,6 +23,7 @@ export const nodeTypes: NodeTypes = {
   mathVec3: MathNodeVec3,
   mixFloat: MixNodeFloat,
   mixVec3: MixNodeVec3,
+  vertexData: VertexDataNode,
   terrain: TerrainNode,
   vector: VectorNode,
   separate: SeparateNode,

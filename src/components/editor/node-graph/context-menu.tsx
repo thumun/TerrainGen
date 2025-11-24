@@ -26,6 +26,7 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'mathVec3', label: 'Math (Vec3)' },
   { nodeType: 'mixVec3', label: 'Mix (Vec3)' },
   { nodeType: 'terrain', label: 'Terrain' },
+  { nodeType: 'vertexData', label: 'Vertex Data (Input)' },
   { nodeType: 'vector', label: 'Vector' },
   { nodeType: 'mathFloat', label: 'Math (Float)' },
   { nodeType: 'trigMathFloat', label: 'Trig Math (Float)' },

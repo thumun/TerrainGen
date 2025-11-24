@@ -15,6 +15,7 @@ export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' 
 export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type MixFloat = Node<'mixFloat'>;
 export type MixVec3 = Node<'mixVec3'>;
+export type VertexData = Node<'vertexData'>;
 export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
@@ -30,6 +31,7 @@ export type All =
   | MathVec3
   | MixFloat
   | MixVec3
+  | VertexData
   | Terrain
   | Separate
   | Combine
@@ -78,6 +80,10 @@ export const HANDLES = {
     in: { a: 'vec3-val1-in', b: 'vec3-val2-in', mix: 'float-val3-in' },
     out: { result: 'vec3-out' },
   },
+  vertexData: {
+    in: {},
+    out: { position: 'vec3-pos-out' },
+  },
   terrain: {
     in: { height: 'float-trans-in' },
     out: {},
@@ -114,6 +120,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
     data: { operationVal: 'Add' },
   },
   mixVec3: { type: 'mixVec3', data: {} },
+  vertexData: { type: 'vertexData', data: {} },
   terrain: { type: 'terrain', data: {} },
   vector: { type: 'vector', data: { x: 0, y: 0, z: 0 } },
   mathFloat: {

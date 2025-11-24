@@ -5,6 +5,7 @@
 import * as nodeTypes from './node-types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
+import * as shaders from '@/lib/shaders/jit/types/shaders';
 import type * as util from '@/lib/shaders/jit/types/util';
 
 // --------------------------------------------------------------------------------------------
@@ -54,8 +55,20 @@ function formatKey(key: string) {
 }
 
 /** Generates a consistent handle key for a specific node's outgoing handle. */
-export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: string }) {
-  return formatKey(`hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`);
+export function getHandleKey({
+  sourceNode,
+  outgoingHandleId,
+}: {
+  sourceNode: nodeTypes.All & { id: string };
+  outgoingHandleId: string;
+}) {
+  // if coming from an input node, read directly from global input key
+  // there's probably some cleaner way of doing this without importing consts like this
+  if (sourceNode.type === 'vertexData') {
+    return shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos;
+  }
+
+  return formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
 }
 
 const mathOperationMapping: {
@@ -85,9 +98,12 @@ const dummyHandler = () => {
  *        modification to accommodate
  */
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
-  // TODO: this is not a real instruction yet
-  float: dummyHandler,
+  float: () => null,
   vector: () => null,
+
+  // only input/output nodes don't get any instructions!
+  vertexData: () => null,
+  terrain: () => null,
 
   // TODO: this transform functionality is not real until we have geometry
   transform: dummyHandler,
@@ -100,7 +116,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       numOctaves: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.numOctaves),
       scale: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.scale),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.noise.out.result,
       }),
     },
@@ -113,7 +129,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readA: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.a),
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
       }),
     },
@@ -124,7 +140,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     references: {
       read: getIncomingHandleKey(nodeTypes.HANDLES.trigMathFloat.in.input),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.trigMathFloat.out.result,
       }),
     },
@@ -136,7 +152,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readA: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.a),
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.b),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
       }),
     },
@@ -151,15 +167,15 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     references: {
       read: getIncomingHandleKey(nodeTypes.HANDLES.separate.in.xyz),
       writeX: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.x,
       }),
       writeY: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.y,
       }),
       writeZ: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.z,
       }),
     },
@@ -171,13 +187,11 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readY: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.y),
       readZ: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.z),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.combine.out.xyz,
       }),
     },
   }),
-
-  terrain: () => null,
 };
 
 const dummyUniformHandler = () => {
@@ -201,14 +215,15 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   mixFloat: dummyUniformHandler,
   mixVec3: dummyUniformHandler,
   noise: dummyUniformHandler,
-  terrain: dummyUniformHandler,
+  vertexData: () => [],
+  terrain: () => [],
   transform: dummyUniformHandler,
   combine: dummyUniformHandler,
   vector: (node) => [
     {
       type: 'vec3f',
       key: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
       }),
       initialValue: [0, 0, 0], // TODO: pull from node.data
@@ -218,7 +233,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     {
       type: 'f32',
       key: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.float.out.result,
       }),
       initialValue: 0, // TODO: pull from node.data

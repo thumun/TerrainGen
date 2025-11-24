@@ -11,6 +11,7 @@ import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
+import path from 'path-browserify';
 
 export type TerrainRendererGlobalParameters = {
   size: number;
@@ -246,10 +247,7 @@ export class TerrainRenderer implements IRenderer {
   async init_mesh() {
     // create test mesh
     const testMesh = new OBJ();
-    await testMesh.loadObj('./models/cube.obj');
-
-    console.log(testMesh.vertices);
-    console.log(testMesh.indices);
+    await testMesh.loadObj(path.join(import.meta.env.BASE_URL, '/models/cube.obj'));
 
     const instanceVertexBuffer = this.device.createBuffer({
       label: 'instancing vertex buffer',
