@@ -1,21 +1,16 @@
 import { useCallback, useRef } from 'react';
-import ReactFlow, {
-  Background,
-  Controls,
-  type Connection,
-  type FitViewOptions,
-  addEdge,
-  type Edge,
-} from 'reactflow';
+import ReactFlow, { Background, Controls, addEdge } from 'reactflow';
+import type { Connection, FitViewOptions, Edge, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import ContextMenu from './context-menu';
 
-import { nodeTypes } from '@/components/nodes';
+import * as nodeComponents from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
 import { NodeDataProvider } from '@/hooks/use-node-data';
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
+import * as nodeTypes from '@/lib/graph/node-types';
 import * as traversal from '@/lib/graph/traversal';
 import type * as scene from '@/lib/scene';
 
@@ -27,12 +22,29 @@ type NodeGraphProps = {
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
 };
 
+const initialNodes: (Node & nodeTypes.All)[] = [
+  {
+    id: 'vertex-data-in',
+    position: { x: -250, y: 0 },
+    type: 'vertexData',
+    data: {},
+  },
+  {
+    id: 'terrain-out',
+    position: { x: 250, y: 0 },
+    type: 'terrain',
+    data: {},
+  },
+];
+
 export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
   // hook owning node + edge state, and react flow
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, setNodeData } = useNodeGraph();
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, setNodeData } = useNodeGraph({
+    initialNodes,
+  });
 
   // hook to manage context menu state + position
   const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
@@ -64,11 +76,12 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
+      {/* TODO: remove this provider, delete associated code (no longer needed) */}
       <NodeDataProvider value={{ setNodeData }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          nodeTypes={nodeTypes}
+          nodeTypes={nodeComponents.nodeTypes}
           onEdgesChange={onEdgesChange}
           onNodesChange={onNodesChange}
           onConnect={onConnect}
