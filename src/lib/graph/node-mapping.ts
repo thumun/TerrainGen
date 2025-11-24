@@ -85,9 +85,12 @@ const dummyHandler = () => {
  *        modification to accommodate
  */
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
-  // TODO: this is not a real instruction yet
-  float: dummyHandler,
+  float: () => null,
   vector: () => null,
+
+  // only input/output nodes don't get any instructions!
+  vertexData: () => null,
+  terrain: () => null,
 
   // TODO: this transform functionality is not real until we have geometry
   transform: dummyHandler,
@@ -176,8 +179,6 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
-
-  terrain: () => null,
 };
 
 const dummyUniformHandler = () => {
@@ -201,7 +202,8 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   mixFloat: dummyUniformHandler,
   mixVec3: dummyUniformHandler,
   noise: dummyUniformHandler,
-  terrain: dummyUniformHandler,
+  vertexData: () => [],
+  terrain: () => [],
   transform: dummyUniformHandler,
   combine: dummyUniformHandler,
   vector: (node) => [
