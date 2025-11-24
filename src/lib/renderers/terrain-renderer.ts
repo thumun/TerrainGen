@@ -68,9 +68,9 @@ export class TerrainRenderer implements IRenderer {
   indirectInstancer: IndirectInstancer;
 
   // uniform buffer vars
-  nodeGraphUniformBuffer?: GPUBuffer;
-  nodeGraphUniformLayout?: Map<string, number>;
-  nodeGraphUniformConfig?: scene.DisplacePipeline['uniforms'];
+  nodeGraphUniformBuffer: GPUBuffer | undefined;
+  nodeGraphUniformLayout: Map<string, number> | undefined;
+  nodeGraphUniformConfig: scene.DisplacePipeline['uniforms'] | undefined;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -542,13 +542,13 @@ export class TerrainRenderer implements IRenderer {
       return;
     }
 
-    const offset = this.nodeGraphUniformLayout.get(key);
+    const offset = this.nodeGraphUniformLayout?.get(key);
     if (offset === undefined) {
       console.warn(`Uniform key "${key}" not found`);
       return;
     }
 
-    const uniformConfig = this.nodeGraphUniformConfig.find((u) => u.key === key);
+    const uniformConfig = this.nodeGraphUniformConfig?.find((u) => u.key === key);
     if (!uniformConfig) {
       console.warn(`Uniform config for key "${key}" not found`);
       return;
