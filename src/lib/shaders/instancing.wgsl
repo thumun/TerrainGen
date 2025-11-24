@@ -47,7 +47,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = vec3f(0.0, 1.0, 0.0);
+    out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
     out.uv = vec2f(1.0, 1.0);
     return out;
 }
@@ -55,5 +55,10 @@ fn vs_main(in : VertexIn) -> VertexOut {
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4f
 {
-  return vec4f(1.0, 0.0, 0.0, 1.0);
+  // do lambertian shading
+  let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
+  let diffuse = max(dot(in.nor, lightDir), 0.0);
+  let color = vec3f(0.5, 0.5, 0.5) * diffuse;
+
+  return vec4f(color, 1.0);
 }

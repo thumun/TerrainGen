@@ -246,7 +246,7 @@ export class TerrainRenderer implements IRenderer {
   async init_mesh() {
     // create test mesh
     const testMesh = new OBJ();
-    await testMesh.loadObj('./models/teapot.obj');
+    await testMesh.loadObj('./models/cube.obj');
 
     console.log(testMesh.vertices);
     console.log(testMesh.indices);

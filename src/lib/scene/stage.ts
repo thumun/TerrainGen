@@ -1,5 +1,5 @@
 import { Camera } from './camera';
-import { Mesh, Plane } from './mesh';
+import { Plane } from './mesh';
 
 export class Stage {
   camera: Camera;

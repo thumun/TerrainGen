@@ -133,7 +133,7 @@ export class OBJ extends Mesh {
 
     const lines = text.split('\n');
 
-    for (let line of lines) {
+    for (const line of lines) {
       const parts = line.trim().split(/\s+/);
       const type = parts[0];
 
