@@ -33,6 +33,7 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'separate', label: 'Separate' },
   { nodeType: 'combine', label: 'Combine' },
   { nodeType: 'float', label: 'Float' },
+  { nodeType: 'scatter', label: 'Scatter' },
 ];
 
 export default function ContextMenu({ top, left, right, bottom, ...props }: ContextMenuProps) {

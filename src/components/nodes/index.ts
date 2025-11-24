@@ -12,6 +12,7 @@ import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
 import TrigMathNodeFloat from './trig-math-node';
 import VectorNode from './vector-node';
+import ScatterNode from './scatter-node';
 
 export const nodeTypes: NodeTypes = {
   transform: TransformNode,
@@ -26,4 +27,5 @@ export const nodeTypes: NodeTypes = {
   separate: SeparateNode,
   combine: CombineNode,
   float: FloatNode,
+  scatter: ScatterNode,
 };
