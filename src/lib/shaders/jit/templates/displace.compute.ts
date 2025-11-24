@@ -24,7 +24,7 @@ ${utils}
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let offset = vertexOffset(id.x);
 
-    let terrain_pos = vec3f(
+    let ${shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos} = vec3f(
         vertices[offset],
         vertices[offset + 1u],
         vertices[offset + 2u],
@@ -35,5 +35,4 @@ ${body}
     vertices[offset + 1u] = ${heightKey};
 }
 `,
-  localKeys: { terrainPos: 'terrain_pos' },
 };

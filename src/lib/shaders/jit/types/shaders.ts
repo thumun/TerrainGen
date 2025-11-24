@@ -6,6 +6,10 @@ type ShaderConfigBase = {
   instructionSet: Array<instructions.All>;
 };
 
+// --------------------------------------------------------------------------------------------
+// ------ DISPLACE SHADER CONFIG
+// --------------------------------------------------------------------------------------------
+
 export type DisplaceShaderConfig = ShaderConfigBase & {
   outputs: {
     height: util.ReferenceKey;
@@ -21,9 +25,10 @@ type DisplaceShaderTemplateValues = {
 
 export type DisplaceShaderTemplate = {
   content: (values: DisplaceShaderTemplateValues) => string;
-  /** Can be used as `ReferenceKey`s in `DisplaceShaderConfig`s to refer to certain in-scope variables */
-  localKeys: {
-    /** `vec3f` - the terrain position for any given vertex */
-    terrainPos: util.ReferenceKey;
-  };
+};
+
+/** Global input keys for use in instructions */
+export const DISPLACE_SHADER_INPUT_KEYS = {
+  /** `vec3f` - world position of the current terrain vertex */
+  terrainPos: 'terrainPos',
 };
