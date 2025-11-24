@@ -44,10 +44,10 @@ export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
   }
 
   const structFields = uniforms
-    .map((uniform) => `${uniform.key}: ${uniform.type},`)
-    .join('\n');
+    .map((uniform) => `  ${uniform.key}: ${uniform.type}`)
+    .join(',\n');
 
-  return `struct NodeGraphUniforms { ${structFields} } @group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
+  return `struct NodeGraphUniforms {\n${structFields}\n}\n@group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
 }
 
 type ShaderUtil = () => string;
