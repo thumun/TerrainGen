@@ -54,8 +54,14 @@ function formatKey(key: string) {
 }
 
 /** Generates a consistent handle key for a specific node's outgoing handle. */
-export function getHandleKey(opts: { sourceNodeId: string; outgoingHandleId: string }) {
-  return formatKey(`hdlkey_${opts.sourceNodeId}_${opts.outgoingHandleId}`);
+export function getHandleKey({
+  sourceNode,
+  outgoingHandleId,
+}: {
+  sourceNode: nodeTypes.All & { id: string };
+  outgoingHandleId: string;
+}) {
+  return formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
 }
 
 const mathOperationMapping: {
@@ -103,7 +109,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       numOctaves: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.numOctaves),
       scale: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.scale),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.noise.out.result,
       }),
     },
@@ -116,7 +122,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readA: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.a),
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
       }),
     },
@@ -127,7 +133,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     references: {
       read: getIncomingHandleKey(nodeTypes.HANDLES.trigMathFloat.in.input),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.trigMathFloat.out.result,
       }),
     },
@@ -139,7 +145,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readA: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.a),
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.b),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
       }),
     },
@@ -154,15 +160,15 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     references: {
       read: getIncomingHandleKey(nodeTypes.HANDLES.separate.in.xyz),
       writeX: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.x,
       }),
       writeY: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.y,
       }),
       writeZ: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.separate.out.z,
       }),
     },
@@ -174,7 +180,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readY: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.y),
       readZ: getIncomingHandleKey(nodeTypes.HANDLES.combine.in.z),
       write: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.combine.out.xyz,
       }),
     },
@@ -210,7 +216,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     {
       type: 'vec3f',
       key: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
       }),
       initialValue: [0, 0, 0], // TODO: pull from node.data
@@ -220,7 +226,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     {
       type: 'f32',
       key: getHandleKey({
-        sourceNodeId: node.id,
+        sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.float.out.result,
       }),
       initialValue: 0, // TODO: pull from node.data
