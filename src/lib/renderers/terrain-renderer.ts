@@ -66,7 +66,7 @@ export class TerrainRenderer implements IRenderer {
   instancePointsComputePipeline: InstancePointsPipeline;
 
   // instancing things
-  indirectInstancer: IndirectInstancer;
+  indirectInstancer: IndirectInstancer | undefined;
 
   // uniform buffer vars
   nodeGraphUniformBuffer!: GPUBuffer;
@@ -190,7 +190,7 @@ export class TerrainRenderer implements IRenderer {
     this.customUniformBindGroup = this.device.createBindGroup({
       label: 'custom compute uniform bind group',
       layout: this.customUniformBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+      entries: [{ binding: 0, resource: { buffer: this.groundPlane.uniformsBuffer! } }],
     });
 
     this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
@@ -484,7 +484,7 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
-    private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
+  private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
     if (!this.nodeGraphUniformBuffer || !this.nodeGraphUniformLayout) return;
 
     for (const uniform of uniforms) {
