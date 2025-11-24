@@ -66,9 +66,7 @@ export function getHandleKey({
   // there's probably some cleaner way of doing this without importing consts like this
   if (sourceNode.type === 'vertexData') {
     return shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos;
-  }
-
-  else if (sourceNode.type === 'float' || sourceNode.type === 'vector') {
+  } else if (sourceNode.type === 'float' || sourceNode.type === 'vector') {
     return 'nodeGraphUniforms.' + formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
   }
 

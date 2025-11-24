@@ -477,13 +477,13 @@ export class TerrainRenderer implements IRenderer {
         if (offset === undefined) continue;
 
         if (uniform.type === 'f32') {
-          const data = new Float32Array([uniform.initialValue as number]);
+          const data = new Float32Array([uniform.initialValue]);
           this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
         } else if (uniform.type === 'u32') {
-          const data = new Uint32Array([uniform.initialValue as number]);
+          const data = new Uint32Array([uniform.initialValue]);
           this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
         } else if (uniform.type === 'vec3f') {
-          const data = new Float32Array(uniform.initialValue as [number, number, number]);
+          const data = new Float32Array(uniform.initialValue);
           this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
         }
       }
