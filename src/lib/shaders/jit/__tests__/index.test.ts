@@ -32,11 +32,14 @@ const mockDisplaceShaderConfig: shaders.DisplaceShaderConfig = {
     },
   ],
   instructionSet: [
-    { type: 'separate-xyz', references: { read: 'unif2', writeX: 'unif2_y' } },
+    {
+      type: 'separate-xyz',
+      references: { read: 'nodeGraphUniforms.unif2', writeX: 'unif2_y' },
+    },
     {
       type: 'math',
       operation: 'add',
-      references: { readA: 'unif1', readB: 'unif2_y', write: 'height_out' },
+      references: { readA: 'nodeGraphUniforms.unif1', readB: 'unif2_y', write: 'height_out' },
     },
   ],
   outputs: { height: 'height_out' },
