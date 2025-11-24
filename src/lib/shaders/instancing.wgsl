@@ -2,10 +2,10 @@
 var<uniform> camera : CameraUniforms;
 
 @group(1) @binding(0)
-var<storage, read> instance_pts: array<f32>;
+var<storage, read> instance_pts: array<f32>; // 8 floats per instance- pos, nor, uv
 
 @group(1) @binding(1)
-var<storage, read> vertices: array<f32>;
+var<storage, read> vertices: array<f32>; // 8 floats per vertex
 
 @group(1) @binding(2)
 var<storage, read> indices: array<u32>;
@@ -22,15 +22,11 @@ struct VertexOut {
     @location(2) uv : vec2f,
 };
 
-fn vertexOffset(i: u32) -> u32 { 
-    return i * 8u; 
-}
-
 @vertex
 fn vs_main(in : VertexIn) -> VertexOut {
     var out : VertexOut;
 
-    let vOffset = vertexOffset(in.instance_index);
+    let vOffset = in.instance_index * 8u;
 
      // get point position
     var pos = vec3f(1.0, 1.0, 1.0);
@@ -39,19 +35,19 @@ fn vs_main(in : VertexIn) -> VertexOut {
     pos.z = instance_pts[vOffset + 2];
 
     let idx = indices[in.vertex_index];
-    let base = idx * 3u;
+    let base = idx * 8u;
     let local = vec3f(
         vertices[base + 0],
         vertices[base + 1],
         vertices[base + 2],
     );
-    let world = vec4(pos.x + local.x, pos.y, pos.z + local.y, 1.0);
+    let world = vec4(pos.x + local.x, pos.y + local.y, pos.z + local.z, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = vec3f(0.0, 1.0, 0.0);
+    out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
     out.uv = vec2f(1.0, 1.0);
     return out;
 }
@@ -59,5 +55,10 @@ fn vs_main(in : VertexIn) -> VertexOut {
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4f
 {
-  return vec4f(1.0, 0.0, 0.0, 1.0);
+  // do lambertian shading
+  let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
+  let diffuse = max(dot(in.nor, lightDir), 0.0);
+  let color = vec3f(0.5, 0.5, 0.5) * diffuse;
+
+  return vec4f(color, 1.0);
 }

@@ -5,7 +5,7 @@ import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
-import { Mesh } from '@/lib/scene/mesh';
+import { OBJ, Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
@@ -20,7 +20,7 @@ export type TerrainRendererGlobalParameters = {
 export class TerrainRenderer implements IRenderer {
   protected stage: Stage;
   protected camera: Camera;
-  mesh: Mesh;
+  groundPlane: Plane;
 
   context: GPUCanvasContext;
   device: GPUDevice;
@@ -65,7 +65,7 @@ export class TerrainRenderer implements IRenderer {
   instancePointsComputePipeline: InstancePointsPipeline;
 
   // instancing things
-  indirectInstancer: IndirectInstancer;
+  indirectInstancer: IndirectInstancer | undefined;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -99,10 +99,10 @@ export class TerrainRenderer implements IRenderer {
     this.context = webGPU.context;
     this.stage = stage;
     this.camera = stage.camera;
-    this.mesh = stage.mesh;
+    this.groundPlane = stage.groundPlane;
 
     // create vertex data
-    this.mesh.writeBuffers(this.device);
+    this.groundPlane.createBuffers(this.device);
 
     // set up bind groups, layouts, pipelines etc
 
@@ -141,7 +141,7 @@ export class TerrainRenderer implements IRenderer {
     this.pipeline = this.createRenderPipeline();
 
     // compute pipeline that creates the terrain
-    this.terrainComputePipeline = new TerrainPipeline(this.device, this.mesh);
+    this.terrainComputePipeline = new TerrainPipeline(this.device, this.groundPlane);
 
     // ----------------------------------------------------------------------------------------
     // --------------------  CUSTOM COMPUTE PIPELINE
@@ -164,7 +164,7 @@ export class TerrainRenderer implements IRenderer {
     this.customBindGroup = this.device.createBindGroup({
       label: 'custom compute bind group',
       layout: this.customBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.mesh.vertexBuffer! } }],
+      entries: [{ binding: 0, resource: { buffer: this.groundPlane.vertexBuffer! } }],
     });
 
     this.customUniformBindGroupLayout = this.device.createBindGroupLayout({
@@ -184,7 +184,7 @@ export class TerrainRenderer implements IRenderer {
     this.customUniformBindGroup = this.device.createBindGroup({
       label: 'custom compute uniform bind group',
       layout: this.customUniformBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.mesh.uniformsBuffer! } }],
+      entries: [{ binding: 0, resource: { buffer: this.groundPlane.uniformsBuffer! } }],
     });
 
     this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
@@ -214,49 +214,13 @@ export class TerrainRenderer implements IRenderer {
     });
 
     // normals compute pipeline that generates normals for the mesh
-    this.normalsComputePipeline = new NormalsPipeline(this.device, this.mesh);
+    this.normalsComputePipeline = new NormalsPipeline(this.device, this.groundPlane);
 
     // instancing compute pipeline to scatter points to instance on
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
-      this.mesh,
+      this.groundPlane,
       this.normalsComputePipeline,
-    );
-
-    // create index and vertex buffers for things we want to instance (for now, plane)
-    // prettier-ignore
-    const vertexArray = new Float32Array([
-      -1.0,  1.0, 0.0,
-       1.0,  1.0, 0.0,
-       1.0, -1.0, 0.0,
-      -1.0, -1.0, 0.0,
-    ]);
-
-    const instanceVertexBuffer = this.device.createBuffer({
-      label: 'instancing vertex buffer',
-      size: vertexArray.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, vertexArray);
-
-    const indexArray = new Uint32Array([0, 1, 2, 0, 2, 3]);
-
-    const instanceIndexBuffer = this.device.createBuffer({
-      label: 'instancing index buffer',
-      size: indexArray.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, indexArray);
-
-    // instancer to draw the mesh we just created
-    // eventually replace instanceVertexBuffer and instanceIndexBuffer with a combined Mesh
-    this.indirectInstancer = new IndirectInstancer(
-      this.device,
-      this.instancePointsComputePipeline,
-      instanceVertexBuffer,
-      instanceIndexBuffer,
-      this.sceneUniformsBindGroupLayout,
-      this.webGPU,
     );
 
     // ----------------------------------------------------------------------------------------
@@ -277,6 +241,40 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
 
     this.device.queue.submit([encoder.finish()]);
+  }
+
+  async init_mesh() {
+    // create test mesh
+    const testMesh = new OBJ();
+    await testMesh.loadObj('./models/cube.obj');
+
+    console.log(testMesh.vertices);
+    console.log(testMesh.indices);
+
+    const instanceVertexBuffer = this.device.createBuffer({
+      label: 'instancing vertex buffer',
+      size: testMesh.vertices!.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, testMesh.vertices!);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      label: 'instancing index buffer',
+      size: testMesh.indices!.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
+
+    // instancer to draw the mesh we just created
+    // eventually replace instanceVertexBuffer and instanceIndexBuffer with a combined Mesh
+    this.indirectInstancer = new IndirectInstancer(
+      this.device,
+      this.instancePointsComputePipeline,
+      instanceVertexBuffer,
+      instanceIndexBuffer,
+      this.sceneUniformsBindGroupLayout,
+      this.webGPU,
+    );
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -358,11 +356,13 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
-    renderPass.setVertexBuffer(0, this.mesh.vertexBuffer);
-    renderPass.setIndexBuffer(this.mesh.indexBuffer!, 'uint32');
-    renderPass.drawIndexedIndirect(this.mesh.indirectBuffer!, 0);
+    renderPass.setVertexBuffer(0, this.groundPlane.vertexBuffer);
+    renderPass.setIndexBuffer(this.groundPlane.indexBuffer!, 'uint32');
+    renderPass.drawIndexedIndirect(this.groundPlane.indirectBuffer!, 0);
 
-    this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    if (this.indirectInstancer) {
+      this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    }
 
     renderPass.end();
 
@@ -372,10 +372,10 @@ export class TerrainRenderer implements IRenderer {
   dispose() {
     // destroy all allocated buffers
     if (this.depthTexture) this.depthTexture.destroy();
-    if (this.mesh.vertexBuffer) this.mesh.vertexBuffer.destroy();
-    if (this.mesh.indexBuffer) this.mesh.indexBuffer.destroy();
-    if (this.mesh.indirectBuffer) this.mesh.indirectBuffer.destroy();
-    if (this.mesh.uniformsBuffer) this.mesh.uniformsBuffer.destroy();
+    if (this.groundPlane.vertexBuffer) this.groundPlane.vertexBuffer.destroy();
+    if (this.groundPlane.indexBuffer) this.groundPlane.indexBuffer.destroy();
+    if (this.groundPlane.indirectBuffer) this.groundPlane.indirectBuffer.destroy();
+    if (this.groundPlane.uniformsBuffer) this.groundPlane.uniformsBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
@@ -479,7 +479,7 @@ export class TerrainRenderer implements IRenderer {
   }
 
   setMeshUniforms(size: number, resolution: number) {
-    this.mesh.updateUniforms(this.device, size, resolution);
+    this.groundPlane.updateUniforms(this.device, size, resolution);
 
     const encoder = this.device.createCommandEncoder();
     const computePass = encoder.beginComputePass();
@@ -497,7 +497,7 @@ export class TerrainRenderer implements IRenderer {
       customComputePass.setBindGroup(0, this.customBindGroup);
       customComputePass.setBindGroup(1, this.customUniformBindGroup);
       customComputePass.setBindGroup(2, this.customNodeGraphUniformsBindGroup);
-      customComputePass.dispatchWorkgroups(Math.ceil(this.mesh.numVertices / 64));
+      customComputePass.dispatchWorkgroups(Math.ceil(this.groundPlane.numVertices / 64));
 
       customComputePass.end();
     }

@@ -25,7 +25,7 @@ export class IndirectInstancer {
     this.instancePointsComputePipeline = instancePointsComputePipeline;
 
     const drawArgs = new Uint32Array(4);
-    drawArgs[0] = 6; // vertex count for instance
+    drawArgs[0] = instanceVertexBuffer.size / 8; // vertex count for instance // CHANGE THIS!
     drawArgs[1] = this.instancePointsComputePipeline.instanceCount; // instance count.
     drawArgs[2] = 0; // First Vertex
     drawArgs[3] = 0; // First Instance
