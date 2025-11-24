@@ -6,7 +6,13 @@ const HANDLES = nodeTypes.HANDLES.vertexData;
 function VertexDataNode() {
   return (
     <TerrainGenNode.Root title="Vertex Data (Input)">
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.position} valueType="vec3f" />
+      <div className="pt-2 pr-2 text-right">Position</div>
+      <TerrainGenNode.HandleOutput
+        handleId={HANDLES.out.position}
+        valueType="vec3f"
+        // not what this is supposed to be used for lol but whatever
+        offset={1.6}
+      />
     </TerrainGenNode.Root>
   );
 }
