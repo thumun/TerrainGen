@@ -1,114 +1,39 @@
-import { useCallback } from 'react';
-import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow';
+import { useReactFlow, type NodeProps } from 'reactflow';
 
+import * as helpers from './helpers';
+
+import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
-const HANDLES = nodeTypes.HANDLES['mathVec3'];
-// TODO: use these above references in other node components
+const HANDLES = nodeTypes.HANDLES.mathVec3;
 
 function MathNodeVec3({ id, data }: NodeProps<MathVec3NodeData>) {
   const { setNodes } = useReactFlow();
 
-  const onOperationChange = useCallback(
-    (evt: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOperationVal = evt.target.value || 'Add';
-
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              data: {
-                ...node.data,
-                operationVal: newOperationVal,
-              },
-            };
-          }
-          return node;
-        }),
-      );
-    },
-    [id, setNodes],
-  );
+  const onOperationChange = (operationVal: MathVec3NodeData['operationVal']) => {
+    helpers.updateNodeData<MathVec3NodeData>({ id, setNodes, newData: { operationVal } });
+  };
 
   return (
-    // need to change color & id based on type
-    <div className="transform-node min-w-[280px] space-y-4 rounded-lg border border-slate-600 bg-slate-800 p-4 text-white shadow-md">
-      <Handle
-        type="source"
-        position={Position.Right}
-        id={HANDLES.out.result}
-        className={`!absolute !top-1/8 !right-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500`}
+    <TerrainGenNode.Root title="Math (Vec3)">
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="vec3f" />
+
+      <TerrainGenNode.HandleInput label="Value A" handleId={HANDLES.in.a} valueType="vec3f" />
+      <TerrainGenNode.HandleInput label="Value B" handleId={HANDLES.in.b} valueType="vec3f" />
+
+      <TerrainGenNode.SelectInput
+        label="Mode"
+        value={data.operationVal}
+        onChange={onOperationChange}
+        options={[
+          { label: 'Add', value: 'Add' },
+          { label: 'Subtract', value: 'Sub' },
+          { label: 'Multiply', value: 'Mult' },
+          { label: 'Divide', value: 'Div' },
+        ]}
       />
-
-      {/* Node Title */}
-      <div className="mb-2 text-center">
-        <div className="inline-block -translate-y-1 transform rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-bold text-white shadow-sm">
-          Math (Vec3)
-        </div>
-      </div>
-
-      {/* First Value Section */}
-      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-        <Handle
-          type="target"
-          position={Position.Left}
-          id={HANDLES.in.a}
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-        />
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Value A</label>
-        </div>
-      </div>
-
-      {/* Second Value Section */}
-      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-        <Handle
-          type="target"
-          position={Position.Left}
-          id={HANDLES.in.b}
-          className="!absolute !top-1/2 !left-[-8px] !h-3 !w-3 !-translate-y-1/2 !bg-green-500"
-        />
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Value B</label>
-        </div>
-      </div>
-
-      {/* Type of Node */}
-      <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Mode</label>
-          <div className="inline-flex -translate-y-1 transform items-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 font-bold text-white shadow-sm">
-            <select
-              value={data.operationVal}
-              onChange={onOperationChange}
-              className="bg-transparent font-bold focus:outline-none"
-            >
-              <option value="Add" className="bg-slate-800 text-white">
-                Add
-              </option>
-              <option value="Sub" className="bg-slate-800 text-white">
-                Subtract
-              </option>
-              <option value="Mult" className="bg-slate-800 text-white">
-                Multiply
-              </option>
-              <option value="Div" className="bg-slate-800 text-white">
-                Divide
-              </option>
-              <option value="Min" className="bg-slate-800 text-white">
-                Min
-              </option>
-              <option value="Max" className="bg-slate-800 text-white">
-                Max
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
+    </TerrainGenNode.Root>
   );
 }
 
