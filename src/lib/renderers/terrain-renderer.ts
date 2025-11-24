@@ -84,7 +84,7 @@ export class TerrainRenderer implements IRenderer {
   instancingPointsBindGroupLayout: GPUBindGroupLayout;
   instancingPointsBindGroup: GPUBindGroup;
 
-  // uniform buffer vars 
+  // uniform buffer vars
   nodeGraphUniformBuffer?: GPUBuffer;
   nodeGraphUniformLayout?: Map<string, number>;
   nodeGraphUniformConfig?: scene.DisplacePipeline['uniforms'];
@@ -855,7 +855,7 @@ export class TerrainRenderer implements IRenderer {
   }
 
   setDisplacePipelineUniform(key: string, value: number | [number, number, number]) {
-    if (!this.nodeGraphUniformBuffer || !this.nodeGraphUniformLayout || !this.nodeGraphUniformConfig) {
+    if (!this.displacePipelineConfigured) {
       console.log('Cannot set uniform');
       return;
     }

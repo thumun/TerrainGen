@@ -1,21 +1,10 @@
 import * as generators from './generators';
 import * as shaders from './types/shaders';
 
-// TODO: helper to inject utils like noise functions
-
 export function generateDisplaceShaderCode(
   shaderConfig: shaders.DisplaceShaderConfig,
   template: shaders.DisplaceShaderTemplate,
 ) {
-  // TODO: this will likely have to change to use a struct instead
-  // const uniforms = shaderConfig.uniforms
-  //   .map((uniformConfig, idx) =>
-  //     generators.generateUniform(uniformConfig, { group: 0, binding: idx }),
-  //   )
-  //   .join('\n');
-  // TODO: return required uniform binding layout
-  // const bufferRequirements / bufferMapping = ...
-
   // struct ver of above
   const uniforms = generators.generateUniformStruct(shaderConfig.uniforms);
 
