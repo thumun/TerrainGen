@@ -68,6 +68,10 @@ export function getHandleKey({
     return shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos;
   }
 
+  else if (sourceNode.type === 'float' || sourceNode.type === 'vector') {
+    return 'nodeGraphUniforms.' + formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
+  }
+
   return formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
 }
 
