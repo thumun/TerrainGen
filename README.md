@@ -6,7 +6,8 @@ _Final project for CIS5650_
 
 This is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation tool.
 
-### Milestones 
+### Milestones
+
 [Milestone 1 Progress: Click to access our powerpoint presentation!](https://docs.google.com/presentation/d/1IfnNaKhCkMEOW8t8lHOAx6w-G378lC401EXVFlAbnQ0/edit?usp=sharing)
 
 ### Feature checklist
