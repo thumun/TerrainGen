@@ -862,7 +862,7 @@ export class TerrainRenderer implements IRenderer {
 
     const offset = this.nodeGraphUniformLayout.get(key);
     if (offset === undefined) {
-      console.log(`Uniform key "${key}" not found`);
+      console.warn(`Uniform key "${key}" not found`);
       return;
     }
 
