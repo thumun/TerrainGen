@@ -100,6 +100,7 @@ const dummyHandler = () => {
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
   float: () => null,
   vector: () => null,
+  unsignedInt: () => null,
 
   // only input/output nodes don't get any instructions!
   vertexData: () => null,
@@ -237,6 +238,16 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
         outgoingHandleId: nodeTypes.HANDLES.float.out.result,
       }),
       initialValue: 0, // TODO: pull from node.data
+    },
+  ],
+  unsignedInt: (node) => [
+    {
+      type: 'u32',
+      key: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.unsignedInt.out.result,
+      }),
+      initialValue: node.data.value,
     },
   ],
   separate: dummyUniformHandler,
