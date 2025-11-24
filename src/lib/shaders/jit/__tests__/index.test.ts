@@ -16,7 +16,6 @@ ${body}
 > HEIGHT KEY
 ${heightKey}
 `,
-  localKeys: { terrainPos: 'test_terrain_pos' },
 };
 
 const mockDisplaceShaderConfig: shaders.DisplaceShaderConfig = {

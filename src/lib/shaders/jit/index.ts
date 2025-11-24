@@ -1,8 +1,6 @@
 import * as generators from './generators';
 import * as shaders from './types/shaders';
 
-// TODO: helper to inject utils like noise functions
-
 export function generateDisplaceShaderCode(
   shaderConfig: shaders.DisplaceShaderConfig,
   template: shaders.DisplaceShaderTemplate,

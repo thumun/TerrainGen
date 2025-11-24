@@ -5,6 +5,7 @@
 import * as nodeTypes from './node-types';
 
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
+import * as shaders from '@/lib/shaders/jit/types/shaders';
 import type * as util from '@/lib/shaders/jit/types/util';
 
 // --------------------------------------------------------------------------------------------
@@ -61,6 +62,12 @@ export function getHandleKey({
   sourceNode: nodeTypes.All & { id: string };
   outgoingHandleId: string;
 }) {
+  // if coming from an input node, read directly from global input key
+  // there's probably some cleaner way of doing this without importing consts like this
+  if (sourceNode.type === 'vertexData') {
+    return shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos;
+  }
+
   return formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
 }
 
