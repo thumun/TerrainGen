@@ -76,6 +76,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
+      {/* TODO: remove this provider, delete associated code (no longer needed) */}
       <NodeDataProvider value={{ setNodeData }}>
         <ReactFlow
           nodes={nodes}
