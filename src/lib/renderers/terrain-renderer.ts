@@ -1,3 +1,5 @@
+import path from 'path-browserify';
+
 import type { IRenderer } from '@/components/common/webgpu-canvas';
 import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
 import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
@@ -11,7 +13,6 @@ import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
-import path from 'path-browserify';
 
 export type TerrainRendererGlobalParameters = {
   size: number;
@@ -484,7 +485,7 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
-    private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
+  private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
     if (!this.nodeGraphUniformBuffer || !this.nodeGraphUniformLayout) return;
 
     for (const uniform of uniforms) {
