@@ -68,9 +68,9 @@ export class TerrainRenderer implements IRenderer {
   indirectInstancer: IndirectInstancer;
 
   // uniform buffer vars
-  nodeGraphUniformBuffer: GPUBuffer | undefined;
-  nodeGraphUniformLayout: Map<string, number> | undefined;
-  nodeGraphUniformConfig: scene.DisplacePipeline['uniforms'] | undefined;
+  nodeGraphUniformBuffer!: GPUBuffer;
+  nodeGraphUniformLayout!: Map<string, number> | undefined;
+  nodeGraphUniformConfig!: scene.DisplacePipeline['uniforms'] | undefined;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
