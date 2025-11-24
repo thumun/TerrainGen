@@ -18,7 +18,7 @@ function FloatNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
   return (
     <TerrainGenNode.Root title="Unsigned Int">
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="u32" />
-      <TerrainGenNode.NumberInput value={data.value} onChange={onChange} />
+      <TerrainGenNode.NumberInput value={data.value} valueType="u32" onChange={onChange} />
     </TerrainGenNode.Root>
   );
 }
