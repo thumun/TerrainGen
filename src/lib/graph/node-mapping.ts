@@ -130,7 +130,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
       write: getHandleKey({
         sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
+        outgoingHandleId: nodeTypes.HANDLES.mathFloat.out.result,
       }),
     },
   }),
