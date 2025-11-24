@@ -868,7 +868,7 @@ export class TerrainRenderer implements IRenderer {
 
     const uniformConfig = this.nodeGraphUniformConfig.find((u) => u.key === key);
     if (!uniformConfig) {
-      console.log(`Uniform config for key "${key}" not found`);
+      console.warn(`Uniform config for key "${key}" not found`);
       return;
     }
 
