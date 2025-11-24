@@ -1,12 +1,12 @@
 import { Camera } from './camera';
-import { Mesh } from './mesh';
+import { Plane } from './mesh';
 
 export class Stage {
   camera: Camera;
-  mesh: Mesh;
+  groundPlane: Plane;
 
-  constructor(camera: Camera, mesh: Mesh) {
+  constructor(camera: Camera, mesh: Plane) {
     this.camera = camera;
-    this.mesh = mesh;
+    this.groundPlane = mesh;
   }
 }

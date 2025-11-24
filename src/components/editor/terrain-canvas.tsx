@@ -12,8 +12,11 @@ export type TerrainCanvasProps = {
   globalParams: TerrainRendererGlobalParameters;
 };
 
-const createRenderer: WebGPUCanvasProps['createRenderer'] = (webGPU, stage) =>
-  new TerrainRenderer(webGPU, stage);
+const createRenderer: WebGPUCanvasProps['createRenderer'] = async (webGPU, stage) => {
+  const renderer = new TerrainRenderer(webGPU, stage);
+  await renderer.init_mesh();
+  return renderer;
+};
 
 export default function TerrainCanvas({ displacePipeline, globalParams }: TerrainCanvasProps) {
   const rendererRef = useRef<TerrainRenderer | undefined>(undefined);

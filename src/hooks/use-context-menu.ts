@@ -30,8 +30,8 @@ export function useContextMenu({ reactFlowWrapper }: UseContextMenuOptions) {
       const pane = reactFlowWrapper.current.getBoundingClientRect();
       setMenu({
         id: '10',
-        top: event.clientY < pane.height ? event.clientY : undefined,
-        left: event.clientX < pane.width ? event.clientX : undefined,
+        top: event.clientY < pane.height ? event.clientY - pane.top : undefined,
+        left: event.clientX < pane.width ? event.clientX - pane.left : undefined,
         right: event.clientX >= pane.width ? pane.width - event.clientX : undefined,
         bottom: event.clientY >= pane.height ? pane.height - event.clientY : undefined,
       });

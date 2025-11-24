@@ -39,8 +39,18 @@ export function generateUpdatedPipelines(
       .map((node) => getInstruction(node, orderedDependencyNodes, edges))
       .filter((instruction) => instruction !== null);
 
-    // TODO: get height key from the incoming edge of the terrain node
-    const outputs: scene.DisplacePipeline['outputs'] = { height: 'TODO' };
+    // Get height key from the incoming edge of the terrain node
+    const heightEdge = edges.find((edge) => edge.target === terrainNode.id);
+    const heightEdgeSourceNode = orderedDependencyNodes.find(
+      (node) => node.id === heightEdge?.source,
+    );
+    const outputs: scene.DisplacePipeline['outputs'] = {
+      height: nodeMapping.getHandleKey({
+        // TODO: wow these type assertions are awesome (evil as fuck)
+        sourceNode: heightEdgeSourceNode!,
+        outgoingHandleId: heightEdge!.sourceHandle!,
+      }),
+    };
 
     displacePipeline = { instructionSet, uniforms, outputs };
   }
