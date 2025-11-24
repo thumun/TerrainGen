@@ -65,7 +65,7 @@ export class TerrainRenderer implements IRenderer {
   instancePointsComputePipeline: InstancePointsPipeline;
 
   // instancing things
-  indirectInstancer: IndirectInstancer;
+  indirectInstancer: IndirectInstancer | undefined;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -223,45 +223,6 @@ export class TerrainRenderer implements IRenderer {
       this.normalsComputePipeline,
     );
 
-    // create index and vertex buffers for things we want to instance (for now, plane)
-    const testMesh = new OBJ();
-    testMesh.loadObj('./models/cube.obj');
-
-    // prettier-ignore
-    const vertexArray = new Float32Array([
-      -1.0,  1.0, 0.0,
-       1.0,  1.0, 0.0,
-       1.0, -1.0, 0.0,
-      -1.0, -1.0, 0.0,
-    ]);
-
-    const instanceVertexBuffer = this.device.createBuffer({
-      label: 'instancing vertex buffer',
-      size: vertexArray.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, vertexArray);
-
-    const indexArray = new Uint32Array([0, 1, 2, 0, 2, 3]);
-
-    const instanceIndexBuffer = this.device.createBuffer({
-      label: 'instancing index buffer',
-      size: indexArray.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, indexArray);
-
-    // instancer to draw the mesh we just created
-    // eventually replace instanceVertexBuffer and instanceIndexBuffer with a combined Mesh
-    this.indirectInstancer = new IndirectInstancer(
-      this.device,
-      this.instancePointsComputePipeline,
-      instanceVertexBuffer,
-      instanceIndexBuffer,
-      this.sceneUniformsBindGroupLayout,
-      this.webGPU,
-    );
-
     // ----------------------------------------------------------------------------------------
     // --------------------  RUNNING COMPUTES
     // ----------------------------------------------------------------------------------------
@@ -280,6 +241,40 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
 
     this.device.queue.submit([encoder.finish()]);
+  }
+
+  async init_mesh() {
+    // create test mesh
+    const testMesh = new OBJ();
+    await testMesh.loadObj('./models/teapot.obj');
+
+    console.log(testMesh.vertices);
+    console.log(testMesh.indices);
+
+    const instanceVertexBuffer = this.device.createBuffer({
+      label: 'instancing vertex buffer',
+      size: testMesh.vertices!.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, testMesh.vertices!);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      label: 'instancing index buffer',
+      size: testMesh.indices!.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
+
+    // instancer to draw the mesh we just created
+    // eventually replace instanceVertexBuffer and instanceIndexBuffer with a combined Mesh
+    this.indirectInstancer = new IndirectInstancer(
+      this.device,
+      this.instancePointsComputePipeline,
+      instanceVertexBuffer,
+      instanceIndexBuffer,
+      this.sceneUniformsBindGroupLayout,
+      this.webGPU,
+    );
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -365,7 +360,9 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setIndexBuffer(this.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.groundPlane.indirectBuffer!, 0);
 
-    this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    if (this.indirectInstancer) {
+      this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    }
 
     renderPass.end();
 
