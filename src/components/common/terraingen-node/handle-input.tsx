@@ -21,7 +21,7 @@ export default function HandleInput({ handleId, valueType, label }: HandleInputP
         className={`absolute! top-[calc(50%+var(--spacing)*1.5)]! -left-[calc(var(--spacing)*5.63)]! h-3! w-3! -translate-y-1/2! ${colorClassName}`}
       />
       <div className="flex items-center justify-between">
-        <label className="text-sm font-normal">{label}</label>
+        <label className="font-normal">{label}</label>
       </div>
     </div>
   );

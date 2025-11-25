@@ -16,8 +16,8 @@ export default function SelectInput<TValue extends string>({
   return (
     <div className="relative flex items-center rounded-md bg-zinc-600/50 py-1 pr-1 pl-3">
       <Select.Root value={value} onValueChange={(newValue) => onChange(newValue as TValue)}>
-        <label className="grow text-sm">{label}</label>
-        <Select.Trigger className="flex grow cursor-pointer justify-between rounded bg-transparent py-2 pr-2 pl-4 text-sm font-medium transition-colors hover:bg-zinc-600">
+        <label className="grow">{label}</label>
+        <Select.Trigger className="flex grow cursor-pointer justify-between rounded bg-transparent py-2 pr-2 pl-4 font-medium transition-colors hover:bg-zinc-600">
           <Select.Value placeholder="Select..." />
           <Select.Icon>▾</Select.Icon>
         </Select.Trigger>
