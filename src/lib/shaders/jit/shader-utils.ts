@@ -16,8 +16,7 @@ export const fbmNoise =
 	return result;
 }`;
 
-export const random3D = 
-() => `fn random3D(seed: vec3f) -> vec3f {
+export const random3D = () => `fn random3D(seed: vec3f) -> vec3f {
 	let dot_product = dot(seed, vec3f(12.9898, 78.233, 45.164));
 	let sin_value = sin(dot_product) * 43758.5453;
 	let fract_value = fract(sin_value);
@@ -25,8 +24,7 @@ export const random3D =
 	return vec3f(fract_value, fract_value, fract_value);
 }`;
 
-export const worleyNoise =
-() => `fn worley_noise(pos: vec3f, density: f32) -> f32 {
+export const worleyNoise = () => `fn worley_noise(pos: vec3f, density: f32) -> f32 {
 	var posInt = floor(pos * density);
 	var posFract = fract(pos * density);
 	var minDist = 1.0; // max val
