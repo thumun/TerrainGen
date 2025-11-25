@@ -1,11 +1,13 @@
+import type { NodeProps } from 'reactflow';
+
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.combine;
 
-function CombineNode() {
+function CombineNode({ ...props }: NodeProps) {
   return (
-    <TerrainGenNode.Root title="Combine XYZ">
+    <TerrainGenNode.Root title="Combine XYZ" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.xyz} valueType="vec3f" />
 
       <TerrainGenNode.HandleInput label="X" handleId={HANDLES.in.x} valueType="f32" />
