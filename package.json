@@ -23,6 +23,7 @@
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.545.0",
     "path-browserify": "^1.0.1",
     "react": "^19.2.0",
