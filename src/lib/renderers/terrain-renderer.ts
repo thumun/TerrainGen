@@ -1,3 +1,5 @@
+import path from 'path-browserify';
+
 import type { IRenderer } from '@/components/common/webgpu-canvas';
 import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
 import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
@@ -11,7 +13,6 @@ import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
-import path from 'path-browserify';
 
 export type TerrainRendererGlobalParameters = {
   size: number;
@@ -67,6 +68,11 @@ export class TerrainRenderer implements IRenderer {
 
   // instancing things
   indirectInstancer: IndirectInstancer | undefined;
+
+  // uniform buffer vars
+  nodeGraphUniformBuffer!: GPUBuffer;
+  nodeGraphUniformLayout!: Map<string, number> | undefined;
+  nodeGraphUniformConfig!: scene.DisplacePipeline['uniforms'] | undefined;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -405,33 +411,36 @@ export class TerrainRenderer implements IRenderer {
 
     // also TODO: reuse code between this and our constructor
 
+    this.nodeGraphUniformConfig = config.uniforms;
+
+    // uses the calculateUniformLayout func to get size of vars
+    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+    this.nodeGraphUniformLayout = offsets;
+
+    // Create or recreate the uniform buffer if size changed
+    // this should be good for the dynamic case I think
+    if (this.nodeGraphUniformBuffer) {
+      this.nodeGraphUniformBuffer.destroy();
+    }
+
+    this.nodeGraphUniformBuffer = this.device.createBuffer({
+      label: 'uniform buffer',
+      size: Math.max(totalSize, 16), // WebGPU minimum uniform buffer size
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    this.initializeNodeGraphUniforms(config.uniforms);
+
     this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
       label: 'custom nodegraph bind group layout',
       entries: [
         {
-          binding: 0, // uniform 1 (vec3f)
-          visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'uniform' },
-        },
-        {
-          binding: 1, // uniform 2 (vec3f)
+          binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           buffer: { type: 'uniform' },
         },
       ],
     });
-
-    const nodeGraphUniformsBuffer0 = this.device.createBuffer({
-      size: 4 * 3, // vec3f
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    const nodeGraphUniformsBuffer1 = this.device.createBuffer({
-      size: 4 * 3,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    // TODO: maybe update these uniforms randomly for testing
-    // setInterval(() => {}, 1000);
 
     this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
       label: 'custom nodegraph bind group',
@@ -439,11 +448,7 @@ export class TerrainRenderer implements IRenderer {
       entries: [
         {
           binding: 0,
-          resource: { buffer: nodeGraphUniformsBuffer0 },
-        },
-        {
-          binding: 1,
-          resource: { buffer: nodeGraphUniformsBuffer1 },
+          resource: { buffer: this.nodeGraphUniformBuffer },
         },
       ],
     });
@@ -480,6 +485,28 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
+  private initializeNodeGraphUniforms(uniforms: scene.DisplacePipeline['uniforms']) {
+    if (!this.nodeGraphUniformBuffer || !this.nodeGraphUniformLayout) return;
+
+    for (const uniform of uniforms) {
+      if (uniform.initialValue !== null) {
+        const offset = this.nodeGraphUniformLayout.get(uniform.key);
+        if (offset === undefined) continue;
+
+        if (uniform.type === 'f32') {
+          const data = new Float32Array([uniform.initialValue]);
+          this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+        } else if (uniform.type === 'u32') {
+          const data = new Uint32Array([uniform.initialValue]);
+          this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+        } else if (uniform.type === 'vec3f') {
+          const data = new Float32Array(uniform.initialValue);
+          this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+        }
+      }
+    }
+  }
+
   disableDisplacePipeline() {
     this.displacePipelineConfigured = false;
   }
@@ -500,5 +527,35 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     this.runComputes(encoder);
     this.device.queue.submit([encoder.finish()]);
+  }
+
+  setDisplacePipelineUniform(key: string, value: number | [number, number, number]) {
+    if (!this.displacePipelineConfigured) {
+      console.log('Cannot set uniform');
+      return;
+    }
+
+    const offset = this.nodeGraphUniformLayout?.get(key);
+    if (offset === undefined) {
+      console.warn(`Uniform key "${key}" not found`);
+      return;
+    }
+
+    const uniformConfig = this.nodeGraphUniformConfig?.find((u) => u.key === key);
+    if (!uniformConfig) {
+      console.warn(`Uniform config for key "${key}" not found`);
+      return;
+    }
+
+    if (uniformConfig.type === 'f32') {
+      const data = new Float32Array([value as number]);
+      this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+    } else if (uniformConfig.type === 'u32') {
+      const data = new Uint32Array([value as number]);
+      this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+    } else if (uniformConfig.type === 'vec3f') {
+      const data = new Float32Array(value as [number, number, number]);
+      this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
+    }
   }
 }

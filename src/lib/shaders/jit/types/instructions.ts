@@ -59,7 +59,7 @@ export type Vector = {
 
 export type Noise = {
   type: 'noise';
-  method: 'fbm';
+  method: 'fbm' | 'worley';
   references: {
     pos: util.ReferenceKey;
     scale: util.ReferenceKey;

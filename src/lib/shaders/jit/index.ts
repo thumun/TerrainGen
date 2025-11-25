@@ -5,14 +5,8 @@ export function generateDisplaceShaderCode(
   shaderConfig: shaders.DisplaceShaderConfig,
   template: shaders.DisplaceShaderTemplate,
 ) {
-  // TODO: this will likely have to change to use a struct instead
-  const uniforms = shaderConfig.uniforms
-    .map((uniformConfig, idx) =>
-      generators.generateUniform(uniformConfig, { group: 0, binding: idx }),
-    )
-    .join('\n');
-  // TODO: return required uniform binding layout
-  // const bufferRequirements / bufferMapping = ...
+  // struct ver of above
+  const uniforms = generators.generateUniformStruct(shaderConfig.uniforms);
 
   const processedInstructions = shaderConfig.instructionSet.map(generators.generateCode);
 
@@ -28,3 +22,6 @@ export function generateDisplaceShaderCode(
 
   return template.content({ uniforms, utils, body, heightKey });
 }
+
+// double check this
+export { calculateUniformLayout } from './generators';
