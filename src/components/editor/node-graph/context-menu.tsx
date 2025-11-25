@@ -22,22 +22,6 @@ type ContextMenuItem = {
   className?: string;
 };
 
-const contextMenuItems: ContextMenuItem[] = [
-  { nodeType: 'vector', label: 'Vector', className: 'text-green-800' },
-  { nodeType: 'mathVec3', label: 'Math (Vec3)', className: 'text-green-800' },
-  { nodeType: 'mixVec3', label: 'Mix (Vec3)', className: 'text-green-800' },
-  { nodeType: 'float', label: 'Float', className: 'text-blue-800' },
-  { nodeType: 'mathFloat', label: 'Math (Float)', className: 'text-blue-800' },
-  { nodeType: 'trigMathFloat', label: 'Trig Math (Float)', className: 'text-blue-800' },
-  { nodeType: 'mixFloat', label: 'Mix (Float)', className: 'text-blue-800' },
-  { nodeType: 'separate', label: 'Separate', className: 'text-green-800' },
-  { nodeType: 'combine', label: 'Combine', className: 'text-green-800' },
-  { nodeType: 'noise', label: 'Noise', className: 'text-blue-800' },
-  { nodeType: 'transform', label: 'Transform', className: 'text-teal-800' },
-  { nodeType: 'vertexData', label: 'Vertex Data (Input)', className: 'text-black' },
-  { nodeType: 'terrain', label: 'Terrain (Output)', className: 'text-black' },
-];
-
 export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: ContextMenuProps) {
   const { addNodes, screenToFlowPosition } = useReactFlow();
 
@@ -61,8 +45,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
       };
 
       addNodes(customNode);
+      if (closeMenu) closeMenu();
     },
-    [addNodes, reactFlowWrapper, screenToFlowPosition, state],
+    [addNodes, closeMenu, reactFlowWrapper, screenToFlowPosition, state],
   );
   return (
     <DropdownMenu.Root open={state.show}>
@@ -78,17 +63,152 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
       />
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="bg-zinc-900 transition-opacity"
+          className="rounded-lg rounded-tl-none border border-zinc-600 bg-zinc-900 p-1"
           onInteractOutside={closeMenu}
           onEscapeKeyDown={closeMenu}
           align="start"
         >
-          <DropdownMenu.Group>
-            <DropdownMenu.Item>Hello peter</DropdownMenu.Item>
-            <DropdownMenu.Item>Hello peter 2</DropdownMenu.Item>
-          </DropdownMenu.Group>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>Utility</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem onSelect={() => createNode('vector')} underConstruction>
+                Vector
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('float')} underConstruction>
+                Float
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('separate')}>
+                Separate XYZ
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('combine')}>
+                Combine XYZ
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>Operators</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onSelect={() => createNode('mathVec3')}>
+                    Vector
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={() => createNode('mathFloat')}>
+                    Float
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Mix</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onSelect={() => createNode('mixVec3')}>
+                    Vector
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={() => createNode('mixFloat')}>
+                    Float
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Trigonometry</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onSelect={() => createNode('trigMathFloat')}>
+                    Float
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+
+              <ContextMenuItem onSelect={() => createNode('noise')} underConstruction>
+                Noise
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+
+          <ContextMenuSub>
+            <ContextMenuSubTrigger underConstruction>Geometry</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem onSelect={() => createNode('transform')}>
+                Transform
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>Input/Output</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem onSelect={() => createNode('vertexData')}>
+                Vertex Info (Input)
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('terrain')}>
+                Terrain (Output)
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
+  );
+}
+
+type ContextMenuSubProps = { children?: React.ReactNode };
+
+function ContextMenuSub({ children }: ContextMenuSubProps) {
+  return <DropdownMenu.Sub>{children}</DropdownMenu.Sub>;
+}
+
+type ContextMenuSubTriggerProps = { children?: React.ReactNode; underConstruction?: boolean };
+
+function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTriggerProps) {
+  return (
+    <DropdownMenu.SubTrigger
+      disabled={underConstruction}
+      className="radix-highlighted:bg-zinc-800 radix-disabled:text-zinc-400 radix-state-open:bg-zinc-800 radix-disabled:grayscale cursor-default rounded-sm px-3 py-1 focus-visible:outline-none"
+    >
+      {underConstruction && '🏗️ '}
+      {children}
+    </DropdownMenu.SubTrigger>
+  );
+}
+
+type ContextMenuSubContentProps = { children?: React.ReactNode };
+
+function ContextMenuSubContent({ children }: ContextMenuSubContentProps) {
+  return (
+    <DropdownMenu.SubContent
+      className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
+      alignOffset={-5}
+      sideOffset={4}
+    >
+      {children}
+    </DropdownMenu.SubContent>
+  );
+}
+
+type ContextMenuItemProps = {
+  children?: React.ReactNode;
+  onSelect?: () => void;
+  underConstruction?: boolean;
+  className?: string;
+};
+
+function ContextMenuItem({
+  children,
+  onSelect,
+  underConstruction,
+  className,
+}: ContextMenuItemProps) {
+  return (
+    <DropdownMenu.Item
+      onSelect={onSelect}
+      disabled={underConstruction}
+      className={`radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none ${className}`}
+    >
+      {underConstruction && '🏗️ '}
+      {children}
+    </DropdownMenu.Item>
   );
 }
