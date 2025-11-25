@@ -166,10 +166,13 @@ function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTr
   return (
     <DropdownMenu.SubTrigger
       disabled={underConstruction}
-      className="radix-highlighted:bg-zinc-800 radix-disabled:text-zinc-400 radix-state-open:bg-zinc-800 radix-disabled:grayscale cursor-default rounded-sm px-3 py-1 focus-visible:outline-none"
+      className="radix-highlighted:bg-zinc-800 radix-disabled:text-zinc-400 radix-state-open:bg-zinc-800 radix-disabled:grayscale flex cursor-default justify-between gap-x-4 rounded-sm py-1 pr-2 pl-3 focus-visible:outline-none"
     >
-      {underConstruction && '🏗️ '}
-      {children}
+      <span>
+        {underConstruction && '🏗️ '}
+        {children}
+      </span>
+      <span>›</span>
     </DropdownMenu.SubTrigger>
   );
 }
