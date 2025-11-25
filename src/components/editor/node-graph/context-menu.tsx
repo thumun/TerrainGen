@@ -63,7 +63,7 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
       />
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="rounded-lg rounded-tl-none border border-zinc-600 bg-zinc-900 p-1"
+          className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
           onInteractOutside={closeMenu}
           onEscapeKeyDown={closeMenu}
           align="start"
