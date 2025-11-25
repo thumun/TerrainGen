@@ -114,7 +114,10 @@ export function generateNoiseCode(instruction: instructions.Noise): GenerateCode
   const { pos, scale, numOctaves, write } = instruction.references;
   const mode = instruction.method === 'fbm' ? 'fbm_noise' : 'worley_noise';
   return {
-    code: `let ${write} = ${mode}(${pos} * ${scale}, ${numOctaves});`,
+    code:
+      instruction.method === `fbm`
+        ? `let ${write} = ${mode}(${pos} * ${scale}, ${numOctaves});`
+        : `let ${write} = ${mode}(${pos} * ${scale});`,
     utils:
       instruction.method === 'fbm'
         ? [shaderUtils.fbmNoise]
