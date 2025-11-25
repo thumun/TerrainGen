@@ -167,9 +167,31 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     },
   }),
 
-  // TODO: these guys need nodes!
-  mixFloat: dummyHandler,
-  mixVec3: dummyHandler,
+  mixFloat: (node, getIncomingHandleKey): instructions.Mix => ({
+    type: 'mix',
+    references: {
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.b),
+      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.mix),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.mixFloat.out.result,
+      }),
+    },
+  }),
+
+  mixVec3: (node, getIncomingHandleKey): instructions.Mix => ({
+    type: 'mix',
+    references: {
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.b),
+      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.mix),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.mixVec3.out.result,
+      }),
+    },
+  }),
 
   separate: (node, getIncomingHandleKey): instructions.SeparateXYZ => ({
     type: 'separate-xyz',

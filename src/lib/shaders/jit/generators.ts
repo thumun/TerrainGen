@@ -66,6 +66,11 @@ export function generateMathCode(instruction: instructions.Math): GenerateCodeRe
   return { code: `let ${write} = ${readA} ${operatorChar} ${readB};`, utils: [] };
 }
 
+export function generateCodeMixCode(instruction: instructions.Mix): GenerateCodeResult {
+  const { readA, readB, readMix, write } = instruction.references;
+  return { code: `let ${write} = ${readA} * (1-${readMix}) + ${readB} * ${readMix};` };
+}
+
 const TRIG_FUNCTIONS = {
   sin: 'sin',
   cos: 'cos',
@@ -139,5 +144,7 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
+    case 'mix':
+      return generateCodeMixCode(instruction);
   }
 }
