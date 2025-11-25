@@ -47,7 +47,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
   });
 
   // hook to manage context menu state + position
-  const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
+  const { menuState, onPaneContextMenu, closeMenu } = useContextMenu({ reactFlowWrapper });
 
   /** Callback triggered upon the connection of ANY edge to ANY node. */
   const onConnect = useCallback(
@@ -86,16 +86,17 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
           onNodesChange={onNodesChange}
           onConnect={onConnect}
           onPaneContextMenu={onPaneContextMenu}
-          onPaneClick={onPaneClick}
           fitView
           fitViewOptions={fitViewOptions}
           isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
         >
           <Background />
           <Controls />
-          {menu && (
-            <ContextMenu onClick={onPaneClick} reactFlowWrapper={reactFlowWrapper} {...menu} />
-          )}
+          <ContextMenu
+            state={menuState}
+            closeMenu={closeMenu}
+            reactFlowWrapper={reactFlowWrapper}
+          />
         </ReactFlow>
       </NodeDataProvider>
     </div>

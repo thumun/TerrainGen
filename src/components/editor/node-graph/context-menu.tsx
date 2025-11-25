@@ -1,3 +1,4 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useCallback } from 'react';
 import { useReactFlow } from 'reactflow';
 
@@ -6,15 +7,14 @@ import * as nodeTypes from '@/lib/graph/node-types';
 // referenced from here
 // https://reactflow.dev/examples/interaction/context-menu
 
-interface ContextMenuProps {
+export type ContextMenuState = { show: false } | { show: true; left: number; top: number };
+
+export type ContextMenuProps = {
+  state: ContextMenuState;
+  closeMenu?: () => void;
   reactFlowWrapper: React.RefObject<HTMLElement>;
-  top?: number;
-  left?: number;
-  right?: number;
-  bottom?: number;
-  onClick?: () => void;
   className?: string;
-}
+};
 
 type ContextMenuItem = {
   nodeType: nodeTypes.All['type'];
@@ -38,22 +38,17 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'terrain', label: 'Terrain (Output)', className: 'text-black' },
 ];
 
-export default function ContextMenu({
-  reactFlowWrapper,
-  top,
-  left,
-  right,
-  bottom,
-  ...props
-}: ContextMenuProps) {
+export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: ContextMenuProps) {
   const { addNodes, screenToFlowPosition } = useReactFlow();
 
   const createNode = useCallback(
     (nodeType: nodeTypes.All['type']) => {
+      if (!state.show) return;
+
       const pane = reactFlowWrapper.current.getBoundingClientRect();
       const position = screenToFlowPosition({
-        x: (left ?? 0) + pane.left,
-        y: (top ?? 0) + pane.top,
+        x: (state.left ?? 0) + pane.left,
+        y: (state.top ?? 0) + pane.top,
       });
 
       const baseNode = nodeTypes.NODE_PREFABS[nodeType];
@@ -67,23 +62,33 @@ export default function ContextMenu({
 
       addNodes(customNode);
     },
-    [addNodes, left, reactFlowWrapper, screenToFlowPosition, top],
+    [addNodes, reactFlowWrapper, screenToFlowPosition, state],
   );
   return (
-    <div
-      style={{ top, left, right, bottom }}
-      className="context-menu absolute z-50 w-60 rounded-md border border-gray-300 bg-white shadow-lg"
-      {...props}
-    >
-      {contextMenuItems.map(({ nodeType, label, className }) => (
-        <button
-          key={nodeType}
-          onClick={() => createNode(nodeType)}
-          className={`w-full border-none px-2 py-1 text-left text-sm hover:bg-gray-200 ${className}`}
+    <DropdownMenu.Root open={state.show}>
+      {/* hacky workaround: the trigger exists, but tiny as hell */}
+      <DropdownMenu.Trigger
+        className="absolute size-0 bg-red-400/20 select-none focus-visible:outline-none"
+        // content will align with this element, so position it at the mouse
+        style={{
+          left: state.show ? `${state.left}px` : 0,
+          top: state.show ? `${state.top}px` : 0,
+        }}
+        id="trigger"
+      />
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="bg-zinc-900 transition-opacity"
+          onInteractOutside={closeMenu}
+          onEscapeKeyDown={closeMenu}
+          align="start"
         >
-          + {label}
-        </button>
-      ))}
-    </div>
+          <DropdownMenu.Group>
+            <DropdownMenu.Item>Hello peter</DropdownMenu.Item>
+            <DropdownMenu.Item>Hello peter 2</DropdownMenu.Item>
+          </DropdownMenu.Group>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
