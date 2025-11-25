@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 type TrigMathNodeData = nodeTypes.TrigMathFloat['data'];
 const HANDLES = nodeTypes.HANDLES.trigMathFloat;
 
-function TrigMathNodeFloat({ id, data }: NodeProps<TrigMathNodeData>) {
+function TrigMathNodeFloat({ id, data, ...props }: NodeProps<TrigMathNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onOperationChange = (operationVal: TrigMathNodeData['operationVal']) => {
@@ -16,7 +16,7 @@ function TrigMathNodeFloat({ id, data }: NodeProps<TrigMathNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Trig Math (Float)">
+    <TerrainGenNode.Root title="Trig Math (Float)" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
 
       <TerrainGenNode.HandleInput label="Value" handleId={HANDLES.in.input} valueType="f32" />

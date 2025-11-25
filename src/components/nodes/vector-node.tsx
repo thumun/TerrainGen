@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.vector;
 type VectorNodeData = nodeTypes.Vector['data'];
 
-function VectorNode({ id, data }: NodeProps<VectorNodeData>) {
+function VectorNode({ id, data, ...props }: NodeProps<VectorNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onChange = (axis: 'x' | 'y' | 'z', value: number) => {
@@ -16,7 +16,7 @@ function VectorNode({ id, data }: NodeProps<VectorNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Vector">
+    <TerrainGenNode.Root title="Vector" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="vec3f" />
 
       <TerrainGenNode.NumberInput
