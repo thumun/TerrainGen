@@ -9,7 +9,7 @@ type Node<
 
 export type Vector = Node<'vector', { x: number; y: number; z: number }>;
 export type Transform = Node<'transform'>;
-export type Noise = Node<'noise', { mode: 'FBM' }>;
+export type Noise = Node<'noise', { mode: 'FBM' | 'Worley' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' | 'Tan' }>;
 export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;

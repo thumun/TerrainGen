@@ -2,15 +2,18 @@
 
 exports[`generateDisplaceShaderCode > matches the snapshot with mock vertex template 1`] = `
 "> UNIFORMS
-@group(0) @binding(0) var<uniform> unif1 : f32;
-@group(0) @binding(1) var<uniform> unif2 : vec3f;
+struct NodeGraphUniforms {
+  unif1: f32,
+  unif2: vec3f
+}
+@group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;
 
 > UTILS
 
 
 > BODY CODE
-  let unif2_y = unif2.x;
-  let height_out = unif1 + unif2_y;
+  let unif2_y = nodeGraphUniforms.unif2.x;
+  let height_out = nodeGraphUniforms.unif1 + unif2_y;
 
 > HEIGHT KEY
 height_out
