@@ -8,9 +8,9 @@ const HANDLES = nodeTypes.HANDLES.separate;
 function SeparateNode({ ...props }: NodeProps) {
   return (
     <TerrainGenNode.Root title="Separate XYZ" {...props}>
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.x} valueType="f32" />
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.y} valueType="f32" offset={1} />
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.z} valueType="f32" offset={2} />
+      <TerrainGenNode.HandleOutput label="X" handleId={HANDLES.out.x} valueType="f32" />
+      <TerrainGenNode.HandleOutput label="Y" handleId={HANDLES.out.y} valueType="f32" />
+      <TerrainGenNode.HandleOutput label="Z" handleId={HANDLES.out.z} valueType="f32" />
 
       <TerrainGenNode.HandleInput label="XYZ" handleId={HANDLES.in.xyz} valueType="vec3f" />
     </TerrainGenNode.Root>
