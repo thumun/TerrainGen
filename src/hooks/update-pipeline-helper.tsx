@@ -4,8 +4,6 @@ import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 const TerrainRendererContext = createContext<TerrainRenderer | undefined>(undefined);
 
-export const TerrainRendererProvider = TerrainRendererContext.Provider;
-
 export function useTerrainRenderer() {
   return useContext(TerrainRendererContext);
 }
