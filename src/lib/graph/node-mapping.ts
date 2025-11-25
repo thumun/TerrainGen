@@ -89,6 +89,13 @@ const trigOperationMapping: {
   Tan: 'tan',
 };
 
+const noiseTypeMapping: {
+  [key in nodeTypes.Noise['data']['mode']]: instructions.Noise['method'];
+} = {
+  FBM: 'fbm',
+  Worley: 'worley',
+};
+
 const dummyHandler = () => {
   console.error('Not implemented!');
   return null;
@@ -112,7 +119,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
 
   noise: (node, getIncomingHandleKey): instructions.Noise => ({
     type: 'noise',
-    method: ({ FBM: 'fbm' } as const)[node.data.mode],
+    method: noiseTypeMapping[node.data.mode],
     references: {
       pos: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.position),
       numOctaves: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.numOctaves),

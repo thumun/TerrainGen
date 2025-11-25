@@ -112,9 +112,13 @@ export function generateVectorCode(instruction: instructions.Vector): GenerateCo
 
 export function generateNoiseCode(instruction: instructions.Noise): GenerateCodeResult {
   const { pos, scale, numOctaves, write } = instruction.references;
+  const mode = instruction.method === 'fbm' ? 'fbm_noise' : 'worley_noise';
   return {
-    code: `let ${write} = fbm_noise(${pos} * ${scale}, ${numOctaves});`,
-    utils: [shaderUtils.fbmNoise],
+    code: `let ${write} = ${mode}(${pos} * ${scale}, ${numOctaves});`,
+    utils:
+      instruction.method === 'fbm'
+        ? [shaderUtils.fbmNoise]
+        : [shaderUtils.random3D, shaderUtils.worleyNoise],
   };
 }
 
