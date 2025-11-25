@@ -231,20 +231,14 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   vector: (node) => [
     {
       type: 'vec3f',
-      key: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
-      }),
+      key: formatKey(`hdlkey_${node.id}_${nodeTypes.HANDLES.vector.out.result}`),
       initialValue: [node.data.x, node.data.y, node.data.z],
     },
   ],
   float: (node) => [
     {
       type: 'f32',
-      key: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.float.out.result,
-      }),
+      key: formatKey(`hdlkey_${node.id}_${nodeTypes.HANDLES.float.out.result}`),
       initialValue: node.data.value,
     },
   ],

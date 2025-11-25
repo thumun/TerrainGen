@@ -411,6 +411,13 @@ export class TerrainRenderer implements IRenderer {
 
     // also TODO: reuse code between this and our constructor
 
+    const customComputeShader = jit.generateDisplaceShaderCode(
+      config,
+      displaceComputeShaderTemplate,
+    );
+
+    console.log('custom compute shader:', customComputeShader);
+
     this.nodeGraphUniformConfig = config.uniforms;
 
     // uses the calculateUniformLayout func to get size of vars
@@ -452,13 +459,6 @@ export class TerrainRenderer implements IRenderer {
         },
       ],
     });
-
-    const customComputeShader = jit.generateDisplaceShaderCode(
-      config,
-      displaceComputeShaderTemplate,
-    );
-
-    console.log('custom compute shader:', customComputeShader);
 
     this.customPipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
@@ -557,5 +557,10 @@ export class TerrainRenderer implements IRenderer {
       const data = new Float32Array(value as [number, number, number]);
       this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
     }
+
+    const encoder = this.device.createCommandEncoder();
+    this.runComputes(encoder);
+    this.device.queue.submit([encoder.finish()]);
+    console.log('rerunning compute after uniform update');
   }
 }
