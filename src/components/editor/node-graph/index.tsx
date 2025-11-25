@@ -93,7 +93,9 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
         >
           <Background />
           <Controls />
-          {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+          {menu && (
+            <ContextMenu onClick={onPaneClick} reactFlowWrapper={reactFlowWrapper} {...menu} />
+          )}
         </ReactFlow>
       </NodeDataProvider>
     </div>
