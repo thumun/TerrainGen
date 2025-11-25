@@ -18,7 +18,7 @@ export default function HandleOutput({ handleId, valueType, offset = 0 }: Handle
       type="source"
       position={Position.Right}
       id={handleId}
-      className={`absolute! top-[calc(var(--spacing)*(10+var(--vert-offset)*8))]! -right-2! h-3! w-3! -translate-y-1/2! ${colorClassName}`}
+      className={`absolute! top-[calc(var(--spacing)*(9+var(--vert-offset)*8))]! -right-2! h-3! w-3! -translate-y-1/2! ${colorClassName}`}
       style={{ '--vert-offset': offset } as React.CSSProperties}
     />
   );
