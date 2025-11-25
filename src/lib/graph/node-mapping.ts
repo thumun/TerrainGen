@@ -223,6 +223,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
+  instancing: dummyHandler,
 };
 
 const dummyUniformHandler = () => {
@@ -234,7 +235,6 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     // TODO: logical uniform creation based on node data. these should match uniforms used in
     //       references by INSTRUCTION_MAPPING. In fact, this logic could even be combined into
     //       those methods.
-
     console.log('Not implemented!');
     return [];
 
@@ -265,4 +265,5 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     },
   ],
   separate: dummyUniformHandler,
+  instancing: dummyUniformHandler,
 };

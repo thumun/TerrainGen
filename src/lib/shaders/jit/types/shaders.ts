@@ -16,6 +16,17 @@ export type DisplaceShaderConfig = ShaderConfigBase & {
   };
 };
 
+export type InstancingShaderConfig = ShaderConfigBase & {
+  outputs: {
+    instanceCount: number;
+    instancePositions: util.ReferenceKey;
+  };
+  mesh: {
+    vertices: Float32Array;
+    indices: Uint32Array;
+  };
+};
+
 type DisplaceShaderTemplateValues = {
   uniforms: string;
   utils: string;

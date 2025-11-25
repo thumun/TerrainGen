@@ -20,6 +20,7 @@ export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
+export type Instancing = Node<'instancing'>;
 
 export type All =
   | Vector
@@ -34,7 +35,8 @@ export type All =
   | Terrain
   | Separate
   | Combine
-  | Float;
+  | Float
+  | Instancing;
 
 /**
  * Handle IDs for each node type
@@ -98,6 +100,10 @@ export const HANDLES = {
     in: {},
     out: { result: 'float-out' },
   },
+  instancing: {
+    in: { position: 'vec3-pos-array-in' },
+    out: {},
+  },
 } as const satisfies {
   [nodeType in All['type']]: { in: Record<string, string>; out: Record<string, string> };
 };
@@ -129,4 +135,5 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
+  instancing: { type: 'instancing', data: { meshPath: '/models/cube.obj' } },
 };
