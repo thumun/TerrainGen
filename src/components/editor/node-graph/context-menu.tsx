@@ -7,6 +7,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 // https://reactflow.dev/examples/interaction/context-menu
 
 interface ContextMenuProps {
+  reactFlowWrapper: React.RefObject<HTMLElement>;
   top?: number;
   left?: number;
   right?: number;
@@ -37,30 +38,37 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'terrain', label: 'Terrain (Output)', className: 'text-black' },
 ];
 
-export default function ContextMenu({ top, left, right, bottom, ...props }: ContextMenuProps) {
-  const { addNodes } = useReactFlow();
+export default function ContextMenu({
+  reactFlowWrapper,
+  top,
+  left,
+  right,
+  bottom,
+  ...props
+}: ContextMenuProps) {
+  const { addNodes, screenToFlowPosition } = useReactFlow();
 
-  const duplicateNode = useCallback(
+  const createNode = useCallback(
     (nodeType: nodeTypes.All['type']) => {
-      const position = {
-        x: 50,
-        y: 50,
-      };
+      const pane = reactFlowWrapper.current.getBoundingClientRect();
+      const position = screenToFlowPosition({
+        x: (left ?? 0) + pane.left,
+        y: (top ?? 0) + pane.top,
+      });
 
       const baseNode = nodeTypes.NODE_PREFABS[nodeType];
 
       const customNode = {
+        ...baseNode,
+        // TODO: maybe some more unique id, uuid perhaps?
         id: `custom-node-${Date.now()}`,
-        type: baseNode.type,
         position,
-        data: baseNode.data,
       };
 
       addNodes(customNode);
     },
-    [addNodes],
+    [addNodes, left, reactFlowWrapper, screenToFlowPosition, top],
   );
-
   return (
     <div
       style={{ top, left, right, bottom }}
@@ -70,7 +78,7 @@ export default function ContextMenu({ top, left, right, bottom, ...props }: Cont
       {contextMenuItems.map(({ nodeType, label, className }) => (
         <button
           key={nodeType}
-          onClick={() => duplicateNode(nodeType)}
+          onClick={() => createNode(nodeType)}
           className={`w-full border-none px-2 py-1 text-left text-sm hover:bg-gray-200 ${className}`}
         >
           + {label}
