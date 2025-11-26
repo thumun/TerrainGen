@@ -17,11 +17,18 @@ export class InstancePointsPipeline {
 
   normalsComputePipeline: NormalsPipeline;
 
-  constructor(device: GPUDevice, mesh: Mesh, normalsComputePipeline: NormalsPipeline) {
+  customInstanceCode?: string;
+
+  constructor(
+    device: GPUDevice,
+    mesh: Mesh,
+    normalsComputePipeline: NormalsPipeline,
+    customInstanceCode?: string,
+  ) {
     this.device = device;
     this.mesh = mesh;
     this.normalsComputePipeline = normalsComputePipeline;
-
+    this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
       size: this.instanceCount * 32,
@@ -85,7 +92,7 @@ export class InstancePointsPipeline {
       compute: {
         module: this.device.createShaderModule({
           label: 'instancing compute shader',
-          code: shaders.terrainPointsComputeSrc,
+          code: this.customInstanceCode ?? shaders.terrainPointsComputeSrc,
         }),
         entryPoint: 'main',
       },

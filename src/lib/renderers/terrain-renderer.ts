@@ -11,6 +11,7 @@ import { OBJ, Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
+import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/instance.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -511,10 +512,54 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
-  configureInstancingPipeline() {
+  async configureInstancingPipeline(config: scene.InstancingPipeline) {
     this.instancingPipelineConfigured = true;
 
-    // TODO: Write this method
+    // load obj from geo node
+    const mesh = new OBJ();
+    await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+
+    if (!mesh || !mesh.vertices || !mesh.indices) {
+      return;
+    }
+
+    // Create buffers for mesh
+    const instanceVertexBuffer = this.device.createBuffer({
+      size: mesh.vertices.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      size: mesh.indices.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
+
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+
+    this.instancePointsComputePipeline = new InstancePointsPipeline(
+      this.device,
+      this.groundPlane,
+      this.normalsComputePipeline,
+      customInstanceShader,
+    );
+
+    this.indirectInstancer = new IndirectInstancer(
+      this.device,
+      this.instancePointsComputePipeline,
+      instanceVertexBuffer,
+      instanceIndexBuffer,
+      this.sceneUniformsBindGroupLayout,
+      this.webGPU,
+    );
+
+    const encoder = this.device.createCommandEncoder();
+    this.runComputes(encoder);
+    this.device.queue.submit([encoder.finish()]);
   }
 
   disableInstancingPipeline() {

@@ -20,6 +20,7 @@ export const fitViewOptions: FitViewOptions = {
 
 type NodeGraphProps = {
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
+  onInstancingPipelineUpdate?: (newPipeline: scene.InstancingPipeline) => void;
 };
 
 const initialNodes: (Node & nodeTypes.All)[] = [
@@ -37,7 +38,10 @@ const initialNodes: (Node & nodeTypes.All)[] = [
   },
 ];
 
-export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {
+export default function NodeGraph({
+  onDisplacePipelineUpdate,
+  onInstancingPipelineUpdate,
+}: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
@@ -69,9 +73,11 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
 
       if (pipelines.displacePipeline && onDisplacePipelineUpdate) {
         onDisplacePipelineUpdate(pipelines.displacePipeline);
+      } else if (pipelines.instancingPipeline && onInstancingPipelineUpdate) {
+        onInstancingPipelineUpdate(pipelines.instancingPipeline);
       }
     },
-    [edges, setEdges, nodes, onDisplacePipelineUpdate],
+    [edges, setEdges, nodes, onDisplacePipelineUpdate, onInstancingPipelineUpdate],
   );
 
   return (

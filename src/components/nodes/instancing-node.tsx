@@ -1,12 +1,9 @@
-import type { NodeProps } from 'node_modules/@reactflow/core/dist/esm/types/nodes';
-
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.instancing;
-type InstancingNodeData = nodeTypes.Instancing['data'];
 
-function InstancingNode({ id, data }: NodeProps<InstancingNodeData>) {
+function InstancingNode() {
   return (
     <TerrainGenNode.Root title="Instancing (Output)">
       <TerrainGenNode.HandleInput
@@ -15,11 +12,11 @@ function InstancingNode({ id, data }: NodeProps<InstancingNodeData>) {
         valueType="vec3f[]"
       />
 
-      {/* <TerrainGenNode.HandleInput
-        label="Mesh ID"
-        handleId={HANDLES.in.meshId}
-        valueType="u32"
-      /> */}
+      <TerrainGenNode.HandleInput
+        label="Geometry"
+        handleId={HANDLES.in.geometry}
+        valueType="geometry"
+      />
     </TerrainGenNode.Root>
   );
 }
