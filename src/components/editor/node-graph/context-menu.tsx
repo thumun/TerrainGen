@@ -27,6 +27,7 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'mathVec3', label: 'Math (Vec3)', className: 'text-green-800' },
   { nodeType: 'mixVec3', label: 'Mix (Vec3)', className: 'text-green-800' },
   { nodeType: 'float', label: 'Float', className: 'text-blue-800' },
+  { nodeType: 'unsignedInt', label: 'Unsigned Int', className: 'text-orange-800' },
   { nodeType: 'mathFloat', label: 'Math (Float)', className: 'text-blue-800' },
   { nodeType: 'trigMathFloat', label: 'Trig Math (Float)', className: 'text-blue-800' },
   { nodeType: 'mixFloat', label: 'Mix (Float)', className: 'text-blue-800' },

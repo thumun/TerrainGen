@@ -20,6 +20,7 @@ export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
+export type UnsignedInt = Node<'unsignedInt', { value: number }>;
 
 export type All =
   | Vector
@@ -34,7 +35,8 @@ export type All =
   | Terrain
   | Separate
   | Combine
-  | Float;
+  | Float
+  | UnsignedInt;
 
 /**
  * Handle IDs for each node type
@@ -98,6 +100,10 @@ export const HANDLES = {
     in: {},
     out: { result: 'float-out' },
   },
+  unsignedInt: {
+    in: {},
+    out: { result: 'uint-out' },
+  },
 } as const satisfies {
   [nodeType in All['type']]: { in: Record<string, string>; out: Record<string, string> };
 };
@@ -129,4 +135,5 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
+  unsignedInt: { type: 'unsignedInt', data: { value: 0 } },
 };

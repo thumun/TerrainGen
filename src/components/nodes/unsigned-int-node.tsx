@@ -1,0 +1,26 @@
+import { useReactFlow, type NodeProps } from 'reactflow';
+
+import * as helpers from './helpers';
+
+import * as TerrainGenNode from '@/components/common/terraingen-node';
+import * as nodeTypes from '@/lib/graph/node-types';
+
+const HANDLES = nodeTypes.HANDLES.unsignedInt;
+type UnsignedIntNodeData = nodeTypes.UnsignedInt['data'];
+
+function FloatNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
+  const { setNodes } = useReactFlow();
+
+  const onChange = (value: number) => {
+    helpers.updateNodeData<UnsignedIntNodeData>({ id, setNodes, newData: { value } });
+  };
+
+  return (
+    <TerrainGenNode.Root title="Unsigned Int">
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="u32" />
+      <TerrainGenNode.NumberInput value={data.value} valueType="u32" onChange={onChange} />
+    </TerrainGenNode.Root>
+  );
+}
+
+export default FloatNode;
