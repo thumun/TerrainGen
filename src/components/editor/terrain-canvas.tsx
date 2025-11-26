@@ -37,7 +37,7 @@ export default function TerrainCanvas({
     if (instancingPipeline === undefined) {
       rendererRef.current?.disableInstancingPipeline();
     } else {
-      rendererRef.current?.configureInstancingPipeline(instancingPipeline);
+      void rendererRef.current?.configureInstancingPipeline(instancingPipeline);
     }
   }, [displacePipeline, instancingPipeline]);
 
