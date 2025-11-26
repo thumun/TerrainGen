@@ -60,5 +60,6 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let diffuse = max(dot(in.nor, lightDir), 0.0);
   let color = vec3f(0.5, 0.5, 0.5) * diffuse;
 
-  return vec4f(color, 1.0);
+  // return vec4f(color, 1.0);
+  return vec4f(1.0, 0.0, 0.0, 1.0);
 }
