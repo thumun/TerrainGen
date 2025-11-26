@@ -519,7 +519,7 @@ export class TerrainRenderer implements IRenderer {
     const mesh = new OBJ();
     await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
 
-    if (!mesh || !mesh.vertices || !mesh.indices) {
+    if (!mesh.vertices || !mesh.indices) {
       return;
     }
 
