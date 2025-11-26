@@ -34,6 +34,12 @@ fn vs_main(in : VertexIn) -> VertexOut {
     pos.y = instance_pts[vOffset + 1];
     pos.z = instance_pts[vOffset + 2];
 
+    // point nor for testing...
+    var nor = vec3f(1.0, 1.0, 1.0);
+    nor.x = instance_pts[vOffset + 3];
+    nor.y = instance_pts[vOffset + 4];
+    nor.z = instance_pts[vOffset + 5];
+
     let idx = indices[in.vertex_index];
     let base = idx * 8u;
     let local = vec3f(
@@ -47,7 +53,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
+    //out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
+    out.nor = nor;
     out.uv = vec2f(1.0, 1.0);
     return out;
 }
@@ -61,5 +68,6 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let color = vec3f(0.5, 0.5, 0.5) * diffuse;
 
   // return vec4f(color, 1.0);
-  return vec4f(1.0, 0.0, 0.0, 1.0);
+  //return vec4f(1.0, 0.0, 0.0, 1.0);
+  return vec4f(in.nor.x, in.nor.y, in.nor.z, 1.0);
 }
