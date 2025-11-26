@@ -89,6 +89,12 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let height = mix(mix(h_bl, h_br, fx), mix(h_tl, h_tr, fx), fz);
     let normal = normalize(mix(mix(nor_bl, nor_br, fx), mix(nor_tl, nor_tr, fx), fz));
 
+    // do all the annoying calc in here, then store it in instance_pts...
+    let helper = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(normal.y) > 0.99);
+    let T = normalize(cross(helper, normal));
+    let B = cross(normal, T);
+    let rot = mat3x3f(T, B, normal);
+
     let vOffset = vertexOffset(id.x);
     instance_pts[vOffset + 0] = x;               // pos.x
     instance_pts[vOffset + 1] = height;               // pos.y

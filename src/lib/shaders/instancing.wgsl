@@ -39,6 +39,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     nor.x = instance_pts[vOffset + 3];
     nor.y = instance_pts[vOffset + 4];
     nor.z = instance_pts[vOffset + 5];
+    nor = normalize(nor);
 
     let idx = indices[in.vertex_index];
     let base = idx * 8u;
@@ -47,7 +48,15 @@ fn vs_main(in : VertexIn) -> VertexOut {
         vertices[base + 1],
         vertices[base + 2],
     );
-    let world = vec4(pos.x + local.x, pos.y + local.y, pos.z + local.z, 1.0);
+
+    // do transformations
+    let helper = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(nor.y) > 0.99);
+    let T = normalize(cross(helper, nor));
+    let B = cross(nor, T);
+    let rot = mat3x3f(T, B, nor);
+
+    let rotated = rot * local;   // apply orientation
+    let world = vec4(pos + rotated, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // set output
