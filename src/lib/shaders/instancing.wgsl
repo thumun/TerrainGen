@@ -2,7 +2,7 @@
 var<uniform> camera : CameraUniforms;
 
 @group(1) @binding(0)
-var<storage, read> instance_pts: array<f32>; // 8 floats per instance- pos, nor, uv
+var<storage, read> instance_pts: array<InstanceVertex>; // 8 floats per instance- pos, nor, uv
 
 @group(1) @binding(1)
 var<storage, read> vertices: array<f32>; // 8 floats per vertex
@@ -29,17 +29,10 @@ fn vs_main(in : VertexIn) -> VertexOut {
     let vOffset = in.instance_index * 8u;
 
      // get point position
-    var pos = vec3f(1.0, 1.0, 1.0);
-    pos.x = instance_pts[vOffset + 0];
-    pos.y = instance_pts[vOffset + 1];
-    pos.z = instance_pts[vOffset + 2];
+    var pos = instance_pts[in.instance_index].pos;
 
     // point nor for testing...
-    var nor = vec3f(1.0, 1.0, 1.0);
-    nor.x = instance_pts[vOffset + 3];
-    nor.y = instance_pts[vOffset + 4];
-    nor.z = instance_pts[vOffset + 5];
-    nor = normalize(nor);
+    var nor = normalize(instance_pts[in.instance_index].nor);
 
     let idx = indices[in.vertex_index];
     let base = idx * 8u;
@@ -62,7 +55,6 @@ fn vs_main(in : VertexIn) -> VertexOut {
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    //out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
     out.nor = nor;
     out.uv = vec2f(1.0, 1.0);
     return out;

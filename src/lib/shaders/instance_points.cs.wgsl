@@ -10,7 +10,7 @@ var<storage, read_write> indices: array<u32>;
 var<uniform> meshUniforms : MeshUniforms;
 
 @group(2) @binding(0)
-var<storage, read_write> instance_pts: array<f32>;
+var<storage, read_write> instance_pts: array<InstanceVertex>;
 
 @group(2) @binding(1)
 var<uniform> instanceCount: u32;
@@ -95,13 +95,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let B = cross(normal, T);
     let rot = mat3x3f(T, B, normal);
 
-    let vOffset = vertexOffset(id.x);
-    instance_pts[vOffset + 0] = x;               // pos.x
-    instance_pts[vOffset + 1] = height;               // pos.y
-    instance_pts[vOffset + 2] = z;               // pos.z
-    instance_pts[vOffset + 3] = normal.x;             // nor.x
-    instance_pts[vOffset + 4] = normal.y;             // nor.y
-    instance_pts[vOffset + 5] = normal.z;             // nor.z
-    instance_pts[vOffset + 6] = 0.0;             // uv.x
-    instance_pts[vOffset + 7] = 0.0;             // uv.y
+    instance_pts[id.x].pos = vec3<f32>(x, height, z);
+    instance_pts[id.x].nor = vec3<f32>(normal.x, normal.y, normal.z);
+    instance_pts[id.x].uv = vec2<f32>(0.0, 0.0);
 }
