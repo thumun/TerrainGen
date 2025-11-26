@@ -39,14 +39,13 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         return;
     }
 
-    let colRowSize = u32(sqrt(f32(instanceCount)));
+    // generate a random point inside the grid
+    let rx = hash11(f32(id.x) * 12.123);
+    let rz = hash11(f32(id.x) * 91.331);
 
-    let row = id.x / colRowSize;
-    let col = id.x % colRowSize;
-
-    // world position
-    let x = f32(col) * (size * 0.25) - (size * 0.5);
-    let z = f32(row) * (size * 0.25) - (size * 0.5);
+    // world pos
+    let x = rx * size - size * 0.5;
+    let z = rz * size - size * 0.5;
 
     // convert to local
     let lx = x + size * 0.5;
@@ -61,7 +60,6 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let cz1 = min(u32(cz) + 1u, subdivisions);
 
     // find the idxes of the 4 corners
-
     let idx_bl = u32(cz) * verts_per_row + u32(cx);   // bottom-left
     let idx_br = u32(cz) * verts_per_row + cx1;       // bottom-right
     let idx_tl = cz1 * verts_per_row + u32(cx);       // top-left
