@@ -23,16 +23,18 @@ export class InstancePointsPipeline {
     device: GPUDevice,
     mesh: Mesh,
     normalsComputePipeline: NormalsPipeline,
+    instanceCount: number,
     customInstanceCode?: string,
     nodeGraphUniformsBindGroupLayout?: GPUBindGroupLayout,
   ) {
     this.device = device;
     this.mesh = mesh;
     this.normalsComputePipeline = normalsComputePipeline;
+    this.instanceCount = instanceCount;
     this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
-      size: this.instanceCount * 32,
+      size: Math.max(this.instanceCount * 32, 32),
       usage:
         GPUBufferUsage.VERTEX |
         GPUBufferUsage.COPY_DST |
@@ -110,6 +112,9 @@ export class InstancePointsPipeline {
     computePass: GPUComputePassEncoder,
     nodeGraphUniformsBindGroup?: GPUBindGroup,
   ) {
+    if (this.instanceCount === 0) {
+      return;
+    }
     computePass.setPipeline(this.instancingPipeline);
     computePass.setBindGroup(0, this.normalsComputePipeline.normalsDataBindGroup);
     computePass.setBindGroup(1, this.normalsComputePipeline.normalsUniformBindGroup);

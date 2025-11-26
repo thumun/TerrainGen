@@ -229,6 +229,7 @@ export class TerrainRenderer implements IRenderer {
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
+      30,
     );
 
     // ----------------------------------------------------------------------------------------
@@ -585,6 +586,7 @@ export class TerrainRenderer implements IRenderer {
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
+      config.outputs.instanceCount,
       customInstanceShader,
       this.customNodeGraphUniformsBindGroupLayout,
     );

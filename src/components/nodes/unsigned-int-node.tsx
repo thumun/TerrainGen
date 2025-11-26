@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.unsignedInt;
 type UnsignedIntNodeData = nodeTypes.UnsignedInt['data'];
 
-function FloatNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
+function UnsignedIntNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onChange = (value: number) => {
@@ -23,4 +23,4 @@ function FloatNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
   );
 }
 
-export default FloatNode;
+export default UnsignedIntNode;

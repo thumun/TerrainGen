@@ -88,6 +88,15 @@ export function generateUpdatedPipelines(
       (node) => node.id === geometryEdge?.source && node.type === 'geometry',
     ) as (nodeTypes.Geometry & { id: string }) | undefined;
 
+    const instCountEdge = edges.find(
+      (edge) =>
+        edge.target === instancingNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.instancing.in.instCount,
+    );
+    const instCountNode = orderedDependencyNodes.find(
+      (node) => node.id === instCountEdge?.source,
+    ) as (nodeTypes.UnsignedInt & { id: string }) | undefined;
+
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');
       return { displacePipeline };
@@ -97,7 +106,7 @@ export function generateUpdatedPipelines(
     }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: 30,
+      instanceCount: !instCountNode ? 30 : instCountNode.data.value,
       instancePositions: nodeMapping.getHandleKey({
         sourceNode: orderedDependencyNodes.find((n) => n.id === positionEdge?.source)!,
         outgoingHandleId: positionEdge.sourceHandle!,
