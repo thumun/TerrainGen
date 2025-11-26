@@ -30,10 +30,10 @@ ${body}
 
     let vOffset = vertexOffset(id.x);
     let instancePos = ${posKey};
-
-    instance_pts[vOffset + 0] = instancePos.x;
-    instance_pts[vOffset + 1] = instancePos.y;
-    instance_pts[vOffset + 2] = instancePos.z;
+    
+    instance_pts[vOffset + 0] = ${posKey}.x;
+    instance_pts[vOffset + 1] = ${posKey}.y;
+    instance_pts[vOffset + 2] = ${posKey}.z;
     instance_pts[vOffset + 3] = 0.0; // nor.x
     instance_pts[vOffset + 4] = 1.0; // nor.y
     instance_pts[vOffset + 5] = 0.0; // nor.z

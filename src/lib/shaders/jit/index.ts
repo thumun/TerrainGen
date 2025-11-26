@@ -42,7 +42,7 @@ export function generateInstanceShaderCode(
 
   const posKey = shaderConfig.outputs.instancePositions;
 
-  return template.content({ uniforms, utils, body, posKey, meshKey: 'mesh' });
+  return template.content({ uniforms, utils, body, posKey });
 }
 
 // double check this

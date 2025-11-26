@@ -36,7 +36,6 @@ type InstancingShaderTemplateValues = {
   utils: string;
   body: string;
   posKey: string;
-  meshKey: string;
 };
 
 export type DisplaceShaderTemplate = {
@@ -51,10 +50,4 @@ export type InstancingShaderTemplate = {
 export const DISPLACE_SHADER_INPUT_KEYS = {
   /** `vec3f` - world position of the current terrain vertex */
   terrainPos: 'terrainPos',
-};
-
-export const INSTANCING_SHADER_INPUT_KEYS = {
-  /** `vec3f` - world position of the current terrain vertex */
-  pos: 'pos',
-  mesh: 'mesh',
 };
