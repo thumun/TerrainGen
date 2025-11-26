@@ -22,7 +22,10 @@ function GeometryNode({ id, data }: NodeProps<GeometryNodeData>) {
         label="Mesh"
         value={data.meshPath}
         onChange={onMeshPathChange}
-        options={[{ label: 'Cube', value: '/models/cube.obj' }]}
+        options={[
+          { label: 'Cube', value: '/models/cube.obj' },
+          { label: 'Teapot', value: '/models/teapot.obj' },
+        ]}
       />
     </TerrainGenNode.Root>
   );
