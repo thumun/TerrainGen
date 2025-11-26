@@ -73,7 +73,8 @@ export default function NodeGraph({
 
       if (pipelines.displacePipeline && onDisplacePipelineUpdate) {
         onDisplacePipelineUpdate(pipelines.displacePipeline);
-      } else if (pipelines.instancingPipeline && onInstancingPipelineUpdate) {
+      }
+      if (pipelines.instancingPipeline && onInstancingPipelineUpdate) {
         onInstancingPipelineUpdate(pipelines.instancingPipeline);
       }
     },
