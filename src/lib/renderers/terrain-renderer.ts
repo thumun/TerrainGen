@@ -541,11 +541,52 @@ export class TerrainRenderer implements IRenderer {
       instanceComputeShaderTemplate,
     );
 
+    console.log('custom instance shader:', customInstanceShader);
+
+    this.nodeGraphUniformConfig = config.uniforms;
+    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+    this.nodeGraphUniformLayout = offsets;
+
+    if (this.nodeGraphUniformBuffer) {
+      this.nodeGraphUniformBuffer.destroy();
+    }
+
+    this.nodeGraphUniformBuffer = this.device.createBuffer({
+      label: 'instancing uniform buffer',
+      size: Math.max(totalSize, 16),
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    this.initializeNodeGraphUniforms(config.uniforms);
+
+    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'instancing nodegraph bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'instancing nodegraph bind group',
+      layout: this.customNodeGraphUniformsBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: this.nodeGraphUniformBuffer },
+        },
+      ],
+    });
+
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
       customInstanceShader,
+      this.customNodeGraphUniformsBindGroupLayout,
     );
 
     this.indirectInstancer = new IndirectInstancer(
@@ -558,7 +599,12 @@ export class TerrainRenderer implements IRenderer {
     );
 
     const encoder = this.device.createCommandEncoder();
-    this.runComputes(encoder);
+    const computePass = encoder.beginComputePass();
+    this.instancePointsComputePipeline.runComputePass(
+      computePass,
+      this.customNodeGraphUniformsBindGroup,
+    );
+    computePass.end();
     this.device.queue.submit([encoder.finish()]);
   }
 

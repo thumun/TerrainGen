@@ -103,7 +103,7 @@ export const HANDLES = {
     out: { result: 'float-out' },
   },
   instancing: {
-    in: { position: 'vec3-pos-array-in', geometry: 'geo-in' },
+    in: { position: 'vec3-pos-array-in', geometry: 'geo-inst-in' },
     out: {},
   },
   geometry: {

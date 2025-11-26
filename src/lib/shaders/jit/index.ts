@@ -28,7 +28,7 @@ export function generateInstanceShaderCode(
   template: shaders.InstancingShaderTemplate,
 ) {
   // struct ver of above
-  const uniforms = generators.generateUniformStruct(shaderConfig.uniforms);
+  const uniforms = generators.generateUniformStruct(shaderConfig.uniforms, 3);
 
   const processedInstructions = shaderConfig.instructionSet.map(generators.generateCode);
 

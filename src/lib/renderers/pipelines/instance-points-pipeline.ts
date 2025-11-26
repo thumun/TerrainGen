@@ -24,6 +24,7 @@ export class InstancePointsPipeline {
     mesh: Mesh,
     normalsComputePipeline: NormalsPipeline,
     customInstanceCode?: string,
+    nodeGraphUniformsBindGroupLayout?: GPUBindGroupLayout,
   ) {
     this.device = device;
     this.mesh = mesh;
@@ -79,15 +80,21 @@ export class InstancePointsPipeline {
       ],
     });
 
+    const bindGroupLayouts = [
+      normalsComputePipeline.normalsDataBindGroupLayout,
+      normalsComputePipeline.normalsUniformBindGroupLayout,
+      this.instancingBindGroupLayout,
+    ];
+
+    if (nodeGraphUniformsBindGroupLayout) {
+      bindGroupLayouts.push(nodeGraphUniformsBindGroupLayout);
+    }
+
     this.instancingPipeline = this.device.createComputePipeline({
       label: 'instancing compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'instancing compute pipeline layout',
-        bindGroupLayouts: [
-          normalsComputePipeline.normalsDataBindGroupLayout,
-          normalsComputePipeline.normalsUniformBindGroupLayout,
-          this.instancingBindGroupLayout,
-        ],
+        bindGroupLayouts: bindGroupLayouts,
       }),
       compute: {
         module: this.device.createShaderModule({
@@ -99,11 +106,19 @@ export class InstancePointsPipeline {
     });
   }
 
-  runComputePass(computePass: GPUComputePassEncoder) {
+  runComputePass(
+    computePass: GPUComputePassEncoder,
+    nodeGraphUniformsBindGroup?: GPUBindGroup,
+  ) {
     computePass.setPipeline(this.instancingPipeline);
     computePass.setBindGroup(0, this.normalsComputePipeline.normalsDataBindGroup);
     computePass.setBindGroup(1, this.normalsComputePipeline.normalsUniformBindGroup);
     computePass.setBindGroup(2, this.instancingBindGroup);
+
+    if (nodeGraphUniformsBindGroup) {
+      computePass.setBindGroup(3, nodeGraphUniformsBindGroup);
+    }
+
     computePass.dispatchWorkgroups(Math.ceil(this.instanceCount / 64));
   }
 }

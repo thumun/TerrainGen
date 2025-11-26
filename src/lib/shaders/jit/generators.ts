@@ -38,7 +38,10 @@ export function calculateUniformLayout(uniforms: util.UniformConfig[]): {
   return { totalSize, offsets };
 }
 
-export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
+export function generateUniformStruct(
+  uniforms: util.UniformConfig[],
+  groupNumber: number = 2,
+): string {
   if (uniforms.length === 0) {
     return '';
   }
@@ -47,7 +50,7 @@ export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
     .map((uniform) => `  ${uniform.key}: ${uniform.type}`)
     .join(',\n');
 
-  return `struct NodeGraphUniforms {\n${structFields}\n}\n@group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
+  return `struct NodeGraphUniforms {\n${structFields}\n}\n@group(${groupNumber}) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
 }
 
 type ShaderUtil = () => string;
