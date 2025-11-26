@@ -24,6 +24,6 @@ struct Vertex {
 struct InstanceVertex {
     pos: vec3<f32>,
     nor: vec3<f32>,
-    //rotMat: mat3x3<f32>,
     uv: vec2<f32>,
+    rotMat: mat3x3<f32>,
 };

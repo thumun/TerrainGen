@@ -98,4 +98,5 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     instance_pts[id.x].pos = vec3<f32>(x, height, z);
     instance_pts[id.x].nor = vec3<f32>(normal.x, normal.y, normal.z);
     instance_pts[id.x].uv = vec2<f32>(0.0, 0.0);
+    instance_pts[id.x].rotMat = rot;
 }
