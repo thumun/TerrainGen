@@ -9,7 +9,7 @@ type Node<
 
 export type Vector = Node<'vector', { x: number; y: number; z: number }>;
 export type Transform = Node<'transform'>;
-export type Noise = Node<'noise', { mode: 'FBM' }>;
+export type Noise = Node<'noise', { mode: 'FBM' | 'Worley' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' | 'Tan' }>;
 export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
@@ -21,6 +21,7 @@ export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
 export type Scatter = Node<'scatter', { value: number }>;
+export type UnsignedInt = Node<'unsignedInt', { value: number }>;
 
 export type All =
   | Vector
@@ -36,7 +37,8 @@ export type All =
   | Separate
   | Combine
   | Float
-  | Scatter;
+  | Scatter
+  | UnsignedInt;
 
 /**
  * Handle IDs for each node type
@@ -104,6 +106,10 @@ export const HANDLES = {
     in: {},
     out: { result: 'float-out' },
   },
+  unsignedInt: {
+    in: {},
+    out: { result: 'uint-out' },
+  },
 } as const satisfies {
   [nodeType in All['type']]: { in: Record<string, string>; out: Record<string, string> };
 };
@@ -136,4 +142,5 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
   scatter: { type: 'scatter', data: { value: 0 } },
+  unsignedInt: { type: 'unsignedInt', data: { value: 0 } },
 };

@@ -66,6 +66,8 @@ export function getHandleKey({
   // there's probably some cleaner way of doing this without importing consts like this
   if (sourceNode.type === 'vertexData') {
     return shaders.DISPLACE_SHADER_INPUT_KEYS.terrainPos;
+  } else if (sourceNode.type === 'float' || sourceNode.type === 'vector') {
+    return 'nodeGraphUniforms.' + formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
   }
 
   return formatKey(`hdlkey_${sourceNode.id}_${outgoingHandleId}`);
@@ -87,6 +89,13 @@ const trigOperationMapping: {
   Tan: 'tan',
 };
 
+const noiseTypeMapping: {
+  [key in nodeTypes.Noise['data']['mode']]: instructions.Noise['method'];
+} = {
+  FBM: 'fbm',
+  Worley: 'worley',
+};
+
 const dummyHandler = () => {
   console.error('Not implemented!');
   return null;
@@ -100,6 +109,7 @@ const dummyHandler = () => {
 export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions.All> = {
   float: () => null,
   vector: () => null,
+  unsignedInt: () => null,
 
   // only input/output nodes don't get any instructions!
   vertexData: () => null,
@@ -110,7 +120,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
 
   noise: (node, getIncomingHandleKey): instructions.Noise => ({
     type: 'noise',
-    method: ({ FBM: 'fbm' } as const)[node.data.mode],
+    method: noiseTypeMapping[node.data.mode],
     references: {
       pos: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.position),
       numOctaves: getIncomingHandleKey(nodeTypes.HANDLES.noise.in.numOctaves),
@@ -130,7 +140,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
       write: getHandleKey({
         sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
+        outgoingHandleId: nodeTypes.HANDLES.mathFloat.out.result,
       }),
     },
   }),
@@ -226,7 +236,7 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
         sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
       }),
-      initialValue: [0, 0, 0], // TODO: pull from node.data
+      initialValue: [node.data.x, node.data.y, node.data.z],
     },
   ],
   float: (node) => [
@@ -236,7 +246,17 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
         sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.float.out.result,
       }),
-      initialValue: 0, // TODO: pull from node.data
+      initialValue: node.data.value,
+    },
+  ],
+  unsignedInt: (node) => [
+    {
+      type: 'u32',
+      key: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.unsignedInt.out.result,
+      }),
+      initialValue: node.data.value,
     },
   ],
   separate: dummyUniformHandler,

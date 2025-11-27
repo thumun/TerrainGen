@@ -11,6 +11,7 @@ import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
 import TrigMathNodeFloat from './trig-math-node';
+import UnsignedIntNode from './unsigned-int-node';
 import VectorNode from './vector-node';
 import ScatterNode from './scatter-node';
 import VertexDataNode from './vertex-data-node';
@@ -30,4 +31,5 @@ export const nodeTypes: NodeTypes = {
   combine: CombineNode,
   float: FloatNode,
   scatter: ScatterNode,
+  unsignedInt: UnsignedIntNode,
 };

@@ -2,32 +2,42 @@
 
 _Final project for CIS5650_
 
+![Milestone 1 Demo](./docs/images/milestone_01_demo.webp)
+
 ## Motivation
 
 This is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation tool.
 
+### Milestones
+
+1. [Milestone 1 Progress Slides](https://docs.google.com/presentation/d/1IfnNaKhCkMEOW8t8lHOAx6w-G378lC401EXVFlAbnQ0/edit?usp=sharing)
+2. [Milestone 2 Progress Slides](https://docs.google.com/presentation/d/1EiJf1spHf-v6SMP9DFZE5cckQX3vl9SmCcZ-_3t7WVw/edit?usp=sharing)
+
 ### Feature checklist
 
-- [ ] 🔌 Node-based description system for procedural terrain
-- [ ] 🏭 Just-in-time WebGPU shader code generation
-- [ ] 🏔️ Real-time terrain rendering
-  - [ ] Adjustable tesselation and terrain size
+- [x] 🔌 Node-based description system for procedural terrain
+- [x] 🏭 Just-in-time WebGPU shader code generation
+- [x] 🏔️ Real-time terrain rendering
+  - [x] Adjustable tesselation and terrain size
   - [ ] Varied terrain type rendering (grass, rock, snow, etc)
 - [ ] 🔎 Real-time in-editor node previews
-- [ ] 🌲 Mesh instancing across terrain
+- [x] 🌲 Mesh instancing across terrain
   - [ ] Mesh import for instancing
 - [ ] 💾 Export to glTF or similar format
 
 #### Node types:
 
 - General-purpose
-  - [ ] Basic math (add, sub, mult, div, min, max)
-  - [ ] Masking/graphics util (mix, lt, gt)
+  - [x] Basic math (add, sub, mult, div)
+  - [x] Trig math (sin, cos, tan)
+  - [ ] Masking/graphics util (mix, lt, gt, min, max)
 - Terrain source
   - [ ] Perlin noise
   - [ ] Custom image texture
+- Terrain input
+  - [x] Vertex XYZ position
 - Terrain output
-  - [ ] Height
+  - [x] Height
   - [ ] Terrain type
 - Scattering source
   - [ ] Terrain height
@@ -35,7 +45,9 @@ This is a single-page web application using WebGPU to create a real-time node-ba
 - Scattering geometry
   - [ ] Built-in objects: trees, rocks, bushes
   - [ ] Primitive geometry: sphere, cube, plane, line
-  - [ ] Custom OBJ or glTF imports
+  - Custom models
+    - [x] OBJ import
+    - [ ] glTF import
   - [ ] Vegetation → like Unreal’s PCG
 
 ## Development

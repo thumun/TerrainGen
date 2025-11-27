@@ -35,7 +35,10 @@ function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
         label="Mode"
         value={data.mode}
         onChange={onModeChange}
-        options={[{ label: 'FBM', value: 'FBM' }]}
+        options={[
+          { label: 'FBM', value: 'FBM' },
+          { label: 'Worley', value: 'Worley' },
+        ]}
       />
     </TerrainGenNode.Root>
   );
