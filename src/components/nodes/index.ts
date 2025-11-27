@@ -2,6 +2,8 @@ import type { NodeTypes } from 'reactflow';
 
 import CombineNode from './combine-node';
 import FloatNode from './float-node';
+import GeometryNode from './geometry-node';
+import InstancingNode from './instancing-node';
 import MathNodeFloat from './math-node-float';
 import MathNodeVec3 from './math-node-vec3';
 import MixNodeFloat from './mix-node-float';
@@ -29,5 +31,7 @@ export const nodeTypes: NodeTypes = {
   separate: SeparateNode,
   combine: CombineNode,
   float: FloatNode,
+  geometry: GeometryNode,
+  instancing: InstancingNode,
   unsignedInt: UnsignedIntNode,
 };

@@ -38,7 +38,10 @@ export function calculateUniformLayout(uniforms: util.UniformConfig[]): {
   return { totalSize, offsets };
 }
 
-export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
+export function generateUniformStruct(
+  uniforms: util.UniformConfig[],
+  groupNumber: number = 2,
+): string {
   if (uniforms.length === 0) {
     return '';
   }
@@ -47,7 +50,7 @@ export function generateUniformStruct(uniforms: util.UniformConfig[]): string {
     .map((uniform) => `  ${uniform.key}: ${uniform.type}`)
     .join(',\n');
 
-  return `struct NodeGraphUniforms {\n${structFields}\n}\n@group(2) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
+  return `struct NodeGraphUniforms {\n${structFields}\n}\n@group(${groupNumber}) @binding(0) var<uniform> nodeGraphUniforms : NodeGraphUniforms;`;
 }
 
 type ShaderUtil = () => string;
@@ -64,6 +67,11 @@ export function generateMathCode(instruction: instructions.Math): GenerateCodeRe
   const operatorChar = OPERATOR_CHARACTERS[instruction.operation];
 
   return { code: `let ${write} = ${readA} ${operatorChar} ${readB};`, utils: [] };
+}
+
+export function generateCodeMixCode(instruction: instructions.Mix): GenerateCodeResult {
+  const { readA, readB, readMix, write } = instruction.references;
+  return { code: `let ${write} = ${readA} * (1-${readMix}) + ${readB} * ${readMix};` };
 }
 
 const TRIG_FUNCTIONS = {
@@ -114,7 +122,10 @@ export function generateNoiseCode(instruction: instructions.Noise): GenerateCode
   const { pos, scale, numOctaves, write } = instruction.references;
   const mode = instruction.method === 'fbm' ? 'fbm_noise' : 'worley_noise';
   return {
-    code: `let ${write} = ${mode}(${pos} * ${scale}, ${numOctaves});`,
+    code:
+      instruction.method === `fbm`
+        ? `let ${write} = ${mode}(${pos} * ${scale}, ${numOctaves});`
+        : `let ${write} = ${mode}(${pos} * ${scale});`,
     utils:
       instruction.method === 'fbm'
         ? [shaderUtils.fbmNoise]
@@ -136,5 +147,7 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
+    case 'mix':
+      return generateCodeMixCode(instruction);
   }
 }
