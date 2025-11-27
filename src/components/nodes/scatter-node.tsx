@@ -26,7 +26,7 @@ function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
         onChange={(newValue) => onChange('instances', newValue)}
       />
 
-      <TerrainGenNode.HandleInput label="Mask" handleId={HANDLES.in.a} valueType="f32" /> 
+      <TerrainGenNode.HandleInput label="Mask" handleId={HANDLES.in.a} valueType="f32" />
 
       <TerrainGenNode.NumberInput
         label="Threshold"
@@ -34,7 +34,6 @@ function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
         valueType="f32"
         onChange={(newValue) => onChange('threshold', newValue)}
       />
-
     </TerrainGenNode.Root>
   );
 }

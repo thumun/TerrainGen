@@ -7,13 +7,13 @@ import MathNodeVec3 from './math-node-vec3';
 import MixNodeFloat from './mix-node-float';
 import MixNodeVec3 from './mix-node-vec3';
 import NoiseNode from './noise-node';
+import ScatterNode from './scatter-node';
 import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
 import TrigMathNodeFloat from './trig-math-node';
 import UnsignedIntNode from './unsigned-int-node';
 import VectorNode from './vector-node';
-import ScatterNode from './scatter-node';
 import VertexDataNode from './vertex-data-node';
 
 export const nodeTypes: NodeTypes = {
