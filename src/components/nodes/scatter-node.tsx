@@ -5,20 +5,36 @@ import * as helpers from './helpers';
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
-const HANDLES = nodeTypes.HANDLES.float;
-type FloatNodeData = nodeTypes.Float['data'];
+const HANDLES = nodeTypes.HANDLES.scatter;
+type ScatterNodeData = nodeTypes.Scatter['data'];
 
-function ScatterNode({ id, data }: NodeProps<FloatNodeData>) {
+function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
   const { setNodes } = useReactFlow();
 
-  const onChange = (value: number) => {
-    helpers.updateNodeData<FloatNodeData>({ id, setNodes, newData: { value } });
+  const onChange = (key: 'instances' | 'threshold', value: number) => {
+    helpers.updateNodeData<ScatterNodeData>({ id, setNodes, newData: { [key]: value } });
   };
 
   return (
     <TerrainGenNode.Root title="Scatter">
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
-      <TerrainGenNode.NumberInput value={data.value} onChange={onChange} />
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="points" />
+
+      <TerrainGenNode.NumberInput
+        label="Instances"
+        value={data.instances}
+        valueType="u32"
+        onChange={(newValue) => onChange('instances', newValue)}
+      />
+
+      <TerrainGenNode.HandleInput label="Mask" handleId={HANDLES.in.a} valueType="f32" /> 
+
+      <TerrainGenNode.NumberInput
+        label="Threshold"
+        value={data.threshold}
+        valueType="f32"
+        onChange={(newValue) => onChange('threshold', newValue)}
+      />
+
     </TerrainGenNode.Root>
   );
 }

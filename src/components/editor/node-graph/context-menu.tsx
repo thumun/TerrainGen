@@ -37,6 +37,7 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'transform', label: 'Transform', className: 'text-teal-800' },
   { nodeType: 'vertexData', label: 'Vertex Data (Input)', className: 'text-black' },
   { nodeType: 'terrain', label: 'Terrain (Output)', className: 'text-black' },
+  { nodeType: 'scatter', label: 'Scatter', className: 'text-black'},
 ];
 
 export default function ContextMenu({

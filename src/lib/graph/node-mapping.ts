@@ -202,6 +202,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
+
+  scatter: () => null, // dummy for now, make this later...
 };
 
 const dummyUniformHandler = () => {
@@ -260,4 +262,6 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     },
   ],
   separate: dummyUniformHandler,
+
+  scatter: dummyUniformHandler,
 };

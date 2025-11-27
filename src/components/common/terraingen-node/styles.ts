@@ -5,4 +5,5 @@ export const VALUE_TYPE_CLASSNAMES: Record<types.ValueType, string> = {
   u32: '!bg-orange-500',
   vec3f: '!bg-green-500',
   geometry: '!bg-teal-500',
+  points: '!bg-purple-500',
 };
