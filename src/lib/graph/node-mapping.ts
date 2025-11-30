@@ -226,6 +226,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   }),
   instancing: dummyHandler,
   primGeo: dummyHandler,
+  loadGeo: dummyHandler,
+  builtinGeo: dummyHandler,
 };
 
 const dummyUniformHandler = () => {
@@ -279,4 +281,6 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   separate: dummyUniformHandler,
   instancing: dummyUniformHandler,
   primGeo: dummyUniformHandler,
+  loadGeo: dummyUniformHandler,
+  builtinGeo: dummyUniformHandler,
 };

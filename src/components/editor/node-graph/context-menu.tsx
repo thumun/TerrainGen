@@ -39,6 +39,8 @@ const contextMenuItems: ContextMenuItem[] = [
   { nodeType: 'terrain', label: 'Terrain (Output)', className: 'text-black' },
   { nodeType: 'primGeo', label: 'Primitive Geometry', className: 'text-purple-800' },
   { nodeType: 'instancing', label: 'Instancing (Output)', className: 'text-purple-800' },
+  { nodeType: 'loadGeo', label: 'Load Geometry', className: 'text-purple-800' },
+  { nodeType: 'builtinGeo', label: 'Builtin Geometry', className: 'text-purple-800' },
 ];
 
 export default function ContextMenu({

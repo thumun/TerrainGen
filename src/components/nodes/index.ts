@@ -1,14 +1,16 @@
 import type { NodeTypes } from 'reactflow';
 
+import BuiltInGeoNode from './builtin-geometry-node';
 import CombineNode from './combine-node';
 import FloatNode from './float-node';
-import PrimGeoNode from './geometry-node';
 import InstancingNode from './instancing-node';
+import LoadGeoNode from './load-geometry-node';
 import MathNodeFloat from './math-node-float';
 import MathNodeVec3 from './math-node-vec3';
 import MixNodeFloat from './mix-node-float';
 import MixNodeVec3 from './mix-node-vec3';
 import NoiseNode from './noise-node';
+import PrimGeoNode from './primitive-geometry-node';
 import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
@@ -34,4 +36,6 @@ export const nodeTypes: NodeTypes = {
   primGeo: PrimGeoNode,
   instancing: InstancingNode,
   unsignedInt: UnsignedIntNode,
+  loadGeo: LoadGeoNode,
+  builtinGeo: BuiltInGeoNode,
 };
