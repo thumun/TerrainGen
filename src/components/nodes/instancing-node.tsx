@@ -9,7 +9,7 @@ function InstancingNode() {
       <TerrainGenNode.HandleInput
         label="Position"
         handleId={HANDLES.in.position}
-        valueType="vec3f"
+        valueType="vec3f[]"
       />
 
       <TerrainGenNode.HandleInput

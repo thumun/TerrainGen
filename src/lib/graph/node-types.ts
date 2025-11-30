@@ -108,7 +108,7 @@ export const HANDLES = {
   },
   scatter: {
     in: { a: 'float-val1-in' },
-    out: { result: 'float-out' },
+    out: { result: 'vec3-pos-array-out' },
   },
   instancing: {
     in: { position: 'vec3-pos-array-in', geometry: 'geo-inst-in', instCount: 'uint-count-in' },
