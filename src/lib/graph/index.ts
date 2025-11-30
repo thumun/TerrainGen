@@ -89,8 +89,8 @@ export function generateUpdatedPipelines(
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
     );
     const geometryNode = orderedDependencyNodes.find(
-      (node) => node.id === geometryEdge?.source && node.type === 'geometry',
-    ) as (nodeTypes.Geometry & { id: string }) | undefined;
+      (node) => node.id === geometryEdge?.source && node.type === 'primGeo',
+    ) as (nodeTypes.PrimitiveGeometry & { id: string }) | undefined;
 
     const instCountEdge = edges.find(
       (edge) =>

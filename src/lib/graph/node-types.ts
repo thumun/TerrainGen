@@ -20,7 +20,7 @@ export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
-export type Geometry = Node<'geometry', { meshPath: string }>;
+export type PrimitiveGeometry = Node<'primGeo', { meshPath: string }>;
 export type Instancing = Node<'instancing'>;
 export type UnsignedInt = Node<'unsignedInt', { value: number }>;
 
@@ -38,7 +38,7 @@ export type All =
   | Separate
   | Combine
   | Float
-  | Geometry
+  | PrimitiveGeometry
   | Instancing
   | UnsignedInt;
 
@@ -108,7 +108,7 @@ export const HANDLES = {
     in: { position: 'vec3-pos-array-in', geometry: 'geo-inst-in', instCount: 'uint-count-in' },
     out: {},
   },
-  geometry: {
+  primGeo: {
     in: {},
     out: { result: 'geo-out' },
   },
@@ -148,6 +148,6 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
   instancing: { type: 'instancing', data: {} },
-  geometry: { type: 'geometry', data: { meshPath: '/models/cube.obj' } },
+  primGeo: { type: 'primGeo', data: { meshPath: '/models/cube.obj' } },
   unsignedInt: { type: 'unsignedInt', data: { value: 0 } },
 };
