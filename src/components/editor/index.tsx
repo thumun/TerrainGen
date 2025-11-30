@@ -42,9 +42,7 @@ export default function Editor() {
   });
 
   // hook owning node + edge state, and react flow
-  const nodeGraph = useNodeGraph({
-    initialNodes,
-  });
+  const nodeGraph = useNodeGraph({ initialNodes });
 
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
@@ -54,7 +52,7 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <Toolbar />
+          <Toolbar nodeGraph={nodeGraph} />
           <div className="relative grow">
             {/* TODO: figure out preview nodes */}
             <NodeGraphCanvas previewNodes={[]} />

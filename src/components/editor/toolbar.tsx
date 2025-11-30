@@ -2,8 +2,13 @@ import * as Menubar from '@radix-ui/react-menubar';
 import { clsx } from 'clsx';
 
 import * as styles from '@/components/common/styles';
+import type { UseNodeGraphResult } from '@/hooks/use-node-graph';
 
-export default function Toolbar() {
+export type ToolbarProps = {
+  nodeGraph: UseNodeGraphResult;
+};
+
+export default function Toolbar({ nodeGraph }: ToolbarProps) {
   return (
     <div className="bg-zinc-900 text-zinc-400">
       <Menubar.Root>
@@ -13,14 +18,14 @@ export default function Toolbar() {
             <Menubar.Content className={styles.selectViewport} align="start">
               <MenubarItem
                 onSelect={() => {
-                  console.log('hello!');
+                  console.log(nodeGraph.nodes);
                 }}
               >
                 Save node graph
               </MenubarItem>
               <MenubarItem
                 onSelect={() => {
-                  console.log('hello!');
+                  console.log(nodeGraph.nodes);
                 }}
               >
                 Import node graph from file
