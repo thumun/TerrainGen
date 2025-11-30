@@ -42,7 +42,7 @@ function MenubarTrigger({ children, underConstruction }: MenubarTriggerProps) {
   return (
     <Menubar.Trigger
       disabled={underConstruction}
-      className="cursor-pointer px-4 py-2 hover:bg-zinc-800/60"
+      className="radix-state-open:bg-zinc-800/60 radix-state-open:text-zinc-200 px-4 py-2 hover:bg-zinc-800/60 hover:text-zinc-200"
     >
       {children}
     </Menubar.Trigger>
