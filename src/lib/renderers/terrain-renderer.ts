@@ -582,6 +582,8 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
+    console.log(config.outputs.instanceCount);
+
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
       this.groundPlane,

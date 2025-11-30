@@ -48,14 +48,11 @@ fn vs_main(in : VertexIn) -> VertexOut {
     );
 
     // do transformations
-    // let helper = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(nor.y) > 0.99);
-    // let T = normalize(cross(helper, nor));
-    // let B = cross(nor, T);
-    // let rot = mat3x3f(T, B, nor);
 
-    let rot = instance_pts[in.instance_index].rotMat;
-    let rotated = rot * local;   // apply orientation
-    let world = vec4(pos + rotated, 1.0);
+    // let rot = instance_pts[in.instance_index].rotMat;
+    // let rotated = rot * local;   // apply orientation
+    // let world = vec4(pos + rotated, 1.0);
+    let world = vec4(pos + local, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // set output
