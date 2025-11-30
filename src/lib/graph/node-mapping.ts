@@ -168,9 +168,31 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     },
   }),
 
-  // TODO: these guys need nodes!
-  mixFloat: dummyHandler,
-  mixVec3: dummyHandler,
+  mixFloat: (node, getIncomingHandleKey): instructions.Mix => ({
+    type: 'mix',
+    references: {
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.b),
+      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.mix),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.mixFloat.out.result,
+      }),
+    },
+  }),
+
+  mixVec3: (node, getIncomingHandleKey): instructions.Mix => ({
+    type: 'mix',
+    references: {
+      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.a),
+      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.b),
+      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.mix),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.mixVec3.out.result,
+      }),
+    },
+  }),
 
   separate: (node, getIncomingHandleKey): instructions.SeparateXYZ => ({
     type: 'separate-xyz',
@@ -204,6 +226,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   }),
 
   scatter: () => null, // dummy for now, make this later...
+  instancing: dummyHandler,
+  geometry: dummyHandler,
 };
 
 const dummyUniformHandler = () => {
@@ -215,7 +239,6 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     // TODO: logical uniform creation based on node data. these should match uniforms used in
     //       references by INSTRUCTION_MAPPING. In fact, this logic could even be combined into
     //       those methods.
-
     console.log('Not implemented!');
     return [];
 
@@ -234,20 +257,14 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   vector: (node) => [
     {
       type: 'vec3f',
-      key: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.vector.out.result,
-      }),
+      key: formatKey(`hdlkey_${node.id}_${nodeTypes.HANDLES.vector.out.result}`),
       initialValue: [node.data.x, node.data.y, node.data.z],
     },
   ],
   float: (node) => [
     {
       type: 'f32',
-      key: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.float.out.result,
-      }),
+      key: formatKey(`hdlkey_${node.id}_${nodeTypes.HANDLES.float.out.result}`),
       initialValue: node.data.value,
     },
   ],
@@ -264,4 +281,6 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   separate: dummyUniformHandler,
 
   scatter: dummyUniformHandler,
+  instancing: dummyUniformHandler,
+  geometry: dummyUniformHandler,
 };
