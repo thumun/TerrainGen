@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Node } from 'reactflow';
 
 import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
@@ -6,7 +7,24 @@ import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 import Toolbar from './toolbar';
 
+import { useNodeGraph } from '@/hooks/use-node-graph';
+import type * as nodeTypes from '@/lib/graph/node-types';
 import * as scene from '@/lib/scene';
+
+const initialNodes: (Node & nodeTypes.All)[] = [
+  {
+    id: 'vertex-data-in',
+    position: { x: -250, y: 0 },
+    type: 'vertexData',
+    data: {},
+  },
+  {
+    id: 'terrain-out',
+    position: { x: 250, y: 0 },
+    type: 'terrain',
+    data: {},
+  },
+];
 
 export default function Editor() {
   const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
@@ -23,6 +41,11 @@ export default function Editor() {
     resolution: 100,
   });
 
+  // hook owning node + edge state, and react flow
+  const nodeGraph = useNodeGraph({
+    initialNodes,
+  });
+
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
       <header className="bg-zinc-700 px-8 py-4">
@@ -36,6 +59,7 @@ export default function Editor() {
             {/* TODO: figure out preview nodes */}
             <NodeGraphCanvas previewNodes={[]} />
             <NodeGraph
+              nodeGraph={nodeGraph}
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
               onInstancingPipelineUpdate={setInstancingPipelineConfig}
             />

@@ -36,3 +36,5 @@ export const useNodeGraph = (
     setNodeData,
   };
 };
+
+export type UseNodeGraphResult = ReturnType<typeof useNodeGraph>;
