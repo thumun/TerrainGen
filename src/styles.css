@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin 'tailwindcss-radix';
+@plugin '@iconify/tailwind4';
 
 @theme {
   --font-sans:
