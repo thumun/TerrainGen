@@ -4,6 +4,7 @@ import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
+import Toolbar from './toolbar';
 
 import * as scene from '@/lib/scene';
 
@@ -36,9 +37,7 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <div className="border-b-2 border-zinc-900 bg-zinc-900 px-4 py-2 text-zinc-400">
-            Toolbar or something goes here
-          </div>
+          <Toolbar />
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph
