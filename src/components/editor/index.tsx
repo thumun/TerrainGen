@@ -17,13 +17,7 @@ export default function Editor() {
     scene.InstancingPipeline | undefined
   >();
 
-  // @ts-expect-error not setting this yet
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [previewNodes, setPreviewNodes] = useState([{ bar: 'foo' }]);
-  // This "preview nodes" data should be computed from the scene graph.
-
   // states for size and resolution...
-
   const [globalParams, setGlobalParams] = useState({
     size: 10,
     resolution: 100,
@@ -39,7 +33,8 @@ export default function Editor() {
         <div className="flex flex-col">
           <Toolbar />
           <div className="relative grow">
-            <NodeGraphCanvas previewNodes={previewNodes} />
+            {/* TODO: figure out preview nodes */}
+            <NodeGraphCanvas previewNodes={[]} />
             <NodeGraph
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
               onInstancingPipelineUpdate={setInstancingPipelineConfig}
