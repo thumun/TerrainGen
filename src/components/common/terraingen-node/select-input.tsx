@@ -1,5 +1,7 @@
 import * as Select from '@radix-ui/react-select';
 
+import * as styles from '@/components/common/styles';
+
 export type SelectInputProps<TValue extends string> = {
   value: TValue;
   onChange: (value: TValue) => void;
@@ -23,12 +25,12 @@ export default function SelectInput<TValue extends string>({
         </Select.Trigger>
         <Select.Portal>
           <Select.Content>
-            <Select.Viewport className="rounded-lg border border-zinc-600 bg-zinc-900 p-1 text-white">
+            <Select.Viewport className={styles.selectViewport}>
               {options.map((option) => (
                 <Select.Item
                   key={option.value}
                   value={option.value}
-                  className="radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none"
+                  className={styles.selectOption}
                 >
                   <Select.ItemText>{option.label}</Select.ItemText>
                 </Select.Item>

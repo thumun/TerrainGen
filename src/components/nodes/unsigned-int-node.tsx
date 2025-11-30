@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.unsignedInt;
 type UnsignedIntNodeData = nodeTypes.UnsignedInt['data'];
 
-function UnsignedIntNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
+function UnsignedIntNode({ id, data, ...props }: NodeProps<UnsignedIntNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onChange = (value: number) => {
@@ -16,7 +16,7 @@ function UnsignedIntNode({ id, data }: NodeProps<UnsignedIntNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Unsigned Int">
+    <TerrainGenNode.Root title="Unsigned Int" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="u32" />
       <TerrainGenNode.NumberInput value={data.value} valueType="u32" onChange={onChange} />
     </TerrainGenNode.Root>
