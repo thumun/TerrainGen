@@ -17,14 +17,24 @@ export class InstancePointsPipeline {
 
   normalsComputePipeline: NormalsPipeline;
 
-  constructor(device: GPUDevice, mesh: Mesh, normalsComputePipeline: NormalsPipeline) {
+  customInstanceCode?: string;
+
+  constructor(
+    device: GPUDevice,
+    mesh: Mesh,
+    normalsComputePipeline: NormalsPipeline,
+    instanceCount: number,
+    customInstanceCode?: string,
+    nodeGraphUniformsBindGroupLayout?: GPUBindGroupLayout,
+  ) {
     this.device = device;
     this.mesh = mesh;
     this.normalsComputePipeline = normalsComputePipeline;
-
+    this.instanceCount = instanceCount;
+    this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
-      size: this.instanceCount * (32 + 36),
+      size: Math.max(this.instanceCount * (32 + 36), (32 + 36)),
       usage:
         GPUBufferUsage.VERTEX |
         GPUBufferUsage.COPY_DST |
@@ -72,31 +82,48 @@ export class InstancePointsPipeline {
       ],
     });
 
+    const bindGroupLayouts = [
+      normalsComputePipeline.normalsDataBindGroupLayout,
+      normalsComputePipeline.normalsUniformBindGroupLayout,
+      this.instancingBindGroupLayout,
+    ];
+
+    if (nodeGraphUniformsBindGroupLayout) {
+      bindGroupLayouts.push(nodeGraphUniformsBindGroupLayout);
+    }
+
     this.instancingPipeline = this.device.createComputePipeline({
       label: 'instancing compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'instancing compute pipeline layout',
-        bindGroupLayouts: [
-          normalsComputePipeline.normalsDataBindGroupLayout,
-          normalsComputePipeline.normalsUniformBindGroupLayout,
-          this.instancingBindGroupLayout,
-        ],
+        bindGroupLayouts: bindGroupLayouts,
       }),
       compute: {
         module: this.device.createShaderModule({
           label: 'instancing compute shader',
-          code: shaders.terrainPointsComputeSrc,
+          code: this.customInstanceCode ?? shaders.terrainPointsComputeSrc,
         }),
         entryPoint: 'main',
       },
     });
   }
 
-  runComputePass(computePass: GPUComputePassEncoder) {
+  runComputePass(
+    computePass: GPUComputePassEncoder,
+    nodeGraphUniformsBindGroup?: GPUBindGroup,
+  ) {
+    if (this.instanceCount === 0) {
+      return;
+    }
     computePass.setPipeline(this.instancingPipeline);
     computePass.setBindGroup(0, this.normalsComputePipeline.normalsDataBindGroup);
     computePass.setBindGroup(1, this.normalsComputePipeline.normalsUniformBindGroup);
     computePass.setBindGroup(2, this.instancingBindGroup);
+
+    if (nodeGraphUniformsBindGroup) {
+      computePass.setBindGroup(3, nodeGraphUniformsBindGroup);
+    }
+
     computePass.dispatchWorkgroups(Math.ceil(this.instanceCount / 64));
   }
 }

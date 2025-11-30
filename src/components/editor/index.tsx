@@ -12,6 +12,10 @@ export default function Editor() {
     scene.DisplacePipeline | undefined
   >(undefined);
 
+  const [instancingPipelineConfig, setInstancingPipelineConfig] = useState<
+    scene.InstancingPipeline | undefined
+  >();
+
   // @ts-expect-error not setting this yet
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previewNodes, setPreviewNodes] = useState([{ bar: 'foo' }]);
@@ -37,7 +41,10 @@ export default function Editor() {
           </div>
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
-            <NodeGraph onDisplacePipelineUpdate={setDisplacePipelineConfig} />
+            <NodeGraph
+              onDisplacePipelineUpdate={setDisplacePipelineConfig}
+              onInstancingPipelineUpdate={setInstancingPipelineConfig}
+            />
           </div>
         </div>
 
@@ -46,6 +53,7 @@ export default function Editor() {
           <div className="relative aspect-4/3">
             <TerrainCanvas
               displacePipeline={displacePipelineConfig}
+              instancingPipeline={instancingPipelineConfig}
               globalParams={globalParams}
             />
           </div>
