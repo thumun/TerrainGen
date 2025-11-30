@@ -162,6 +162,6 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   instancing: { type: 'instancing', data: {} },
   primGeo: { type: 'primGeo', data: { meshPath: '/models/cube.obj' } },
   loadGeo: { type: 'loadGeo', data: { meshPath: '/models/cube.obj' } },
-  builtinGeo: { type: 'builtinGeo', data: { meshPath: '/models/cube.obj' } },
+  builtinGeo: { type: 'builtinGeo', data: { meshPath: '/models/tree.obj' } },
   unsignedInt: { type: 'unsignedInt', data: { value: 0 } },
 };
