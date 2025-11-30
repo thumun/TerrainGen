@@ -230,30 +230,17 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   geometry: dummyHandler,
 };
 
-const dummyUniformHandler = () => {
-  console.error('Not implemented!');
-  return [];
-};
 export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
-  mathVec3: (node) => {
-    // TODO: logical uniform creation based on node data. these should match uniforms used in
-    //       references by INSTRUCTION_MAPPING. In fact, this logic could even be combined into
-    //       those methods.
-    console.log('Not implemented!');
-    return [];
-
-    return [{ key: formatKey(`unif_${node.id}`), type: 'vec3f', initialValue: [0, 0, 0] }];
-  },
-  // TODO: all of the below, or move the logic up into the "instruction mapping"
-  mathFloat: dummyUniformHandler,
-  trigMathFloat: dummyUniformHandler,
-  mixFloat: dummyUniformHandler,
-  mixVec3: dummyUniformHandler,
-  noise: dummyUniformHandler,
+  mathVec3: () => [],
+  mathFloat: () => [],
+  trigMathFloat: () => [],
+  mixFloat: () => [],
+  mixVec3: () => [],
+  noise: () => [],
   vertexData: () => [],
   terrain: () => [],
-  transform: dummyUniformHandler,
-  combine: dummyUniformHandler,
+  transform: () => [],
+  combine: () => [],
   vector: (node) => [
     {
       type: 'vec3f',
@@ -278,9 +265,9 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
       initialValue: node.data.value,
     },
   ],
-  separate: dummyUniformHandler,
+  separate: () => [],
 
-  scatter: dummyUniformHandler,
-  instancing: dummyUniformHandler,
-  geometry: dummyUniformHandler,
+  scatter: () => [],
+  instancing: () => [],
+  geometry: () => [],
 };
