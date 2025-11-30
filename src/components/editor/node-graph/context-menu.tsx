@@ -1,7 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { clsx } from 'clsx';
 import { useCallback } from 'react';
 import { useReactFlow } from 'reactflow';
 
+import * as styles from '@/components/common/styles';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 // referenced from here
@@ -63,7 +65,7 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
       />
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
+          className={styles.selectViewport}
           onInteractOutside={closeMenu}
           onEscapeKeyDown={closeMenu}
           align="start"
@@ -171,10 +173,7 @@ type ContextMenuSubTriggerProps = { children?: React.ReactNode; underConstructio
 
 function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTriggerProps) {
   return (
-    <DropdownMenu.SubTrigger
-      disabled={underConstruction}
-      className="radix-highlighted:bg-zinc-800 radix-disabled:text-zinc-400 radix-state-open:bg-zinc-800 radix-disabled:grayscale flex cursor-default justify-between gap-x-4 rounded-sm py-1 pr-2 pl-3 focus-visible:outline-none"
-    >
+    <DropdownMenu.SubTrigger disabled={underConstruction} className={styles.subMenuTrigger}>
       <span>
         {underConstruction && '🏗️ '}
         {children}
@@ -188,11 +187,7 @@ type ContextMenuSubContentProps = { children?: React.ReactNode };
 
 function ContextMenuSubContent({ children }: ContextMenuSubContentProps) {
   return (
-    <DropdownMenu.SubContent
-      className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
-      alignOffset={-5}
-      sideOffset={4}
-    >
+    <DropdownMenu.SubContent className={styles.selectViewport} alignOffset={-5} sideOffset={4}>
       {children}
     </DropdownMenu.SubContent>
   );
@@ -215,7 +210,7 @@ function ContextMenuItem({
     <DropdownMenu.Item
       onSelect={onSelect}
       disabled={underConstruction}
-      className={`radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none ${className}`}
+      className={clsx(styles.selectOption, className)}
     >
       {underConstruction && '🏗️ '}
       {children}
