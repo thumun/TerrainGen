@@ -79,7 +79,7 @@ export function generateUpdatedPipelines(
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
     );
 
-    const positionNode = orderedDependencyNodes.find(
+    const scatterNode = orderedDependencyNodes.find(
       (node) => node.id === positionEdge?.source,
     );
 
@@ -92,27 +92,18 @@ export function generateUpdatedPipelines(
       (node) => node.id === geometryEdge?.source && node.type === 'geometry',
     ) as (nodeTypes.Geometry & { id: string }) | undefined;
 
-    const instCountEdge = edges.find(
-      (edge) =>
-        edge.target === instancingNode.id &&
-        edge.targetHandle === nodeTypes.HANDLES.instancing.in.instCount,
-    );
-    const instCountNode = orderedDependencyNodes.find(
-      (node) => node.id === instCountEdge?.source,
-    ) as (nodeTypes.UnsignedInt & { id: string }) | undefined;
-
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');
       return { displacePipeline };
-    } else if (!positionNode || !positionEdge) {
+    } else if (!scatterNode || !positionEdge) {
       console.error('Instancing node requires a position input');
       return { displacePipeline };
     }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: !instCountNode ? 2 : instCountNode.data.value,
+      instanceCount: !scatterNode ? 2 : Math.max(scatterNode.data.instances, 2),
       instancePositions: nodeMapping.getHandleKey({
-        sourceNode: positionNode,
+        sourceNode: scatterNode,
         outgoingHandleId: positionEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
