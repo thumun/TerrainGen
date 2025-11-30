@@ -17,7 +17,7 @@ function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
 
   return (
     <TerrainGenNode.Root title="Scatter">
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="points" />
+      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="vec3f[]" />
 
       <TerrainGenNode.NumberInput
         label="Instances"
