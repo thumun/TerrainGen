@@ -5,6 +5,8 @@ import * as jitShaders from '@/lib/shaders/jit/types/shaders';
 
 export type DisplacePipeline = jitShaders.DisplaceShaderConfig;
 
+export type InstancingPipeline = jitShaders.InstancingShaderConfig;
+
 export type PreviewNode = {
   bar: string;
 };

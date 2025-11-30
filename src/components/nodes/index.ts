@@ -2,15 +2,19 @@ import type { NodeTypes } from 'reactflow';
 
 import CombineNode from './combine-node';
 import FloatNode from './float-node';
+import GeometryNode from './geometry-node';
+import InstancingNode from './instancing-node';
 import MathNodeFloat from './math-node-float';
 import MathNodeVec3 from './math-node-vec3';
 import MixNodeFloat from './mix-node-float';
 import MixNodeVec3 from './mix-node-vec3';
 import NoiseNode from './noise-node';
+import ScatterNode from './scatter-node';
 import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
 import TrigMathNodeFloat from './trig-math-node';
+import UnsignedIntNode from './unsigned-int-node';
 import VectorNode from './vector-node';
 import VertexDataNode from './vertex-data-node';
 
@@ -28,4 +32,8 @@ export const nodeTypes: NodeTypes = {
   separate: SeparateNode,
   combine: CombineNode,
   float: FloatNode,
+  scatter: ScatterNode,
+  geometry: GeometryNode,
+  instancing: InstancingNode,
+  unsignedInt: UnsignedIntNode,
 };

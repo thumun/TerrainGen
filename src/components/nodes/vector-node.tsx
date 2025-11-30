@@ -22,16 +22,19 @@ function VectorNode({ id, data }: NodeProps<VectorNodeData>) {
       <TerrainGenNode.NumberInput
         label="X"
         value={data.x}
+        valueType="f32"
         onChange={(newValue) => onChange('x', newValue)}
       />
       <TerrainGenNode.NumberInput
         label="Y"
         value={data.y}
+        valueType="f32"
         onChange={(newValue) => onChange('y', newValue)}
       />
       <TerrainGenNode.NumberInput
         label="Z"
         value={data.z}
+        valueType="f32"
         onChange={(newValue) => onChange('z', newValue)}
       />
     </TerrainGenNode.Root>

@@ -11,6 +11,7 @@ import { OBJ, Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
+import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/instance.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -228,6 +229,7 @@ export class TerrainRenderer implements IRenderer {
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
+      30,
     );
 
     // ----------------------------------------------------------------------------------------
@@ -242,10 +244,10 @@ export class TerrainRenderer implements IRenderer {
   private runComputes(encoder: GPUCommandEncoder) {
     const computePass = encoder.beginComputePass();
 
-    // first compute pass: create terrain
+    // pass 1: create terrain
     this.terrainComputePipeline.runComputePass(computePass);
 
-    // second pass: run custom compute pipeline from node graph
+    // pass 2: run custom compute pipeline from node graph
     if (this.displacePipelineConfigured) {
       computePass.setPipeline(this.customPipeline);
       computePass.setBindGroup(0, this.customBindGroup);
@@ -254,10 +256,10 @@ export class TerrainRenderer implements IRenderer {
       computePass.dispatchWorkgroups(Math.ceil(this.groundPlane.numVertices / 64));
     }
 
-    // third compute pass: calculate terrain normals
+    // pass 3: calculate terrain normals
     this.normalsComputePipeline.runComputePass(computePass);
 
-    // temp pass: create points on terrain to instance on
+    // pass 4: create points on terrain to instance on
     this.instancePointsComputePipeline.runComputePass(computePass);
 
     computePass.end();
@@ -411,6 +413,13 @@ export class TerrainRenderer implements IRenderer {
 
     // also TODO: reuse code between this and our constructor
 
+    const customComputeShader = jit.generateDisplaceShaderCode(
+      config,
+      displaceComputeShaderTemplate,
+    );
+
+    console.log('custom compute shader:', customComputeShader);
+
     this.nodeGraphUniformConfig = config.uniforms;
 
     // uses the calculateUniformLayout func to get size of vars
@@ -452,13 +461,6 @@ export class TerrainRenderer implements IRenderer {
         },
       ],
     });
-
-    const customComputeShader = jit.generateDisplaceShaderCode(
-      config,
-      displaceComputeShaderTemplate,
-    );
-
-    console.log('custom compute shader:', customComputeShader);
 
     this.customPipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
@@ -511,10 +513,103 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
-  configureInstancingPipeline() {
+  async configureInstancingPipeline(config: scene.InstancingPipeline) {
     this.instancingPipelineConfigured = true;
 
-    // TODO: Write this method
+    // load obj from geo node
+    const mesh = new OBJ();
+    await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+
+    if (!mesh.vertices || !mesh.indices) {
+      return;
+    }
+
+    // Create buffers for mesh
+    const instanceVertexBuffer = this.device.createBuffer({
+      size: mesh.vertices.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
+
+    const instanceIndexBuffer = this.device.createBuffer({
+      size: mesh.indices.byteLength,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+    });
+    this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
+
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+
+    console.log('custom instance shader:', customInstanceShader);
+
+    this.nodeGraphUniformConfig = config.uniforms;
+    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+    this.nodeGraphUniformLayout = offsets;
+
+    if (this.nodeGraphUniformBuffer) {
+      this.nodeGraphUniformBuffer.destroy();
+    }
+
+    this.nodeGraphUniformBuffer = this.device.createBuffer({
+      label: 'instancing uniform buffer',
+      size: Math.max(totalSize, 16),
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    this.initializeNodeGraphUniforms(config.uniforms);
+
+    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'instancing nodegraph bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'instancing nodegraph bind group',
+      layout: this.customNodeGraphUniformsBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: this.nodeGraphUniformBuffer },
+        },
+      ],
+    });
+
+    console.log(config.outputs.instanceCount);
+
+    this.instancePointsComputePipeline = new InstancePointsPipeline(
+      this.device,
+      this.groundPlane,
+      this.normalsComputePipeline,
+      config.outputs.instanceCount,
+      customInstanceShader,
+      this.customNodeGraphUniformsBindGroupLayout,
+    );
+
+    this.indirectInstancer = new IndirectInstancer(
+      this.device,
+      this.instancePointsComputePipeline,
+      instanceVertexBuffer,
+      instanceIndexBuffer,
+      this.sceneUniformsBindGroupLayout,
+      this.webGPU,
+    );
+
+    const encoder = this.device.createCommandEncoder();
+    const computePass = encoder.beginComputePass();
+    this.instancePointsComputePipeline.runComputePass(
+      computePass,
+      this.customNodeGraphUniformsBindGroup,
+    );
+    computePass.end();
+    this.device.queue.submit([encoder.finish()]);
   }
 
   disableInstancingPipeline() {
@@ -557,5 +652,10 @@ export class TerrainRenderer implements IRenderer {
       const data = new Float32Array(value as [number, number, number]);
       this.device.queue.writeBuffer(this.nodeGraphUniformBuffer, offset, data);
     }
+
+    const encoder = this.device.createCommandEncoder();
+    this.runComputes(encoder);
+    this.device.queue.submit([encoder.finish()]);
+    console.log('rerunning compute after uniform update');
   }
 }

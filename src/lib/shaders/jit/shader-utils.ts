@@ -24,9 +24,9 @@ export const random3D = () => `fn random3D(seed: vec3f) -> vec3f {
 	return vec3f(fract_value, fract_value, fract_value);
 }`;
 
-export const worleyNoise = () => `fn worley_noise(pos: vec3f, density: f32) -> f32 {
-	var posInt = floor(pos * density);
-	var posFract = fract(pos * density);
+export const worleyNoise = () => `fn worley_noise(pos: vec3f) -> f32 {
+	var posInt = floor(pos);
+	var posFract = fract(pos);
 	var minDist = 1.0; // max val
 
 	for (var z: i32 = -1; z <= 1; z = z + 1) {

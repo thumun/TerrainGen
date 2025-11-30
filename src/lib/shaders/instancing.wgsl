@@ -2,7 +2,7 @@
 var<uniform> camera : CameraUniforms;
 
 @group(1) @binding(0)
-var<storage, read> instance_pts: array<f32>; // 8 floats per instance- pos, nor, uv
+var<storage, read> instance_pts: array<InstanceVertex>; // 8 floats per instance- pos, nor, uv
 
 @group(1) @binding(1)
 var<storage, read> vertices: array<f32>; // 8 floats per vertex
@@ -29,10 +29,10 @@ fn vs_main(in : VertexIn) -> VertexOut {
     let vOffset = in.instance_index * 8u;
 
      // get point position
-    var pos = vec3f(1.0, 1.0, 1.0);
-    pos.x = instance_pts[vOffset + 0];
-    pos.y = instance_pts[vOffset + 1];
-    pos.z = instance_pts[vOffset + 2];
+    var pos = instance_pts[in.instance_index].pos;
+
+    // point nor for testing...
+    var nor = normalize(instance_pts[in.instance_index].nor);
 
     let idx = indices[in.vertex_index];
     let base = idx * 8u;
@@ -41,13 +41,23 @@ fn vs_main(in : VertexIn) -> VertexOut {
         vertices[base + 1],
         vertices[base + 2],
     );
-    let world = vec4(pos.x + local.x, pos.y + local.y, pos.z + local.z, 1.0);
+    let vert_nor = vec3f(
+        vertices[base + 3],
+        vertices[base + 4],
+        vertices[base + 5],
+    );
+
+    // do transformations
+    // let rot = instance_pts[in.instance_index].rotMat;
+    // let rotated = rot * local;   // apply orientation
+    // let world = vec4(pos + rotated, 1.0);
+    let world = vec4(pos + local, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = vec3f(vertices[base + 3], vertices[base + 4], vertices[base + 5]);
+    out.nor = vert_nor;
     out.uv = vec2f(1.0, 1.0);
     return out;
 }
@@ -58,7 +68,7 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   // do lambertian shading
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
-  let color = vec3f(0.5, 0.5, 0.5) * diffuse;
+  let color = vec3f(0.7, 0.3, 0.7) * diffuse;
 
   return vec4f(color, 1.0);
 }

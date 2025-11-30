@@ -1,5 +1,5 @@
 import * as nodeMapping from './node-mapping';
-import type * as nodeTypes from './node-types';
+import * as nodeTypes from './node-types';
 import * as traversal from './traversal';
 import type * as types from './types';
 
@@ -7,7 +7,10 @@ import type * as scene from '@/lib/scene';
 import type * as instructions from '@/lib/shaders/jit/types/instructions';
 import type * as util from '@/lib/shaders/jit/types/util';
 
-export type OutputNodeUpdates = { displacePipeline?: scene.DisplacePipeline };
+export type OutputNodeUpdates = {
+  displacePipeline?: scene.DisplacePipeline;
+  instancingPipeline?: scene.InstancingPipeline;
+};
 
 export type PipelineNode = types.Node & nodeTypes.All;
 
@@ -55,7 +58,74 @@ export function generateUpdatedPipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
-  return { displacePipeline };
+  const instancingNode = downstreamNodes.find((node) => node.type === 'instancing');
+  let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
+
+  if (instancingNode) {
+    const orderedDependencyNodes = traversal.getOrderedNodes(instancingNode.id, nodes, edges);
+
+    // generate uniforms
+    const uniforms = orderedDependencyNodes.flatMap(getUniforms);
+
+    // generate instruction set
+    const instructionSet = orderedDependencyNodes
+      .map((node) => getInstruction(node, orderedDependencyNodes, edges))
+      .filter((instruction) => instruction !== null);
+
+    // Get inputs from the incoming edges of the instancing node
+    const positionEdge = edges.find(
+      (edge) =>
+        edge.target === instancingNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
+    );
+
+    const positionNode = orderedDependencyNodes.find(
+      (node) => node.id === positionEdge?.source,
+    );
+
+    const geometryEdge = edges.find(
+      (edge) =>
+        edge.target === instancingNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
+    );
+    const geometryNode = orderedDependencyNodes.find(
+      (node) => node.id === geometryEdge?.source && node.type === 'geometry',
+    ) as (nodeTypes.Geometry & { id: string }) | undefined;
+
+    const instCountEdge = edges.find(
+      (edge) =>
+        edge.target === instancingNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.instancing.in.instCount,
+    );
+    const instCountNode = orderedDependencyNodes.find(
+      (node) => node.id === instCountEdge?.source,
+    ) as (nodeTypes.UnsignedInt & { id: string }) | undefined;
+
+    if (!geometryNode) {
+      console.error('Instancing node requires a geometry input');
+      return { displacePipeline };
+    } else if (!positionNode || !positionEdge) {
+      console.error('Instancing node requires a position input');
+      return { displacePipeline };
+    }
+
+    const outputs: scene.InstancingPipeline['outputs'] = {
+      instanceCount: !instCountNode ? 2 : instCountNode.data.value,
+      instancePositions: nodeMapping.getHandleKey({
+        sourceNode: positionNode,
+        outgoingHandleId: positionEdge.sourceHandle!,
+      }),
+      meshPath: geometryNode.data.meshPath,
+    };
+
+    instancingPipeline = {
+      instructionSet,
+      uniforms,
+      outputs,
+    };
+  }
+
+  return { displacePipeline, instancingPipeline };
 }
 
 function getInstruction(

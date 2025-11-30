@@ -14,6 +14,16 @@ export type Math = {
   };
 };
 
+export type Mix = {
+  type: 'mix';
+  references: {
+    readA: util.ReferenceKey;
+    readB: util.ReferenceKey;
+    readMix: util.ReferenceKey;
+    write: util.ReferenceKey;
+  };
+};
+
 export type TrigMath = {
   type: 'trig-math';
   operation: 'sin' | 'cos' | 'tan';
@@ -68,4 +78,4 @@ export type Noise = {
   };
 };
 
-export type All = Math | TrigMath | SeparateXYZ | CombineXYZ | Noise | Vector;
+export type All = Math | TrigMath | SeparateXYZ | CombineXYZ | Noise | Vector | Mix;

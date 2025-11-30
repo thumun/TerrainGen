@@ -129,16 +129,23 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger underConstruction>Geometry</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger>Geometry</ContextMenuSubTrigger>
             <ContextMenuSubContent>
+              <ContextMenuItem onSelect={() => createNode('scatter')}>Scatter</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('geometry')}>
+                Geometry
+              </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('transform')}>
                 Transform
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('instancing')}>
+                Instancing (Output)
               </ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Input/Output</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger>Terrain</ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vertexData')}>
                 Vertex Info (Input)

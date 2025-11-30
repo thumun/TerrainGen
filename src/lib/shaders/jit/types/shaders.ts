@@ -16,6 +16,14 @@ export type DisplaceShaderConfig = ShaderConfigBase & {
   };
 };
 
+export type InstancingShaderConfig = ShaderConfigBase & {
+  outputs: {
+    instanceCount: number;
+    instancePositions: util.ReferenceKey;
+    meshPath: string;
+  };
+};
+
 type DisplaceShaderTemplateValues = {
   uniforms: string;
   utils: string;
@@ -23,8 +31,19 @@ type DisplaceShaderTemplateValues = {
   heightKey: string;
 };
 
+type InstancingShaderTemplateValues = {
+  uniforms: string;
+  utils: string;
+  body: string;
+  posKey: string;
+};
+
 export type DisplaceShaderTemplate = {
   content: (values: DisplaceShaderTemplateValues) => string;
+};
+
+export type InstancingShaderTemplate = {
+  content: (values: InstancingShaderTemplateValues) => string;
 };
 
 /** Global input keys for use in instructions */
