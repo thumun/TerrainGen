@@ -21,6 +21,7 @@ export type InstancingShaderConfig = ShaderConfigBase & {
     instanceCount: number;
     instancePositions: util.ReferenceKey;
     meshPath: string;
+    fileContent?: string;
   };
 };
 

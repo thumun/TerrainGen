@@ -120,6 +120,7 @@ export function generateUpdatedPipelines(
         outgoingHandleId: positionEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
+      fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
     };
 
     instancingPipeline = {

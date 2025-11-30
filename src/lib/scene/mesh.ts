@@ -121,12 +121,14 @@ export class OBJ extends Mesh {
   async loadObj(url: string) {
     const response = await fetch(url);
     const text = await response.text();
+    this.parseObjContent(text);
+  }
 
+  parseObjContent(text: string) {
     const positions: number[][] = [];
     const normals: number[][] = [];
     const uvs: number[][] = [];
 
-    // Map of "v/t/n" → new vertex index
     const vertexMap = new Map<string, number>();
     const finalVertices: number[] = [];
     const finalIndices: number[] = [];
