@@ -20,6 +20,7 @@ export default function Toolbar({ nodeGraph }: ToolbarProps) {
                 onSelect={() => {
                   console.log(nodeGraph.nodes);
                 }}
+                iconClassName="icon-[tabler--device-floppy]"
               >
                 Save node graph
               </MenubarItem>
@@ -27,6 +28,7 @@ export default function Toolbar({ nodeGraph }: ToolbarProps) {
                 onSelect={() => {
                   console.log(nodeGraph.nodes);
                 }}
+                iconClassName="icon-[tabler--arrow-bar-up]"
               >
                 Import node graph from file
               </MenubarItem>
@@ -47,7 +49,7 @@ function MenubarTrigger({ children, underConstruction }: MenubarTriggerProps) {
   return (
     <Menubar.Trigger
       disabled={underConstruction}
-      className="radix-state-open:bg-zinc-800/60 radix-state-open:text-zinc-200 px-4 py-2 hover:bg-zinc-800/60 hover:text-zinc-200"
+      className="radix-state-open:bg-zinc-800/60 radix-state-open:text-zinc-100 px-4 py-2 hover:bg-zinc-800/60 hover:text-zinc-100 focus-visible:outline-none"
     >
       {children}
     </Menubar.Trigger>
@@ -58,17 +60,23 @@ type MenubarItemProps = {
   children?: React.ReactNode;
   onSelect?: () => void;
   underConstruction?: boolean;
-  className?: string;
+  iconClassName?: string;
 };
 
-function MenubarItem({ children, onSelect, underConstruction, className }: MenubarItemProps) {
+function MenubarItem({
+  children,
+  onSelect,
+  underConstruction,
+  iconClassName,
+}: MenubarItemProps) {
   return (
     <Menubar.Item
       onSelect={onSelect}
       disabled={underConstruction}
-      className={clsx(styles.selectOption, className)}
+      className={styles.selectOption}
     >
-      {underConstruction && '🏗️ '}
+      {underConstruction && !iconClassName && '🏗️ '}
+      {!underConstruction && iconClassName && <span className={iconClassName} />}
       {children}
     </Menubar.Item>
   );
