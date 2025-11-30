@@ -73,15 +73,15 @@ export function generateUpdatedPipelines(
       .filter((instruction) => instruction !== null);
 
     // Get inputs from the incoming edges of the instancing node
-    const positionEdge = edges.find(
+    const scatterEdge = edges.find(
       (edge) =>
         edge.target === instancingNode.id &&
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
     );
 
     const scatterNode = orderedDependencyNodes.find(
-      (node) => node.id === positionEdge?.source,
-    );
+      (node) => node.id === scatterEdge?.source && node.type === 'scatter',
+    ) as (nodeTypes.Scatter & { id : string }) | undefined;
 
     const geometryEdge = edges.find(
       (edge) =>
@@ -95,7 +95,7 @@ export function generateUpdatedPipelines(
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');
       return { displacePipeline };
-    } else if (!scatterNode || !positionEdge) {
+    } else if (!scatterNode || !scatterEdge) {
       console.error('Instancing node requires a position input');
       return { displacePipeline };
     }
@@ -104,7 +104,7 @@ export function generateUpdatedPipelines(
       instanceCount: !scatterNode ? 2 : Math.max(scatterNode.data.instances, 2),
       instancePositions: nodeMapping.getHandleKey({
         sourceNode: scatterNode,
-        outgoingHandleId: positionEdge.sourceHandle!,
+        outgoingHandleId: scatterEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
     };
