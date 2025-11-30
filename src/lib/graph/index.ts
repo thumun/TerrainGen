@@ -110,7 +110,7 @@ export function generateUpdatedPipelines(
     }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: !instCountNode ? 30 : instCountNode.data.value,
+      instanceCount: !instCountNode ? 2 : instCountNode.data.value,
       instancePositions: nodeMapping.getHandleKey({
         sourceNode: positionNode,
         outgoingHandleId: positionEdge.sourceHandle!,

@@ -50,7 +50,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     // do transformations
     // let rot = instance_pts[in.instance_index].rotMat;
     // let rotated = rot * local;   // apply orientation
-    //let world = vec4(pos + rotated, 1.0);
+    // let world = vec4(pos + rotated, 1.0);
     let world = vec4(pos + local, 1.0);
     let world_pos = camera.viewProjMat * world;
 
