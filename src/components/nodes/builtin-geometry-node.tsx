@@ -27,8 +27,8 @@ function BuiltInGeoNode({ id, data }: NodeProps<BuiltinGeometryData>) {
         value={data.meshPath}
         onChange={onMeshPathChange}
         options={[
-          { label: 'Cube', value: '/models/cube.obj' },
-          { label: 'Teapot', value: '/models/teapot.obj' },
+          { label: 'Tree', value: '/models/tree.obj' },
+          { label: 'Rock', value: '/models/rock.obj' },
         ]}
       />
     </TerrainGenNode.Root>
