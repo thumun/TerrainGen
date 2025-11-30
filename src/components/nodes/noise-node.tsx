@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 type NoiseNodeData = nodeTypes.Noise['data'];
 const HANDLES = nodeTypes.HANDLES.noise;
 
-function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
+function NoiseNode({ id, data, ...props }: NodeProps<NoiseNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onModeChange = (mode: NoiseNodeData['mode']) => {
@@ -16,7 +16,7 @@ function NoiseNode({ id, data }: NodeProps<NoiseNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Noise">
+    <TerrainGenNode.Root title="Noise" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
 
       <TerrainGenNode.HandleInput

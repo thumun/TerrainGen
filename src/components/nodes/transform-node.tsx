@@ -1,11 +1,13 @@
+import type { NodeProps } from 'reactflow';
+
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.transform;
 
-function TransformNode() {
+function TransformNode({ ...props }: NodeProps) {
   return (
-    <TerrainGenNode.Root title="Transformation">
+    <TerrainGenNode.Root title="Transformation" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
 
       <TerrainGenNode.HandleInput
