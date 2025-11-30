@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.scatter;
 type ScatterNodeData = nodeTypes.Scatter['data'];
 
-function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
+function ScatterNode({ id, data, ...props }: NodeProps<ScatterNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onChange = (key: 'instances' | 'threshold', value: number) => {
@@ -16,7 +16,7 @@ function ScatterNode({ id, data }: NodeProps<ScatterNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Scatter">
+    <TerrainGenNode.Root title="Scatter" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="vec3f[]" />
 
       <TerrainGenNode.NumberInput

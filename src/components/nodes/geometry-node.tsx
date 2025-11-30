@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.geometry;
 type GeometryNodeData = nodeTypes.Geometry['data'];
 
-function GeometryNode({ id, data }: NodeProps<GeometryNodeData>) {
+function GeometryNode({ id, data, ...props }: NodeProps<GeometryNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onMeshPathChange = (value: string) => {
@@ -16,7 +16,7 @@ function GeometryNode({ id, data }: NodeProps<GeometryNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Geometry">
+    <TerrainGenNode.Root title="Geometry" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
       <TerrainGenNode.SelectInput
         label="Mesh"
