@@ -24,16 +24,15 @@ export class IndirectInstancer {
     this.device = device;
     this.instancePointsComputePipeline = instancePointsComputePipeline;
 
-    const drawArgs = new Uint32Array(5); // Change from 4 to 5
-    drawArgs[0] = instanceIndexBuffer.size / 4; // Index count (indices are u32, 4 bytes each)
+    const drawArgs = new Uint32Array(4);
+    drawArgs[0] = instanceIndexBuffer.size / 4;
     drawArgs[1] = this.instancePointsComputePipeline.instanceCount; // instance count
     drawArgs[2] = 0; // firstIndex
     drawArgs[3] = 0; // baseVertex
-    drawArgs[4] = 0; // firstInstance
 
     this.indirectInstanceBuffer = this.device.createBuffer({
       label: 'indirect render buffer',
-      size: 20,
+      size: 16,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.INDIRECT,
     });
     this.device.queue.writeBuffer(this.indirectInstanceBuffer, 0, drawArgs);
@@ -116,6 +115,6 @@ export class IndirectInstancer {
     renderPass.setPipeline(this.instancingRenderPipeline);
     renderPass.setBindGroup(0, sceneUniforms);
     renderPass.setBindGroup(1, this.instancingPointsBindGroup);
-    renderPass.drawIndexedIndirect(this.indirectInstanceBuffer, 0);
+    renderPass.drawIndirect(this.indirectInstanceBuffer, 0);
   }
 }
