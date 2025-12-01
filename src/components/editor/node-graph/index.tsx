@@ -6,7 +6,7 @@ import ContextMenu from './context-menu';
 
 import * as nodeComponents from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
-import { NodeDataProvider } from '@/hooks/use-node-data';
+import { GraphGlobalsProvider } from '@/hooks/use-graph-globals';
 import { type UseNodeGraphResult } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
 import * as traversal from '@/lib/graph/traversal';
@@ -22,18 +22,20 @@ type NodeGraphProps = {
   nodeGraph: UseNodeGraphResult;
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
   onInstancingPipelineUpdate?: (newPipeline: scene.InstancingPipeline) => void;
+  onUniformUpdate?: (key: string, value: number | [number, number, number]) => void;
 };
 
 export default function NodeGraph({
   nodeGraph,
   onDisplacePipelineUpdate,
   onInstancingPipelineUpdate,
+  onUniformUpdate,
 }: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
   // state and callbacks for node + edge state, and react flow
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, setNodeData } = nodeGraph;
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } = nodeGraph;
 
   // hook to manage context menu state + position
   const { menuState, onPaneContextMenu, closeMenu } = useContextMenu({ reactFlowWrapper });
@@ -68,8 +70,7 @@ export default function NodeGraph({
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
-      {/* TODO: remove this provider, delete associated code (no longer needed) */}
-      <NodeDataProvider value={{ setNodeData }}>
+      <GraphGlobalsProvider value={{ setUniform: onUniformUpdate ?? (() => {}) }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -90,7 +91,7 @@ export default function NodeGraph({
             reactFlowWrapper={reactFlowWrapper}
           />
         </ReactFlow>
-      </NodeDataProvider>
+      </GraphGlobalsProvider>
     </div>
   );
 }
