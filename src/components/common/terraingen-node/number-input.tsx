@@ -24,12 +24,17 @@ const VALUE_TYPE_INFO = {
   },
 };
 
-export default function NumberInput({ value, valueType, onChange, label }: NumberInputProps) {
+export default function NumberInput({
+  value,
+  valueType,
+  onChange,
+  label = 'Value',
+}: NumberInputProps) {
   const { modifierKeys } = VALUE_TYPE_INFO[valueType];
 
   return (
     <label className="relative flex items-center rounded-md py-1 pr-1 pl-3">
-      {label && <span className="grow">{label}</span>}
+      <span className="grow">{label}</span>
       <DraggableNumberInput
         value={value}
         onChange={onChange}
