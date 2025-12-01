@@ -9,7 +9,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.float;
 type FloatNodeData = nodeTypes.Float['data'];
 
-function FloatNode({ id, data }: NodeProps<FloatNodeData>) {
+function FloatNode({ id, data, ...props }: NodeProps<FloatNodeData>) {
   const { setNodes } = useReactFlow();
   const renderer = useTerrainRenderer();
 
@@ -21,9 +21,9 @@ function FloatNode({ id, data }: NodeProps<FloatNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Float">
+    <TerrainGenNode.Root title="Float" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
-      <TerrainGenNode.NumberInput value={data.value} onChange={onChange} />
+      <TerrainGenNode.NumberInput value={data.value} valueType="f32" onChange={onChange} />
     </TerrainGenNode.Root>
   );
 }

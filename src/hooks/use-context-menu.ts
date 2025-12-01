@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react';
 
-export type MenuPosition = {
-  id: string | null;
-  top?: number;
-  left?: number;
-  right?: number;
-  bottom?: number;
-};
+import type { ContextMenuState } from '@/components/editor/node-graph/context-menu';
 
 export type UseContextMenuOptions = {
   reactFlowWrapper: React.RefObject<HTMLElement>;
@@ -15,10 +9,10 @@ export type UseContextMenuOptions = {
 /**
  * React hook responsible for managing context menu position and open/close state.
  *
- * Returns `onPaneContextMenu` and `onPaneClick` to be passed into a `<ReactFlow />`.
+ * Returns `onPaneContextMenu` to be passed into a `<ReactFlow />`.
  */
 export function useContextMenu({ reactFlowWrapper }: UseContextMenuOptions) {
-  const [menu, setMenu] = useState<MenuPosition | null>(null);
+  const [menuState, setMenuState] = useState<ContextMenuState>({ show: false });
 
   // logic for menu event
   const onPaneContextMenu = useCallback(
@@ -26,20 +20,21 @@ export function useContextMenu({ reactFlowWrapper }: UseContextMenuOptions) {
       event.preventDefault();
 
       if (!reactFlowWrapper.current) return;
-
       const pane = reactFlowWrapper.current.getBoundingClientRect();
-      setMenu({
-        id: '10',
-        top: event.clientY < pane.height ? event.clientY - pane.top : undefined,
-        left: event.clientX < pane.width ? event.clientX - pane.left : undefined,
-        right: event.clientX >= pane.width ? pane.width - event.clientX : undefined,
-        bottom: event.clientY >= pane.height ? pane.height - event.clientY : undefined,
+      if (event.clientY > pane.height || event.clientX > pane.width) return;
+
+      setMenuState({
+        show: true,
+        left: event.clientX - pane.left,
+        top: event.clientY - pane.top,
       });
     },
-    [reactFlowWrapper, setMenu],
+    [reactFlowWrapper],
   );
 
-  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+  const closeMenu = useCallback(() => {
+    setMenuState({ show: false });
+  }, []);
 
-  return { onPaneContextMenu, onPaneClick, menu, setMenu };
+  return { onPaneContextMenu, menuState, closeMenu };
 }

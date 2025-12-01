@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 type MathNodeData = nodeTypes.MathFloat['data'];
 const HANDLES = nodeTypes.HANDLES.mathFloat;
 
-function MathNodeFloat({ id, data }: NodeProps<MathNodeData>) {
+function MathNodeFloat({ id, data, ...props }: NodeProps<MathNodeData>) {
   const { setNodes } = useReactFlow();
 
   const onOperationChange = (operationVal: MathNodeData['operationVal']) => {
@@ -16,7 +16,7 @@ function MathNodeFloat({ id, data }: NodeProps<MathNodeData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Math (Float)">
+    <TerrainGenNode.Root title="Math (Float)" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="f32" />
 
       <TerrainGenNode.HandleInput label="Value A" handleId={HANDLES.in.a} valueType="f32" />

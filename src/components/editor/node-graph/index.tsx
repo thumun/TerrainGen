@@ -20,6 +20,7 @@ export const fitViewOptions: FitViewOptions = {
 
 type NodeGraphProps = {
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
+  onInstancingPipelineUpdate?: (newPipeline: scene.InstancingPipeline) => void;
 };
 
 const initialNodes: (Node & nodeTypes.All)[] = [
@@ -37,7 +38,10 @@ const initialNodes: (Node & nodeTypes.All)[] = [
   },
 ];
 
-export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) {
+export default function NodeGraph({
+  onDisplacePipelineUpdate,
+  onInstancingPipelineUpdate,
+}: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
@@ -47,7 +51,7 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
   });
 
   // hook to manage context menu state + position
-  const { menu, onPaneClick, onPaneContextMenu } = useContextMenu({ reactFlowWrapper });
+  const { menuState, onPaneContextMenu, closeMenu } = useContextMenu({ reactFlowWrapper });
 
   /** Callback triggered upon the connection of ANY edge to ANY node. */
   const onConnect = useCallback(
@@ -70,8 +74,11 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
       if (pipelines.displacePipeline && onDisplacePipelineUpdate) {
         onDisplacePipelineUpdate(pipelines.displacePipeline);
       }
+      if (pipelines.instancingPipeline && onInstancingPipelineUpdate) {
+        onInstancingPipelineUpdate(pipelines.instancingPipeline);
+      }
     },
-    [edges, setEdges, nodes, onDisplacePipelineUpdate],
+    [edges, setEdges, nodes, onDisplacePipelineUpdate, onInstancingPipelineUpdate],
   );
 
   return (
@@ -86,14 +93,17 @@ export default function NodeGraph({ onDisplacePipelineUpdate }: NodeGraphProps) 
           onNodesChange={onNodesChange}
           onConnect={onConnect}
           onPaneContextMenu={onPaneContextMenu}
-          onPaneClick={onPaneClick}
           fitView
           fitViewOptions={fitViewOptions}
           isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
         >
           <Background />
           <Controls />
-          {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+          <ContextMenu
+            state={menuState}
+            closeMenu={closeMenu}
+            reactFlowWrapper={reactFlowWrapper}
+          />
         </ReactFlow>
       </NodeDataProvider>
     </div>
