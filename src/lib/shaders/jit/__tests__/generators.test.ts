@@ -55,6 +55,16 @@ describe('math', () => {
   });
 });
 
+describe('smoothstep', () => {
+  it('creates smoothstep instruction', () => {
+    const result = generators.generateSmoothstepCode({
+      type: 'smoothstep',
+      references: { readLow: 'alpha', readHigh: 'beta', readValue: 'gamma', write: 'delta' },
+    });
+    expect(result.code).toBe('let delta = smoothstep(alpha, beta, gamma);');
+  });
+});
+
 describe('trig math', () => {
   it('generates sin function', () => {
     const result = generators.generateTrigMathCode({
