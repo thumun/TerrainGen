@@ -18,6 +18,8 @@
     "format:check": "prettier . --check"
   },
   "dependencies": {
+    "@loaders.gl/core": "^4.3.4",
+    "@loaders.gl/gltf": "^4.3.4",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-select": "^2.2.6",
     "@tailwindcss/vite": "^4.0.6",

@@ -160,8 +160,8 @@ export class OBJ extends Mesh {
             const n = nStr ? parseInt(nStr) - 1 : -1;
 
             const pos = positions[v];
-            const uv = t >= 0 ? uvs[t] : [0, 0];
-            const nor = n >= 0 ? normals[n] : [0, 0, 0];
+            const uv = t >= 0 && t < uvs.length ? uvs[t] : [0, 0];
+            const nor = n >= 0 && n < normals.length ? normals[n] : [0, 0, 0];
 
             finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1]);
 
