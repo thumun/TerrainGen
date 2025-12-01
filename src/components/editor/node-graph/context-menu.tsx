@@ -71,7 +71,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           align="start"
         >
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Utility</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--tool]">
+              Utility
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vector')} underConstruction>
                 Vector
@@ -89,7 +91,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Operators</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--math-function]">
+              Operators
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuSub>
                 <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
@@ -131,7 +135,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Geometry</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--box]">
+              Geometry
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('scatter')}>Scatter</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('geometry')}>
@@ -147,7 +153,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Terrain</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--mountain]">
+              Terrain
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vertexData')}>
                 Vertex Info (Input)
@@ -169,15 +177,22 @@ function ContextMenuSub({ children }: ContextMenuSubProps) {
   return <DropdownMenu.Sub>{children}</DropdownMenu.Sub>;
 }
 
-type ContextMenuSubTriggerProps = { children?: React.ReactNode; underConstruction?: boolean };
+type ContextMenuSubTriggerProps = {
+  children?: React.ReactNode;
+  underConstruction?: boolean;
+  iconClassName?: string;
+};
 
-function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTriggerProps) {
+function ContextMenuSubTrigger({
+  children,
+  underConstruction,
+  iconClassName,
+}: ContextMenuSubTriggerProps) {
   return (
     <DropdownMenu.SubTrigger disabled={underConstruction} className={styles.subMenuTrigger}>
-      <span>
-        {underConstruction && '🏗️ '}
-        {children}
-      </span>
+      {underConstruction && <span>🏗️</span>}
+      {!underConstruction && iconClassName && <span className={iconClassName} />}
+      <span className="grow">{children}</span>
       <span>›</span>
     </DropdownMenu.SubTrigger>
   );
