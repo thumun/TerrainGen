@@ -1,14 +1,26 @@
 import * as Menubar from '@radix-ui/react-menubar';
-import { clsx } from 'clsx';
 
 import * as styles from '@/components/common/styles';
 import type { UseNodeGraphResult } from '@/hooks/use-node-graph';
+import * as files from '@/lib/files';
+import * as serialize from '@/lib/graph/serialize';
 
 export type ToolbarProps = {
   nodeGraph: UseNodeGraphResult;
 };
 
 export default function Toolbar({ nodeGraph }: ToolbarProps) {
+  const saveNodeGraph = () => {
+    files.downloadStringAsFile({
+      filename: `nodegraph_${(Date.now() / 60000).toFixed(0)}.tgen.json`,
+      content: serialize.serializeReactFlowNodeGraph(nodeGraph),
+    });
+  };
+
+  const importNodeGraph = () => {
+    alert('WIP!');
+  };
+
   return (
     <div className="bg-zinc-900 text-zinc-400">
       <Menubar.Root>
@@ -17,17 +29,13 @@ export default function Toolbar({ nodeGraph }: ToolbarProps) {
           <Menubar.Portal>
             <Menubar.Content className={styles.selectViewport} align="start">
               <MenubarItem
-                onSelect={() => {
-                  console.log(nodeGraph.nodes);
-                }}
+                onSelect={saveNodeGraph}
                 iconClassName="icon-[tabler--device-floppy]"
               >
                 Save node graph
               </MenubarItem>
               <MenubarItem
-                onSelect={() => {
-                  console.log(nodeGraph.nodes);
-                }}
+                onSelect={importNodeGraph}
                 iconClassName="icon-[tabler--arrow-bar-up]"
               >
                 Import node graph from file
