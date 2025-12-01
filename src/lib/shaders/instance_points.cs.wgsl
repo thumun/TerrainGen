@@ -26,18 +26,14 @@ fn hash11(n: f32) -> f32 {
 
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
-    let subdivisions = u32(meshUniforms.resolution);
-    let size = meshUniforms.size;
-    let step = size / f32(subdivisions); // .25
-
-    let vertexCount = (subdivisions + 1u) * (subdivisions + 1u); // 25
-    let indexCount = subdivisions * subdivisions * 6u; // 16 * 6
-    let numInsts = instanceCount; //hardcoded for now...
-
-   // do stuff :/
-    if (id.x >= numInsts) {
+    // do stuff :/
+    if (id.x >= instanceCount) {
         return;
     }
+
+    let subdivisions = u32(meshUniforms.resolution);
+    let size = meshUniforms.size;
+    let step = size / f32(subdivisions);
 
     // generate a random point inside the grid
     let rx = hash11(f32(id.x) * 12.123);
