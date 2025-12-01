@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.primGeo;
 type PrimitiveGeometryData = nodeTypes.PrimitiveGeometry['data'];
 
-function PrimGeoNode({ id, data }: NodeProps<PrimitiveGeometryData>) {
+function PrimGeoNode({ id, data, ...props }: NodeProps<PrimitiveGeometryData>) {
   const { setNodes } = useReactFlow();
 
   const onMeshPathChange = (value: string) => {
@@ -20,7 +20,7 @@ function PrimGeoNode({ id, data }: NodeProps<PrimitiveGeometryData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Primitive Geometry">
+    <TerrainGenNode.Root title="Primitive Geometry" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
       <TerrainGenNode.SelectInput
         label="Mesh"

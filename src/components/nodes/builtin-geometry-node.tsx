@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.builtinGeo;
 type BuiltinGeometryData = nodeTypes.BuiltinGeometry['data'];
 
-function BuiltInGeoNode({ id, data }: NodeProps<BuiltinGeometryData>) {
+function BuiltInGeoNode({ id, data, ...props }: NodeProps<BuiltinGeometryData>) {
   const { setNodes } = useReactFlow();
 
   const onMeshPathChange = (value: string) => {
@@ -20,7 +20,7 @@ function BuiltInGeoNode({ id, data }: NodeProps<BuiltinGeometryData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Built-in Geometry">
+    <TerrainGenNode.Root title="Built-in Geometry" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
       <TerrainGenNode.SelectInput
         label="Mesh"

@@ -8,7 +8,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 const HANDLES = nodeTypes.HANDLES.loadGeo;
 type LoadGeometryData = nodeTypes.LoadGeometry['data'];
 
-function LoadGeoNode({ id }: NodeProps<LoadGeometryData>) {
+function LoadGeoNode({ id, ...props }: NodeProps<LoadGeometryData>) {
   const { setNodes } = useReactFlow();
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +30,7 @@ function LoadGeoNode({ id }: NodeProps<LoadGeometryData>) {
   };
 
   return (
-    <TerrainGenNode.Root title="Load Geometry">
+    <TerrainGenNode.Root title="Load Geometry" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
       <div className="noDrag relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <label className="text-sm font-medium">OBJ File</label>
