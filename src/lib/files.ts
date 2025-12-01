@@ -1,3 +1,6 @@
+/**
+ * Downloads a file to the user's machine, given a filename and the contents as a string.
+ */
 export function downloadStringAsFile(opts: { filename: string; content: string }) {
   const element = document.createElement('a');
   element.setAttribute(
@@ -12,4 +15,28 @@ export function downloadStringAsFile(opts: { filename: string; content: string }
   element.click();
 
   document.body.removeChild(element);
+}
+
+export function uploadFileToString(opts: { accept?: string }): Promise<string> {
+  return new Promise<string>((resolve) => {
+    const element = document.createElement('input');
+    element.setAttribute('type', 'file');
+    element.style.display = 'none';
+    if (opts.accept) element.setAttribute('accept', opts.accept);
+
+    element.onchange = () => {
+      const reader = new FileReader();
+
+      reader.addEventListener('load', () => {
+        resolve(reader.result as string);
+      });
+
+      reader.readAsText(element.files![0]);
+    };
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  });
 }

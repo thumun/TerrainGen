@@ -11,14 +11,23 @@ export type ToolbarProps = {
 
 export default function Toolbar({ nodeGraph }: ToolbarProps) {
   const saveNodeGraph = () => {
+    const serializedGraph = serialize.serializeReactFlowNodeGraph(nodeGraph);
     files.downloadStringAsFile({
-      filename: `nodegraph_${(Date.now() / 60000).toFixed(0)}.tgen.json`,
-      content: serialize.serializeReactFlowNodeGraph(nodeGraph),
+      filename: `nodegraph-${Math.floor(Date.now() / 1000).toString(16)}.tgen.json`,
+      content: serializedGraph,
     });
   };
 
-  const importNodeGraph = () => {
-    alert('WIP!');
+  // TODO: trigger full pipeline recreations for TerrainRenderer
+  const importNodeGraph = async () => {
+    const serializedGraph = await files.uploadFileToString({ accept: '.json' });
+    const result = serialize.deserializeReactFlowNodeGraph(serializedGraph);
+    if (!result.success) {
+      alert(`Error loading scene: ${result.message}!`);
+      return;
+    }
+    nodeGraph.setNodes(result.graph.nodes);
+    nodeGraph.setEdges(result.graph.edges);
   };
 
   return (
@@ -35,7 +44,9 @@ export default function Toolbar({ nodeGraph }: ToolbarProps) {
                 Save node graph
               </MenubarItem>
               <MenubarItem
-                onSelect={importNodeGraph}
+                onSelect={() => {
+                  void importNodeGraph();
+                }}
                 iconClassName="icon-[tabler--arrow-bar-up]"
               >
                 Import node graph from file

@@ -32,6 +32,7 @@ export const useNodeGraph = (
     edges,
     onNodesChange,
     onEdgesChange,
+    setNodes,
     setEdges,
     setNodeData,
   };
