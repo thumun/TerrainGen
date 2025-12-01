@@ -21,6 +21,7 @@
     "@loaders.gl/core": "^4.3.4",
     "@loaders.gl/gltf": "^4.3.4",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-menubar": "^1.1.16",
     "@radix-ui/react-select": "^2.2.6",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
@@ -38,6 +39,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@iconify-json/tabler": "^1.2.23",
+    "@iconify/tailwind4": "^1.2.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.10.2",

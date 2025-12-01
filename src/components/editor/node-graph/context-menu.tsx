@@ -71,13 +71,14 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           align="start"
         >
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Utility</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--tool]">
+              Utility
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vector')}>Vector</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('float')}>Float</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('unsignedInt')}>
-                {' '}
-                Unsigned Int{' '}
+                Unsigned Int
               </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('separate')}>
                 Separate XYZ
@@ -89,7 +90,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Operators</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--math-function]">
+              Operators
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuSub>
                 <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
@@ -124,14 +127,14 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                 </ContextMenuSubContent>
               </ContextMenuSub>
 
-              <ContextMenuItem onSelect={() => createNode('noise')} underConstruction>
-                Noise
-              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('noise')}>Noise</ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Geometry</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--box]">
+              Geometry
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('scatter')}>Scatter</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('primGeo')}>
@@ -151,7 +154,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Terrain</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--mountain]">
+              Terrain
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vertexData')}>
                 Vertex Info (Input)
@@ -173,15 +178,22 @@ function ContextMenuSub({ children }: ContextMenuSubProps) {
   return <DropdownMenu.Sub>{children}</DropdownMenu.Sub>;
 }
 
-type ContextMenuSubTriggerProps = { children?: React.ReactNode; underConstruction?: boolean };
+type ContextMenuSubTriggerProps = {
+  children?: React.ReactNode;
+  underConstruction?: boolean;
+  iconClassName?: string;
+};
 
-function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTriggerProps) {
+function ContextMenuSubTrigger({
+  children,
+  underConstruction,
+  iconClassName,
+}: ContextMenuSubTriggerProps) {
   return (
     <DropdownMenu.SubTrigger disabled={underConstruction} className={styles.subMenuTrigger}>
-      <span>
-        {underConstruction && '🏗️ '}
-        {children}
-      </span>
+      {underConstruction && <span>🏗️</span>}
+      {!underConstruction && iconClassName && <span className={iconClassName} />}
+      <span className="grow">{children}</span>
       <span>›</span>
     </DropdownMenu.SubTrigger>
   );
