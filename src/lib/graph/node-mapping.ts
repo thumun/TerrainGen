@@ -224,6 +224,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
+
+  scatter: () => null, // dummy for now, make this later...
   instancing: dummyHandler,
   primGeo: dummyHandler,
   loadGeo: dummyHandler,
@@ -279,6 +281,8 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
     },
   ],
   separate: dummyUniformHandler,
+
+  scatter: dummyUniformHandler,
   instancing: dummyUniformHandler,
   primGeo: dummyUniformHandler,
   loadGeo: dummyUniformHandler,

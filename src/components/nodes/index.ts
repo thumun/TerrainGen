@@ -11,6 +11,7 @@ import MixNodeFloat from './mix-node-float';
 import MixNodeVec3 from './mix-node-vec3';
 import NoiseNode from './noise-node';
 import PrimGeoNode from './primitive-geometry-node';
+import ScatterNode from './scatter-node';
 import SeparateNode from './separate-node';
 import TerrainNode from './terrain-node';
 import TransformNode from './transform-node';
@@ -34,6 +35,7 @@ export const nodeTypes: NodeTypes = {
   combine: CombineNode,
   float: FloatNode,
   primGeo: PrimGeoNode,
+  scatter: ScatterNode,
   instancing: InstancingNode,
   unsignedInt: UnsignedIntNode,
   loadGeo: LoadGeoNode,

@@ -23,6 +23,7 @@ export type Float = Node<'float', { value: number }>;
 export type PrimitiveGeometry = Node<'primGeo', { meshPath: string }>;
 export type LoadGeometry = Node<'loadGeo', { meshPath: string; fileContent: string }>;
 export type BuiltinGeometry = Node<'builtinGeo', { meshPath: string }>;
+export type Scatter = Node<'scatter', { instances: number; threshold: number }>;
 export type Instancing = Node<'instancing'>;
 export type UnsignedInt = Node<'unsignedInt', { value: number }>;
 
@@ -43,6 +44,7 @@ export type All =
   | PrimitiveGeometry
   | LoadGeometry
   | BuiltinGeometry
+  | Scatter
   | Instancing
   | UnsignedInt;
 
@@ -108,6 +110,10 @@ export const HANDLES = {
     in: {},
     out: { result: 'float-out' },
   },
+  scatter: {
+    in: { a: 'float-val1-in' },
+    out: { result: 'float-out' },
+  },
   instancing: {
     in: { position: 'vec3-pos-array-in', geometry: 'geo-inst-in', instCount: 'uint-count-in' },
     out: {},
@@ -159,6 +165,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
+  scatter: { type: 'scatter', data: { instances: 0, threshold: 0 } },
   instancing: { type: 'instancing', data: {} },
   primGeo: { type: 'primGeo', data: { meshPath: '/models/cube.obj' } },
   loadGeo: { type: 'loadGeo', data: { meshPath: '/models/cube.obj', fileContent: '' } },

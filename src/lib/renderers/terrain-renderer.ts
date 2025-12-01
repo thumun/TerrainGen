@@ -244,10 +244,10 @@ export class TerrainRenderer implements IRenderer {
   private runComputes(encoder: GPUCommandEncoder) {
     const computePass = encoder.beginComputePass();
 
-    // first compute pass: create terrain
+    // pass 1: create terrain
     this.terrainComputePipeline.runComputePass(computePass);
 
-    // second pass: run custom compute pipeline from node graph
+    // pass 2: run custom compute pipeline from node graph
     if (this.displacePipelineConfigured) {
       computePass.setPipeline(this.customPipeline);
       computePass.setBindGroup(0, this.customBindGroup);
@@ -256,10 +256,10 @@ export class TerrainRenderer implements IRenderer {
       computePass.dispatchWorkgroups(Math.ceil(this.groundPlane.numVertices / 64));
     }
 
-    // third compute pass: calculate terrain normals
+    // pass 3: calculate terrain normals
     this.normalsComputePipeline.runComputePass(computePass);
 
-    // temp pass: create points on terrain to instance on
+    // pass 4: create points on terrain to instance on
     this.instancePointsComputePipeline.runComputePass(computePass);
 
     computePass.end();
@@ -588,6 +588,8 @@ export class TerrainRenderer implements IRenderer {
         },
       ],
     });
+
+    console.log(config.outputs.instanceCount);
 
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
