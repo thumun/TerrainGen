@@ -36,8 +36,8 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let step = size / f32(subdivisions);
 
     // generate a random point inside the grid
-    let rx = hash11(f32(id.x) * 12.123);
-    let rz = hash11(f32(id.x) * 91.331);
+    let rx = hash11(f32(id.x + 1) * 12.123);
+    let rz = hash11(f32(id.x + 1) * 91.331);
 
     // world pos
     let x = rx * size - size * 0.5;

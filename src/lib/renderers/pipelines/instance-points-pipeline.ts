@@ -30,7 +30,7 @@ export class InstancePointsPipeline {
     this.device = device;
     this.mesh = mesh;
     this.normalsComputePipeline = normalsComputePipeline;
-    this.instanceCount = instanceCount;
+    this.instanceCount = Math.max(1, instanceCount);
     this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
