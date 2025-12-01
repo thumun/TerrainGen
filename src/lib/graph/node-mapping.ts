@@ -180,7 +180,6 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
-
   mixVec3: (node, getIncomingHandleKey): instructions.Mix => ({
     type: 'mix',
     references: {
@@ -190,6 +189,31 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       write: getHandleKey({
         sourceNode: node,
         outgoingHandleId: nodeTypes.HANDLES.mixVec3.out.result,
+      }),
+    },
+  }),
+
+  smoothstepFloat: (node, getIncomingHandleKey): instructions.Smoothstep => ({
+    type: 'smoothstep',
+    references: {
+      readLow: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepFloat.in.low),
+      readHigh: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepFloat.in.high),
+      readValue: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepFloat.in.value),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.smoothstepFloat.out.result,
+      }),
+    },
+  }),
+  smoothstepVec3: (node, getIncomingHandleKey): instructions.Smoothstep => ({
+    type: 'smoothstep',
+    references: {
+      readLow: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepVec3.in.low),
+      readHigh: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepVec3.in.high),
+      readValue: getIncomingHandleKey(nodeTypes.HANDLES.smoothstepVec3.in.value),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.smoothstepVec3.out.result,
       }),
     },
   }),
@@ -238,6 +262,8 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   trigMathFloat: () => [],
   mixFloat: () => [],
   mixVec3: () => [],
+  smoothstepFloat: () => [],
+  smoothstepVec3: () => [],
   noise: () => [],
   vertexData: () => [],
   terrain: () => [],
