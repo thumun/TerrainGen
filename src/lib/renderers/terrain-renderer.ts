@@ -229,7 +229,7 @@ export class TerrainRenderer implements IRenderer {
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
-      30,
+      2,
     );
 
     // ----------------------------------------------------------------------------------------
@@ -589,16 +589,21 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    console.log(config.outputs.instanceCount);
+    console.log('num instances:', config.outputs.instanceCount);
 
+    // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
       config.outputs.instanceCount,
-      customInstanceShader,
-      this.customNodeGraphUniformsBindGroupLayout,
     );
+
+    const encoder = this.device.createCommandEncoder();
+    const computePass = encoder.beginComputePass();
+    this.instancePointsComputePipeline.runComputePass(computePass);
+    computePass.end();
+    this.device.queue.submit([encoder.finish()]);
 
     this.indirectInstancer = new IndirectInstancer(
       this.device,
@@ -608,15 +613,6 @@ export class TerrainRenderer implements IRenderer {
       this.sceneUniformsBindGroupLayout,
       this.webGPU,
     );
-
-    const encoder = this.device.createCommandEncoder();
-    const computePass = encoder.beginComputePass();
-    this.instancePointsComputePipeline.runComputePass(
-      computePass,
-      this.customNodeGraphUniformsBindGroup,
-    );
-    computePass.end();
-    this.device.queue.submit([encoder.finish()]);
   }
 
   disableInstancingPipeline() {
