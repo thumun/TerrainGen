@@ -11,7 +11,7 @@ type VectorNodeData = nodeTypes.Vector['data'];
 
 function VectorNode({ id, data, ...props }: NodeProps<VectorNodeData>) {
   const { setNodes } = useReactFlow();
-  const { setDisplacePipelineUniform } = useGraphGlobals();
+  const { setUniform: setDisplacePipelineUniform } = useGraphGlobals();
 
   const onChange = (axis: 'x' | 'y' | 'z', value: number) => {
     const newData = { ...data, [axis]: value };

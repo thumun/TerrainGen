@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
 
 const GraphGlobalsContext = createContext<{
-  setDisplacePipelineUniform: (key: string, value: number | [number, number, number]) => void;
-}>({ setDisplacePipelineUniform: () => {} });
+  setUniform: (key: string, value: number | [number, number, number]) => void;
+}>({ setUniform: () => {} });
 
 export const GraphGlobalsProvider = GraphGlobalsContext.Provider;
 

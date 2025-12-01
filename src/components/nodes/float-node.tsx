@@ -11,7 +11,7 @@ type FloatNodeData = nodeTypes.Float['data'];
 
 function FloatNode({ id, data, ...props }: NodeProps<FloatNodeData>) {
   const { setNodes } = useReactFlow();
-  const { setDisplacePipelineUniform } = useGraphGlobals();
+  const { setUniform: setDisplacePipelineUniform } = useGraphGlobals();
 
   const onChange = (value: number) => {
     helpers.updateNodeData<FloatNodeData>({ id, setNodes, newData: { value } });

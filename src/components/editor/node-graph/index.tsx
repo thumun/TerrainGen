@@ -22,14 +22,14 @@ type NodeGraphProps = {
   nodeGraph: UseNodeGraphResult;
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
   onInstancingPipelineUpdate?: (newPipeline: scene.InstancingPipeline) => void;
-  onDisplaceUniformUpdate?: (key: string, value: number | [number, number, number]) => void;
+  onUniformUpdate?: (key: string, value: number | [number, number, number]) => void;
 };
 
 export default function NodeGraph({
   nodeGraph,
   onDisplacePipelineUpdate,
   onInstancingPipelineUpdate,
-  onDisplaceUniformUpdate,
+  onUniformUpdate,
 }: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
@@ -70,9 +70,7 @@ export default function NodeGraph({
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
-      <GraphGlobalsProvider
-        value={{ setDisplacePipelineUniform: onDisplaceUniformUpdate ?? (() => {}) }}
-      >
+      <GraphGlobalsProvider value={{ setUniform: onUniformUpdate ?? (() => {}) }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}

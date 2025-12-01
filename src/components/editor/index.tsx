@@ -32,6 +32,8 @@ export default function Editor() {
 
   const setUniform = useCallback((key: string, value: number | [number, number, number]) => {
     terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
+    // TODO: also set uniform for instancing pipeline(s)
+    // terrainRendererRef.current?.setInstancingPipelineUniform(key, value);
   }, []);
 
   const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
@@ -69,7 +71,7 @@ export default function Editor() {
               nodeGraph={nodeGraph}
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
               onInstancingPipelineUpdate={setInstancingPipelineConfig}
-              onDisplaceUniformUpdate={setUniform}
+              onUniformUpdate={setUniform}
             />
           </div>
         </div>
