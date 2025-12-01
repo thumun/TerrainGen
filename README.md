@@ -4,6 +4,8 @@ _Final project for CIS5650_
 
 ![Milestone 1 Demo](./docs/images/milestone_01_demo.webp)
 
+[Link to website! ](https://thumun.github.io/TerrainGen/)
+
 ## Motivation
 
 This is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation tool.
@@ -12,6 +14,47 @@ This is a single-page web application using WebGPU to create a real-time node-ba
 
 1. [Milestone 1 Progress Slides](https://docs.google.com/presentation/d/1IfnNaKhCkMEOW8t8lHOAx6w-G378lC401EXVFlAbnQ0/edit?usp=sharing)
 2. [Milestone 2 Progress Slides](https://docs.google.com/presentation/d/1EiJf1spHf-v6SMP9DFZE5cckQX3vl9SmCcZ-_3t7WVw/edit?usp=sharing)
+3. [Milestone 3 Progress Slides](https://docs.google.com/presentation/d/1SY8XgbtOQOwFCNqlIhqCft3_o6H0uVIyBBi3s_v93jw/edit?usp=sharing)
+
+## Project Details 
+
+TerrainGen is a easy-to-use procedural, node-based tool that users can utilize to create terrain! Our project is entirely on WebGPU so the user does not have to worry about any setup/download issues.
+
+### Input Nodes
+
+#### Vertex Data
+This node outputs the position of the verticies. Nodes connected to this one can be used to offset these positions.
+<img width="378" height="174" alt="image" src="https://github.com/user-attachments/assets/38adfa94-68c6-42cb-8bd6-b7689630da02" />
+
+#### Geometry 
+These nodes all work the same functionally. In that, they load a chosen model based on user input after connected to the **instancing (output)** node.
+|<img width="379" height="241" alt="image" src="https://github.com/user-attachments/assets/aa79ad21-5101-40a2-9b4e-874bb0944ef5" /> | <img width="373" height="241" alt="image" src="https://github.com/user-attachments/assets/91e9f8f0-09c5-4d9a-9ab1-5a317ee425d2" /> | <img width="481" height="261" alt="Screenshot 2025-12-01 135707" src="https://github.com/user-attachments/assets/0a9cf638-f27d-43b0-94fb-de3d3d76534d" /> |
+-------------------------- | -------------------------- | -------------------------- |
+A user can add primitive geometry with this node (cube, sphere, plane) | A user can load their personal models with this node (only OBJ is supported for the time being) | A user can choose between our custom built-in geometry (ex. trees, rocks) to add to the terrain rather than upload their own |
+
+#### Float 
+This node allows for an input float variable.
+
+<img width="320" height="197" alt="image" src="https://github.com/user-attachments/assets/27a5aca0-a385-470a-ba32-99a32d944072" />
+
+#### Vector
+This node allows for an input vec3f variable.
+
+<img width="318" height="325" alt="image" src="https://github.com/user-attachments/assets/417311ad-3078-410a-93ca-5e866f0d6d0f" />
+
+#### Unsigned Int
+This node allows for an input unsigned int variable.
+
+<img width="321" height="208" alt="image" src="https://github.com/user-attachments/assets/1109f959-3dec-4e72-911f-de0c8c3880cc" />
+
+### Utility Nodes
+
+| Separate XYZ | Combine XYZ |
+-------------------------- | -------------------------- |
+<img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" /> |
+| This node separates an input of type vec3f to three floats (x, y, z) | This node combines three float inputs into one vec3f |
+
+### 
 
 ### Feature checklist
 
