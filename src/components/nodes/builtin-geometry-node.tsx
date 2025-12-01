@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useReactFlow, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
+import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.builtinGeo;
@@ -10,6 +12,7 @@ type BuiltinGeometryData = nodeTypes.BuiltinGeometry['data'];
 
 function BuiltInGeoNode({ id, data, ...props }: NodeProps<BuiltinGeometryData>) {
   const { setNodes } = useReactFlow();
+  const { triggerNodePipelineUpdate } = useGraphGlobals();
 
   const onMeshPathChange = (value: string) => {
     helpers.updateNodeData<BuiltinGeometryData>({
@@ -18,6 +21,10 @@ function BuiltInGeoNode({ id, data, ...props }: NodeProps<BuiltinGeometryData>) 
       newData: { meshPath: value },
     });
   };
+
+  useEffect(() => {
+    triggerNodePipelineUpdate(id);
+  }, [data.meshPath, id, triggerNodePipelineUpdate]);
 
   return (
     <TerrainGenNode.Root title="Built-in Geometry" {...props}>

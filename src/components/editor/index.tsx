@@ -6,11 +6,13 @@ import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
 import Toolbar from './toolbar';
+import type { ToolbarProps } from './toolbar';
 
 import { useNodeGraph } from '@/hooks/use-node-graph';
+import { usePipelines } from '@/hooks/use-pipelines';
+import type { PipelineNode } from '@/lib/graph';
 import type * as nodeTypes from '@/lib/graph/node-types';
 import type { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
-import * as scene from '@/lib/scene';
 
 const initialNodes: (Node & nodeTypes.All)[] = [
   {
@@ -29,20 +31,9 @@ const initialNodes: (Node & nodeTypes.All)[] = [
 
 export default function Editor() {
   const terrainRendererRef = useRef<TerrainRenderer | undefined>(undefined);
-
-  const setUniform = useCallback((key: string, value: number | [number, number, number]) => {
-    terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
-    // TODO: also set uniform for instancing pipeline(s)
-    // terrainRendererRef.current?.setInstancingPipelineUniform(key, value);
-  }, []);
-
-  const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
-    scene.DisplacePipeline | undefined
-  >(undefined);
-
-  const [instancingPipelineConfig, setInstancingPipelineConfig] = useState<
-    scene.InstancingPipeline | undefined
-  >();
+  const { setUniform, rebuildPipelinesFromNode, rebuildAllPipelines } = usePipelines({
+    terrainRendererRef,
+  });
 
   // states for size and resolution...
   const [globalParams, setGlobalParams] = useState({
@@ -56,6 +47,12 @@ export default function Editor() {
   // TODO: figure out preview nodes
   const previewNodes = useMemo(() => [], []);
 
+  // callbacks for toolbar
+  const onLoadScene = useCallback<ToolbarProps['onLoadScene']>(
+    ({ nodes, edges }) => rebuildAllPipelines({ nodes: nodes as PipelineNode[], edges }),
+    [rebuildAllPipelines],
+  );
+
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
       <header className="bg-zinc-700 px-8 py-4">
@@ -64,13 +61,12 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <Toolbar nodeGraph={nodeGraph} />
+          <Toolbar nodeGraph={nodeGraph} onLoadScene={onLoadScene} />
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph
               nodeGraph={nodeGraph}
-              onDisplacePipelineUpdate={setDisplacePipelineConfig}
-              onInstancingPipelineUpdate={setInstancingPipelineConfig}
+              rebuildPipelinesFromNode={rebuildPipelinesFromNode}
               onUniformUpdate={setUniform}
             />
           </div>
@@ -79,12 +75,7 @@ export default function Editor() {
         {/* Right column */}
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
-            <TerrainCanvas
-              rendererRef={terrainRendererRef}
-              displacePipeline={displacePipelineConfig}
-              instancingPipeline={instancingPipelineConfig}
-              globalParams={globalParams}
-            />
+            <TerrainCanvas rendererRef={terrainRendererRef} globalParams={globalParams} />
           </div>
           <div className="relative grow">
             <div className="absolute inset-0 overflow-y-auto px-8 py-4">

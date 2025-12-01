@@ -11,14 +11,14 @@ type VectorNodeData = nodeTypes.Vector['data'];
 
 function VectorNode({ id, data, ...props }: NodeProps<VectorNodeData>) {
   const { setNodes } = useReactFlow();
-  const { setUniform: setDisplacePipelineUniform } = useGraphGlobals();
+  const { setUniform } = useGraphGlobals();
 
   const onChange = (axis: 'x' | 'y' | 'z', value: number) => {
     const newData = { ...data, [axis]: value };
     helpers.updateNodeData<VectorNodeData>({ id, setNodes, newData });
 
     const uniformKey = `hdlkey_${id}_${HANDLES.out.result}`.replaceAll('-', '_');
-    setDisplacePipelineUniform(uniformKey, [newData.x, newData.y, newData.z]);
+    if (setUniform) setUniform(uniformKey, [newData.x, newData.y, newData.z]);
   };
 
   return (

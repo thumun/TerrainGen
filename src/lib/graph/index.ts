@@ -20,16 +20,44 @@ export type PipelineNode = types.Node & nodeTypes.All;
  * @param nodeId  The ID of the node at which changes have been made (i.e. a connection is made)
  * @returns       An object containing any updated pipelines downstream from the provided node
  */
-export function generateUpdatedPipelines(
+export function generatePipelinesFromNode(
   nodeId: string,
   nodes: PipelineNode[],
   edges: types.Edge[],
-): OutputNodeUpdates {
+) {
   const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
-  const downstreamNodes = nodes.filter((node) => downstreamNodeIds.has(node.id));
+
+  return generatePipelines([...downstreamNodeIds], nodes, edges);
+}
+
+/**
+ * Alternate entrypoint for pipeline generation, regenerating all existing pipelines
+ *
+ * @returns  An object containing all (existing) generated pipelines
+ */
+export function generateAllPipelines(nodes: PipelineNode[], edges: types.Edge[]) {
+  return generatePipelines(
+    nodes.map((node) => node.id),
+    nodes,
+    edges,
+  );
+}
+
+/**
+ * Internal entrypoint for pipeline generation, using a set of updated nodes.
+ *
+ * @param updatedNodeIds  All node IDs which have been affected by some change
+ * @returns               An object containing any updated pipelines downstream from the provided node
+ */
+function generatePipelines(
+  updatedNodeIds: string[],
+  nodes: PipelineNode[],
+  edges: types.Edge[],
+): OutputNodeUpdates {
+  const activeNodes = nodes.filter((node) => updatedNodeIds.includes(node.id));
 
   // find displace pipeline
-  const terrainNode = downstreamNodes.find((node) => node.type === 'terrain');
+  const terrainNode = activeNodes.find((node) => node.type === 'terrain');
   let displacePipeline: scene.DisplacePipeline | undefined = undefined;
   if (terrainNode) {
     const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
@@ -58,7 +86,7 @@ export function generateUpdatedPipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
-  const instancingNode = downstreamNodes.find((node) => node.type === 'instancing');
+  const instancingNode = activeNodes.find((node) => node.type === 'instancing');
   let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
 
   if (instancingNode) {
