@@ -89,8 +89,12 @@ export function generateUpdatedPipelines(
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
     );
     const geometryNode = orderedDependencyNodes.find(
-      (node) => node.id === geometryEdge?.source && node.type === 'geometry',
-    ) as (nodeTypes.Geometry & { id: string }) | undefined;
+      (node) => node.id === geometryEdge?.source,
+    ) as
+      | (nodeTypes.PrimitiveGeometry & { id: string })
+      | (nodeTypes.BuiltinGeometry & { id: string })
+      | (nodeTypes.LoadGeometry & { id: string })
+      | undefined;
 
     const instCountEdge = edges.find(
       (edge) =>
@@ -116,6 +120,7 @@ export function generateUpdatedPipelines(
         outgoingHandleId: positionEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
+      fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
     };
 
     instancingPipeline = {

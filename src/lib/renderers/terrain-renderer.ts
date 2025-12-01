@@ -518,7 +518,14 @@ export class TerrainRenderer implements IRenderer {
 
     // load obj from geo node
     const mesh = new OBJ();
-    await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+
+    if (config.outputs.fileContent) {
+      // Parse directly from stored content
+      mesh.parseObjContent(config.outputs.fileContent);
+    } else {
+      // Load from URL (for primGeo or builtinGeo)
+      await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+    }
 
     if (!mesh.vertices || !mesh.indices) {
       return;

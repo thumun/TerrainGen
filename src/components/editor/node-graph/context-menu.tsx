@@ -137,8 +137,12 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('scatter')}>Scatter</ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('geometry')}>
-                Geometry
+              <ContextMenuItem onSelect={() => createNode('primGeo')}>
+                Primitive Geometry
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('loadGeo')}>Load OBJ</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('builtinGeo')}>
+                Built-in Geometry
               </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('transform')}>
                 Transform

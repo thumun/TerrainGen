@@ -121,12 +121,14 @@ export class OBJ extends Mesh {
   async loadObj(url: string) {
     const response = await fetch(url);
     const text = await response.text();
+    this.parseObjContent(text);
+  }
 
+  parseObjContent(text: string) {
     const positions: number[][] = [];
     const normals: number[][] = [];
     const uvs: number[][] = [];
 
-    // Map of "v/t/n" → new vertex index
     const vertexMap = new Map<string, number>();
     const finalVertices: number[] = [];
     const finalIndices: number[] = [];
@@ -144,8 +146,10 @@ export class OBJ extends Mesh {
       } else if (type === 'vt') {
         uvs.push([Number(parts[1]), Number(parts[2])]);
       } else if (type === 'f') {
-        // Each face has 3 entries (triangle)
-        for (let i = 1; i <= 3; i++) {
+        // adding triangulation
+        const faceVertices = [];
+
+        for (let i = 1; i < parts.length; i++) {
           const key = parts[i]; // "v/t/n" or "v//n" etc
 
           if (!vertexMap.has(key)) {
@@ -156,16 +160,21 @@ export class OBJ extends Mesh {
             const n = nStr ? parseInt(nStr) - 1 : -1;
 
             const pos = positions[v];
-            const uv = t >= 0 ? uvs[t] : [0, 0];
-            const nor = n >= 0 ? normals[n] : [0, 0, 0];
+            const uv = t >= 0 && t < uvs.length ? uvs[t] : [0, 0];
+            const nor = n >= 0 && n < normals.length ? normals[n] : [0, 0, 0];
 
-            // Push interleaved vertex
             finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1]);
 
             vertexMap.set(key, finalVertices.length / 8 - 1);
           }
 
-          finalIndices.push(vertexMap.get(key)!);
+          faceVertices.push(vertexMap.get(key)!);
+        }
+
+        for (let i = 1; i < faceVertices.length - 1; i++) {
+          finalIndices.push(faceVertices[0]);
+          finalIndices.push(faceVertices[i]);
+          finalIndices.push(faceVertices[i + 1]);
         }
       }
     }
