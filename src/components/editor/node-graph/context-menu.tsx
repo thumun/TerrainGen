@@ -70,15 +70,19 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               Utility
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
-              <ContextMenuItem onSelect={() => createNode('vector')}>Vector</ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('float')}>Float</ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('unsignedInt')}>
+              <ContextMenuItem onSelect={() => createNode('vector')} shortcutHint="V">
+                Vector
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('float')} shortcutHint="F">
+                Float
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('unsignedInt')} shortcutHint="U">
                 Unsigned Int
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('separate')}>
+              <ContextMenuItem onSelect={() => createNode('separate')} shortcutHint="S">
                 Separate XYZ
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('combine')}>
+              <ContextMenuItem onSelect={() => createNode('combine')} shortcutHint="C">
                 Combine XYZ
               </ContextMenuItem>
             </ContextMenuSubContent>
@@ -220,6 +224,7 @@ type ContextMenuItemProps = {
   children?: React.ReactNode;
   onSelect?: () => void;
   underConstruction?: boolean;
+  shortcutHint?: string;
   className?: string;
 };
 
@@ -227,6 +232,7 @@ function ContextMenuItem({
   children,
   onSelect,
   underConstruction,
+  shortcutHint,
   className,
 }: ContextMenuItemProps) {
   return (
@@ -236,7 +242,12 @@ function ContextMenuItem({
       className={clsx(styles.selectOption, className)}
     >
       {underConstruction && '🏗️ '}
-      {children}
+      <span className="grow">{children}</span>
+      {shortcutHint && (
+        <span className="ml-4 inline-flex size-5 items-center justify-center rounded-sm border border-zinc-600 bg-zinc-800 font-mono text-sm text-zinc-300">
+          {shortcutHint}
+        </span>
+      )}
     </DropdownMenu.Item>
   );
 }

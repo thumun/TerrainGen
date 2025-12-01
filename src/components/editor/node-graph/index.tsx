@@ -3,6 +3,7 @@ import ReactFlow, { Background, Controls, addEdge } from 'reactflow';
 import type { Connection, FitViewOptions, Edge, Node } from 'reactflow';
 
 import ContextMenu from './context-menu';
+import KeyboardShortcuts from './keyboard-shortcuts';
 
 import * as nodeComponents from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
@@ -101,6 +102,7 @@ export default function NodeGraph({
         >
           <Background />
           <Controls />
+          <KeyboardShortcuts />
           <ContextMenu
             state={menuState}
             closeMenu={closeMenu}
