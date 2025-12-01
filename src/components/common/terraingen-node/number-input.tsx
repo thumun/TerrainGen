@@ -1,3 +1,5 @@
+import { DraggableNumberInput } from 'draggable-number-input';
+
 export type NumberInputProps = {
   value: number;
   valueType: 'f32' | 'u32';
@@ -6,24 +8,35 @@ export type NumberInputProps = {
 };
 
 const VALUE_TYPE_INFO = {
-  f32: { step: 0.1 },
-  u32: { step: 1 },
+  f32: {
+    modifierKeys: {
+      default: { multiplier: 1, sensitivity: 0.25 },
+      shiftKey: { multiplier: 0.1, sensitivity: 0.25 },
+      altKey: { multiplier: 10, sensitivity: 0.25 },
+    },
+  },
+  u32: {
+    modifierKeys: {
+      default: { multiplier: 1, sensitivity: 0.25 },
+      shiftKey: { multiplier: 1, sensitivity: 0.025 },
+      altKey: { multiplier: 10, sensitivity: 0.25 },
+    },
+  },
 };
 
 export default function NumberInput({ value, valueType, onChange, label }: NumberInputProps) {
-  const { step } = VALUE_TYPE_INFO[valueType];
+  const { modifierKeys } = VALUE_TYPE_INFO[valueType];
 
   return (
-    <div className="relative flex items-center rounded-md py-1 pr-1 pl-3">
-      {label && <label className="grow">{label}</label>}
-      <input
+    <label className="relative flex items-center rounded-md py-1 pr-1 pl-3">
+      {label && <span className="grow">{label}</span>}
+      <DraggableNumberInput
         value={value}
-        type="number"
-        step={step}
-        // TODO: better accessibility on this number, like dragging to raise/lower
-        onChange={(evt) => onChange(Number.parseFloat(evt.target.value) || 0)}
-        className="w-24 rounded bg-zinc-600 py-2 pr-2 pl-4 font-medium transition-colors hover:bg-zinc-500/60 focus-visible:bg-zinc-500/60 focus-visible:outline-none"
+        onChange={onChange}
+        disablePointerLock
+        modifierKeys={modifierKeys}
+        className="nodrag w-32 rounded bg-zinc-600 py-2 pr-2 pl-4 font-medium tabular-nums transition-colors hover:bg-zinc-500/60 focus-visible:bg-zinc-500/60 focus-visible:outline-none"
       />
-    </div>
+    </label>
   );
 }
