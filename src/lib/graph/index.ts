@@ -121,6 +121,7 @@ export function generateUpdatedPipelines(
       }),
       meshPath: geometryNode.data.meshPath,
       fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
+      fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
     instancingPipeline = {

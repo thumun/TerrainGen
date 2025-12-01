@@ -1,3 +1,6 @@
+import { GLTFLoader } from '@loaders.gl/gltf';
+import { load, parse } from '@loaders.gl/core';
+
 // storage class for mesh uniforms
 class MeshUniforms {
   readonly buffer = new ArrayBuffer(8);
@@ -108,6 +111,23 @@ export class Plane extends Mesh {
   }
 }
 
+interface GLTFPrimitive {
+  attributes: {
+    POSITION: { value: Float32Array };
+    NORMAL?: { value: Float32Array };
+    TEXCOORD_0?: { value: Float32Array };
+  };
+  indices?: { value: Uint32Array | Uint16Array };
+}
+
+interface GLTFMesh {
+  primitives: GLTFPrimitive[];
+}
+
+interface GLTFData {
+  meshes?: GLTFMesh[];
+}
+
 export class OBJ extends Mesh {
   obj: Mesh | undefined;
 
@@ -181,5 +201,52 @@ export class OBJ extends Mesh {
 
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
+  }
+
+  async loadGltf(url: string) {
+    const gltf = (await load(url, GLTFLoader)) as GLTFData;
+    this.parseGltfContent(gltf);
+  }
+
+  parseGltfFromBuffer(buffer: ArrayBuffer) {
+    void (async () => {
+      const gltf = (await parse(buffer, GLTFLoader)) as GLTFData;
+      this.parseGltfContent(gltf);
+    })();
+  }
+
+  parseGltfContent(gltf: GLTFData) {
+    const mesh = gltf.meshes?.[0];
+    if (!mesh) return;
+
+    const primitive = mesh.primitives[0];
+
+    const positions = primitive.attributes.POSITION.value;
+
+    const normals =
+      primitive.attributes.NORMAL?.value || new Float32Array(positions.length).fill(0);
+
+    const uvs =
+      primitive.attributes.TEXCOORD_0?.value ||
+      new Float32Array((positions.length / 3) * 2).fill(0);
+
+    const indices = primitive.indices?.value || new Uint32Array(positions.length / 3);
+
+    const finalVertices: number[] = [];
+    for (let i = 0; i < positions.length / 3; i++) {
+      finalVertices.push(
+        positions[i * 3],
+        positions[i * 3 + 1],
+        positions[i * 3 + 2],
+        normals[i * 3],
+        normals[i * 3 + 1],
+        normals[i * 3 + 2],
+        uvs[i * 2],
+        uvs[i * 2 + 1],
+      );
+    }
+
+    this.vertices = new Float32Array(finalVertices);
+    this.indices = new Uint32Array(indices);
   }
 }

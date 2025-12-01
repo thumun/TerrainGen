@@ -520,10 +520,12 @@ export class TerrainRenderer implements IRenderer {
     const mesh = new OBJ();
 
     if (config.outputs.fileContent) {
-      // Parse directly from stored content
-      mesh.parseObjContent(config.outputs.fileContent);
+      if (config.outputs.fileType === 'obj') {
+        mesh.parseObjContent(config.outputs.fileContent);
+      } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
+        mesh.parseGltfFromBuffer(config.outputs.fileContent as unknown as ArrayBuffer);
+      }
     } else {
-      // Load from URL (for primGeo or builtinGeo)
       await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
     }
 
