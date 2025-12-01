@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useReactFlow, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
+import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
@@ -10,10 +12,15 @@ const HANDLES = nodeTypes.HANDLES.mathVec3;
 
 function MathNodeVec3({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
   const { setNodes } = useReactFlow();
+  const { triggerNodePipelineUpdate } = useGraphGlobals();
 
   const onOperationChange = (operationVal: MathVec3NodeData['operationVal']) => {
     helpers.updateNodeData<MathVec3NodeData>({ id, setNodes, newData: { operationVal } });
   };
+
+  useEffect(() => {
+    triggerNodePipelineUpdate(id);
+  }, [data.operationVal, id, triggerNodePipelineUpdate]);
 
   return (
     <TerrainGenNode.Root title="Math (Vec3)" {...props}>

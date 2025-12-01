@@ -11,13 +11,13 @@ type FloatNodeData = nodeTypes.Float['data'];
 
 function FloatNode({ id, data, ...props }: NodeProps<FloatNodeData>) {
   const { setNodes } = useReactFlow();
-  const { setUniform: setDisplacePipelineUniform } = useGraphGlobals();
+  const { setUniform } = useGraphGlobals();
 
   const onChange = (value: number) => {
     helpers.updateNodeData<FloatNodeData>({ id, setNodes, newData: { value } });
 
     const uniformKey = `hdlkey_${id}_${HANDLES.out.result}`.replaceAll('-', '_');
-    setDisplacePipelineUniform(uniformKey, value);
+    if (setUniform) setUniform(uniformKey, value);
   };
 
   return (
