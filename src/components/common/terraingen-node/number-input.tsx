@@ -10,16 +10,16 @@ export type NumberInputProps = {
 const VALUE_TYPE_INFO = {
   f32: {
     modifierKeys: {
-      default: { multiplier: 1, sensitivity: 0.25 },
-      shiftKey: { multiplier: 0.1, sensitivity: 0.25 },
-      altKey: { multiplier: 10, sensitivity: 0.25 },
+      shiftKey: { multiplier: 0.01, sensitivity: 0.5 },
+      default: { multiplier: 0.1, sensitivity: 0.5 },
+      altKey: { multiplier: 1, sensitivity: 0.5 },
     },
   },
   u32: {
     modifierKeys: {
-      default: { multiplier: 1, sensitivity: 0.25 },
-      shiftKey: { multiplier: 1, sensitivity: 0.025 },
-      altKey: { multiplier: 10, sensitivity: 0.25 },
+      shiftKey: { multiplier: 1, sensitivity: 0.005 },
+      default: { multiplier: 1, sensitivity: 0.05 },
+      altKey: { multiplier: 10, sensitivity: 0.05 },
     },
   },
 };
