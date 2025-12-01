@@ -81,7 +81,7 @@ export function generateUpdatedPipelines(
 
     const scatterNode = orderedDependencyNodes.find(
       (node) => node.id === scatterEdge?.source && node.type === 'scatter',
-    ) as (nodeTypes.Scatter & { id : string }) | undefined;
+    ) as (nodeTypes.Scatter & { id: string }) | undefined;
 
     const geometryEdge = edges.find(
       (edge) =>

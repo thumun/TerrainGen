@@ -589,14 +589,14 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    console.log("num instances:", config.outputs.instanceCount);
+    console.log('num instances:', config.outputs.instanceCount);
 
     // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
       this.groundPlane,
       this.normalsComputePipeline,
-      config.outputs.instanceCount
+      config.outputs.instanceCount,
     );
 
     const encoder = this.device.createCommandEncoder();

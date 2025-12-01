@@ -19,7 +19,6 @@ function InstancingNode({ ...props }: NodeProps) {
         handleId={HANDLES.in.geometry}
         valueType="geometry"
       />
-      
     </TerrainGenNode.Root>
   );
 }
