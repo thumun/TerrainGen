@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { type Mat4, mat4, type Vec3, vec3, type Vec4, vec4 } from 'wgpu-matrix';
+import { type Mat4, mat4, type Vec3, vec3, vec4 } from 'wgpu-matrix';
 
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -200,7 +200,12 @@ export class Camera {
     this.uniforms.viewProjMat = viewProjMat;
 
     // set view dir
-    this.uniforms.viewDir = vec4.create(this.cameraFront.at(0), this.cameraFront.at(1), this.cameraFront.at(2), 1.0);
+    this.uniforms.viewDir = vec4.create(
+      this.cameraFront.at(0),
+      this.cameraFront.at(1),
+      this.cameraFront.at(2),
+      1.0,
+    );
 
     // write to extra buffers needed for light clustering here
     this.uniforms.viewMat = viewMat;

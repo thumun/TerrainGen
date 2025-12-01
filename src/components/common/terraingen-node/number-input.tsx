@@ -30,7 +30,7 @@ export default function NumberInput({
   valueType,
   onChange,
   label = 'Value',
-  min
+  min,
 }: NumberInputProps) {
   const { modifierKeys } = VALUE_TYPE_INFO[valueType];
 
