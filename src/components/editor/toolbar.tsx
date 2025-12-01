@@ -42,24 +42,28 @@ export default function Toolbar({ nodeGraph, onLoadScene, onClearScene }: Toolba
           <MenubarTrigger>Graph</MenubarTrigger>
           <Menubar.Portal>
             <Menubar.Content className={styles.selectViewport} align="start">
-              <MenubarItem onSelect={onClearScene} iconClassName="icon-[tabler--trash]">
-                Clear
-              </MenubarItem>
-
-              <MenubarItem
-                onSelect={saveNodeGraph}
-                iconClassName="icon-[tabler--device-floppy]"
-              >
-                Save to file
-              </MenubarItem>
-              <MenubarItem
-                onSelect={() => {
-                  void importNodeGraph();
-                }}
-                iconClassName="icon-[tabler--arrow-bar-up]"
-              >
-                Import from file
-              </MenubarItem>
+              <Menubar.Group>
+                <MenubarItem
+                  onSelect={saveNodeGraph}
+                  iconClassName="icon-[tabler--device-floppy]"
+                >
+                  Save to file
+                </MenubarItem>
+                <MenubarItem
+                  onSelect={() => {
+                    void importNodeGraph();
+                  }}
+                  iconClassName="icon-[tabler--arrow-bar-up]"
+                >
+                  Import from file
+                </MenubarItem>
+              </Menubar.Group>
+              <MenubarSeparator />
+              <Menubar.Group>
+                <MenubarItem onSelect={onClearScene} iconClassName="icon-[tabler--trash]">
+                  Reset
+                </MenubarItem>
+              </Menubar.Group>
             </Menubar.Content>
           </Menubar.Portal>
         </Menubar.Menu>
@@ -108,4 +112,8 @@ function MenubarItem({
       {children}
     </Menubar.Item>
   );
+}
+
+function MenubarSeparator() {
+  return <Menubar.Separator className="m-1 h-px bg-zinc-600" />;
 }
