@@ -20,6 +20,22 @@ This is a single-page web application using WebGPU to create a real-time node-ba
 
 TerrainGen is a easy-to-use procedural, node-based tool that users can utilize to create terrain! Our project is entirely on WebGPU so the user does not have to worry about any setup/download issues.
 
+### Window Layout 
+<img width="900" height="945" alt="image" src="https://github.com/user-attachments/assets/3572e3e8-1551-47da-ae8d-d7ba98b7e206" />
+
+Nodes can be added to the canvas element on the left-hand side of the screen and will be renderer on the right side window when the output nodes have the appropriate inputs. The terrain has two additional settings that can be adjusted with the terrain size and resolution sliders below the render screen.
+
+### Import/Export 
+
+<img width="200" height="292" alt="image" src="https://github.com/user-attachments/assets/5946e1e9-4189-46ef-a593-d0007ddfe020" />
+
+A user can import/export their node graph.
+
+As an example, here is a saved node graph layout [file](https://github.com/user-attachments/files/23843108/nodegraph-692ce3b8.tgen.json).
+If this is imported, then the following node graph will be loaded in.
+
+<img width="500" height="968" alt="image" src="https://github.com/user-attachments/assets/91ac03f7-4fad-4dd1-a62b-5bd242054c49" />
+
 ### Input Nodes
 
 #### Vertex Data
