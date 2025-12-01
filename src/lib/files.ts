@@ -17,6 +17,12 @@ export function downloadStringAsFile(opts: { filename: string; content: string }
   document.body.removeChild(element);
 }
 
+/**
+ * Opens a system dialog for the user to select a file. This file is then parsed into a string
+ * and returned in a `Promise`.
+ *
+ * @param opts.accept  file types to accept. example: `'.jpg,.jpeg,.png'`
+ */
 export function uploadFileToString(opts: { accept?: string }): Promise<string> {
   return new Promise<string>((resolve) => {
     const element = document.createElement('input');
