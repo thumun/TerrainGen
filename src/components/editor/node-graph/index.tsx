@@ -1,54 +1,41 @@
 import { useCallback, useRef } from 'react';
 import ReactFlow, { Background, Controls, addEdge } from 'reactflow';
-import type { Connection, FitViewOptions, Edge, Node } from 'reactflow';
-import 'reactflow/dist/style.css';
+import type { Connection, FitViewOptions, Edge } from 'reactflow';
 
 import ContextMenu from './context-menu';
 
 import * as nodeComponents from '@/components/nodes';
 import { useContextMenu } from '@/hooks/use-context-menu';
-import { NodeDataProvider } from '@/hooks/use-node-data';
-import { useNodeGraph } from '@/hooks/use-node-graph';
+import { GraphGlobalsProvider } from '@/hooks/use-graph-globals';
+import { type UseNodeGraphResult } from '@/hooks/use-node-graph';
 import * as graph from '@/lib/graph';
-import * as nodeTypes from '@/lib/graph/node-types';
 import * as traversal from '@/lib/graph/traversal';
 import type * as scene from '@/lib/scene';
+
+import 'reactflow/dist/style.css';
 
 export const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
 type NodeGraphProps = {
+  nodeGraph: UseNodeGraphResult;
   onDisplacePipelineUpdate?: (newPipeline: scene.DisplacePipeline) => void;
   onInstancingPipelineUpdate?: (newPipeline: scene.InstancingPipeline) => void;
+  onUniformUpdate?: (key: string, value: number | [number, number, number]) => void;
 };
 
-const initialNodes: (Node & nodeTypes.All)[] = [
-  {
-    id: 'vertex-data-in',
-    position: { x: -250, y: 0 },
-    type: 'vertexData',
-    data: {},
-  },
-  {
-    id: 'terrain-out',
-    position: { x: 250, y: 0 },
-    type: 'terrain',
-    data: {},
-  },
-];
-
 export default function NodeGraph({
+  nodeGraph,
   onDisplacePipelineUpdate,
   onInstancingPipelineUpdate,
+  onUniformUpdate,
 }: NodeGraphProps) {
   /** Ref pointing to div wrapping ReactFlow element. */
   const reactFlowWrapper = useRef<HTMLDivElement>(null!);
 
-  // hook owning node + edge state, and react flow
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges, setNodeData } = useNodeGraph({
-    initialNodes,
-  });
+  // state and callbacks for node + edge state, and react flow
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } = nodeGraph;
 
   // hook to manage context menu state + position
   const { menuState, onPaneContextMenu, closeMenu } = useContextMenu({ reactFlowWrapper });
@@ -83,8 +70,7 @@ export default function NodeGraph({
 
   return (
     <div ref={reactFlowWrapper} className="relative h-screen w-full">
-      {/* TODO: remove this provider, delete associated code (no longer needed) */}
-      <NodeDataProvider value={{ setNodeData }}>
+      <GraphGlobalsProvider value={{ setUniform: onUniformUpdate ?? (() => {}) }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -105,7 +91,7 @@ export default function NodeGraph({
             reactFlowWrapper={reactFlowWrapper}
           />
         </ReactFlow>
-      </NodeDataProvider>
+      </GraphGlobalsProvider>
     </div>
   );
 }

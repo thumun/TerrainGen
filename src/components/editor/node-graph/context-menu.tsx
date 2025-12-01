@@ -1,7 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { clsx } from 'clsx';
 import { useCallback } from 'react';
 import { useReactFlow } from 'reactflow';
 
+import * as styles from '@/components/common/styles';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 // referenced from here
@@ -63,19 +65,20 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
       />
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
+          className={styles.selectViewport}
           onInteractOutside={closeMenu}
           onEscapeKeyDown={closeMenu}
           align="start"
         >
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Utility</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--tool]">
+              Utility
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
-              <ContextMenuItem onSelect={() => createNode('vector')} underConstruction>
-                Vector
-              </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('float')} underConstruction>
-                Float
+              <ContextMenuItem onSelect={() => createNode('vector')}>Vector</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('float')}>Float</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('unsignedInt')}>
+                Unsigned Int
               </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('separate')}>
                 Separate XYZ
@@ -87,7 +90,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Operators</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--math-function]">
+              Operators
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuSub>
                 <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
@@ -122,18 +127,22 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                 </ContextMenuSubContent>
               </ContextMenuSub>
 
-              <ContextMenuItem onSelect={() => createNode('noise')} underConstruction>
-                Noise
-              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('noise')}>Noise</ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Geometry</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--box]">
+              Geometry
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('scatter')}>Scatter</ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('geometry')}>
-                Geometry
+              <ContextMenuItem onSelect={() => createNode('primGeo')}>
+                Primitive Geometry
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('loadGeo')}>Load OBJ</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('builtinGeo')}>
+                Built-in Geometry
               </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('transform')}>
                 Transform
@@ -145,7 +154,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
           </ContextMenuSub>
 
           <ContextMenuSub>
-            <ContextMenuSubTrigger>Terrain</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger iconClassName="icon-[tabler--mountain]">
+              Terrain
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vertexData')}>
                 Vertex Info (Input)
@@ -167,18 +178,22 @@ function ContextMenuSub({ children }: ContextMenuSubProps) {
   return <DropdownMenu.Sub>{children}</DropdownMenu.Sub>;
 }
 
-type ContextMenuSubTriggerProps = { children?: React.ReactNode; underConstruction?: boolean };
+type ContextMenuSubTriggerProps = {
+  children?: React.ReactNode;
+  underConstruction?: boolean;
+  iconClassName?: string;
+};
 
-function ContextMenuSubTrigger({ children, underConstruction }: ContextMenuSubTriggerProps) {
+function ContextMenuSubTrigger({
+  children,
+  underConstruction,
+  iconClassName,
+}: ContextMenuSubTriggerProps) {
   return (
-    <DropdownMenu.SubTrigger
-      disabled={underConstruction}
-      className="radix-highlighted:bg-zinc-800 radix-disabled:text-zinc-400 radix-state-open:bg-zinc-800 radix-disabled:grayscale flex cursor-default justify-between gap-x-4 rounded-sm py-1 pr-2 pl-3 focus-visible:outline-none"
-    >
-      <span>
-        {underConstruction && '🏗️ '}
-        {children}
-      </span>
+    <DropdownMenu.SubTrigger disabled={underConstruction} className={styles.subMenuTrigger}>
+      {underConstruction && <span>🏗️</span>}
+      {!underConstruction && iconClassName && <span className={iconClassName} />}
+      <span className="grow">{children}</span>
       <span>›</span>
     </DropdownMenu.SubTrigger>
   );
@@ -188,11 +203,7 @@ type ContextMenuSubContentProps = { children?: React.ReactNode };
 
 function ContextMenuSubContent({ children }: ContextMenuSubContentProps) {
   return (
-    <DropdownMenu.SubContent
-      className="rounded-lg border border-zinc-600 bg-zinc-900 p-1"
-      alignOffset={-5}
-      sideOffset={4}
-    >
+    <DropdownMenu.SubContent className={styles.selectViewport} alignOffset={-5} sideOffset={4}>
       {children}
     </DropdownMenu.SubContent>
   );
@@ -215,7 +226,7 @@ function ContextMenuItem({
     <DropdownMenu.Item
       onSelect={onSelect}
       disabled={underConstruction}
-      className={`radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none ${className}`}
+      className={clsx(styles.selectOption, className)}
     >
       {underConstruction && '🏗️ '}
       {children}

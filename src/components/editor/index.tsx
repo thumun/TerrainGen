@@ -1,13 +1,41 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import type { Node } from 'reactflow';
 
 import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
+import Toolbar from './toolbar';
 
+import { useNodeGraph } from '@/hooks/use-node-graph';
+import type * as nodeTypes from '@/lib/graph/node-types';
+import type { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import * as scene from '@/lib/scene';
 
+const initialNodes: (Node & nodeTypes.All)[] = [
+  {
+    id: 'vertex-data-in',
+    position: { x: -250, y: 0 },
+    type: 'vertexData',
+    data: {},
+  },
+  {
+    id: 'terrain-out',
+    position: { x: 250, y: 0 },
+    type: 'terrain',
+    data: {},
+  },
+];
+
 export default function Editor() {
+  const terrainRendererRef = useRef<TerrainRenderer | undefined>(undefined);
+
+  const setUniform = useCallback((key: string, value: number | [number, number, number]) => {
+    terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
+    // TODO: also set uniform for instancing pipeline(s)
+    // terrainRendererRef.current?.setInstancingPipelineUniform(key, value);
+  }, []);
+
   const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
     scene.DisplacePipeline | undefined
   >(undefined);
@@ -16,17 +44,17 @@ export default function Editor() {
     scene.InstancingPipeline | undefined
   >();
 
-  // @ts-expect-error not setting this yet
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [previewNodes, setPreviewNodes] = useState([{ bar: 'foo' }]);
-  // This "preview nodes" data should be computed from the scene graph.
-
   // states for size and resolution...
-
   const [globalParams, setGlobalParams] = useState({
     size: 10,
     resolution: 100,
   });
+
+  // hook owning node + edge state, and react flow
+  const nodeGraph = useNodeGraph({ initialNodes });
+
+  // TODO: figure out preview nodes
+  const previewNodes = useMemo(() => [], []);
 
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
@@ -36,14 +64,14 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <div className="border-b-2 border-zinc-900 bg-zinc-900 px-4 py-2 text-zinc-400">
-            Toolbar or something goes here
-          </div>
+          <Toolbar nodeGraph={nodeGraph} />
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph
+              nodeGraph={nodeGraph}
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
               onInstancingPipelineUpdate={setInstancingPipelineConfig}
+              onUniformUpdate={setUniform}
             />
           </div>
         </div>
@@ -52,6 +80,7 @@ export default function Editor() {
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
             <TerrainCanvas
+              rendererRef={terrainRendererRef}
               displacePipeline={displacePipelineConfig}
               instancingPipeline={instancingPipelineConfig}
               globalParams={globalParams}

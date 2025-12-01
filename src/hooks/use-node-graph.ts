@@ -32,7 +32,10 @@ export const useNodeGraph = (
     edges,
     onNodesChange,
     onEdgesChange,
+    setNodes,
     setEdges,
     setNodeData,
   };
 };
+
+export type UseNodeGraphResult = ReturnType<typeof useNodeGraph>;

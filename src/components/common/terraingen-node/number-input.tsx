@@ -1,3 +1,5 @@
+import { DraggableNumberInput } from 'draggable-number-input';
+
 export type NumberInputProps = {
   value: number;
   valueType: 'f32' | 'u32';
@@ -6,26 +8,35 @@ export type NumberInputProps = {
 };
 
 const VALUE_TYPE_INFO = {
-  f32: { step: 0.1 },
-  u32: { step: 1 },
+  f32: {
+    modifierKeys: {
+      shiftKey: { multiplier: 0.01, sensitivity: 0.5 },
+      default: { multiplier: 0.1, sensitivity: 0.5 },
+      altKey: { multiplier: 1, sensitivity: 0.5 },
+    },
+  },
+  u32: {
+    modifierKeys: {
+      shiftKey: { multiplier: 1, sensitivity: 0.005 },
+      default: { multiplier: 1, sensitivity: 0.05 },
+      altKey: { multiplier: 10, sensitivity: 0.05 },
+    },
+  },
 };
 
 export default function NumberInput({ value, valueType, onChange, label }: NumberInputProps) {
-  const { step } = VALUE_TYPE_INFO[valueType];
+  const { modifierKeys } = VALUE_TYPE_INFO[valueType];
 
   return (
-    <div className="relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
-      <div className="flex items-center justify-between">
-        {label && <label className="mr-4 font-medium">{label}</label>}
-        <input
-          value={value}
-          type="number"
-          step={step}
-          // TODO: better accessibility on this number, like dragging to raise/lower
-          onChange={(evt) => onChange(Number.parseFloat(evt.target.value) || 0)}
-          className="bg-transparent font-bold focus:outline-none"
-        />
-      </div>
-    </div>
+    <label className="relative flex items-center rounded-md py-1 pr-1 pl-3">
+      {label && <span className="grow">{label}</span>}
+      <DraggableNumberInput
+        value={value}
+        onChange={onChange}
+        disablePointerLock
+        modifierKeys={modifierKeys}
+        className="nodrag w-32 rounded bg-zinc-600 py-2 pr-2 pl-4 font-medium tabular-nums transition-colors hover:bg-zinc-500/60 focus-visible:bg-zinc-500/60 focus-visible:outline-none"
+      />
+    </label>
   );
 }

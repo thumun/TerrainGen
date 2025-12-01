@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/common/webgpu-canvas';
 import {
@@ -8,6 +8,7 @@ import {
 import type * as scene from '@/lib/scene';
 
 export type TerrainCanvasProps = {
+  rendererRef: React.RefObject<TerrainRenderer | undefined>;
   displacePipeline?: scene.DisplacePipeline;
   instancingPipeline?: scene.InstancingPipeline;
   globalParams: TerrainRendererGlobalParameters;
@@ -20,12 +21,11 @@ const createRenderer: WebGPUCanvasProps['createRenderer'] = async (webGPU, stage
 };
 
 export default function TerrainCanvas({
+  rendererRef,
   displacePipeline,
   instancingPipeline,
   globalParams,
 }: TerrainCanvasProps) {
-  const rendererRef = useRef<TerrainRenderer | undefined>(undefined);
-
   // Update pipelines etc when scene graph changes
   useEffect(() => {
     if (displacePipeline === undefined) {
@@ -33,13 +33,15 @@ export default function TerrainCanvas({
     } else {
       rendererRef.current?.configureDisplacePipeline(displacePipeline);
     }
+  }, [displacePipeline, rendererRef]);
 
+  useEffect(() => {
     if (instancingPipeline === undefined) {
       rendererRef.current?.disableInstancingPipeline();
     } else {
       void rendererRef.current?.configureInstancingPipeline(instancingPipeline);
     }
-  }, [displacePipeline, instancingPipeline]);
+  }, [instancingPipeline, rendererRef]);
 
   // Update global parameters when sliders update them
   useEffect(() => {

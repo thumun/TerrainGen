@@ -5,18 +5,22 @@ import * as helpers from './helpers';
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
-const HANDLES = nodeTypes.HANDLES.geometry;
-type GeometryNodeData = nodeTypes.Geometry['data'];
+const HANDLES = nodeTypes.HANDLES.primGeo;
+type PrimitiveGeometryData = nodeTypes.PrimitiveGeometry['data'];
 
-function GeometryNode({ id, data }: NodeProps<GeometryNodeData>) {
+function PrimGeoNode({ id, data, ...props }: NodeProps<PrimitiveGeometryData>) {
   const { setNodes } = useReactFlow();
 
   const onMeshPathChange = (value: string) => {
-    helpers.updateNodeData<GeometryNodeData>({ id, setNodes, newData: { meshPath: value } });
+    helpers.updateNodeData<PrimitiveGeometryData>({
+      id,
+      setNodes,
+      newData: { meshPath: value },
+    });
   };
 
   return (
-    <TerrainGenNode.Root title="Geometry">
+    <TerrainGenNode.Root title="Primitive Geometry" {...props}>
       <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="geometry" />
       <TerrainGenNode.SelectInput
         label="Mesh"
@@ -31,4 +35,4 @@ function GeometryNode({ id, data }: NodeProps<GeometryNodeData>) {
   );
 }
 
-export default GeometryNode;
+export default PrimGeoNode;

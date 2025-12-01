@@ -25,10 +25,10 @@ export class IndirectInstancer {
     this.instancePointsComputePipeline = instancePointsComputePipeline;
 
     const drawArgs = new Uint32Array(4);
-    drawArgs[0] = instanceVertexBuffer.size / 8; // vertex count for instance // CHANGE THIS!
-    drawArgs[1] = this.instancePointsComputePipeline.instanceCount; // instance count.
-    drawArgs[2] = 0; // First Vertex
-    drawArgs[3] = 0; // First Instance
+    drawArgs[0] = instanceIndexBuffer.size / 4;
+    drawArgs[1] = this.instancePointsComputePipeline.instanceCount; // instance count
+    drawArgs[2] = 0; // firstIndex
+    drawArgs[3] = 0; // baseVertex
 
     this.indirectInstanceBuffer = this.device.createBuffer({
       label: 'indirect render buffer',
