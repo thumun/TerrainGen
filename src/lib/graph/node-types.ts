@@ -15,6 +15,8 @@ export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' 
 export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type MixFloat = Node<'mixFloat'>;
 export type MixVec3 = Node<'mixVec3'>;
+export type SmoothstepFloat = Node<'smoothstepFloat'>;
+export type SmoothstepVec3 = Node<'smoothstepVec3'>;
 export type VertexData = Node<'vertexData'>;
 export type Terrain = Node<'terrain'>;
 export type Separate = Node<'separate'>;
@@ -36,6 +38,8 @@ export type All =
   | MathVec3
   | MixFloat
   | MixVec3
+  | SmoothstepFloat
+  | SmoothstepVec3
   | VertexData
   | Terrain
   | Separate
@@ -88,6 +92,14 @@ export const HANDLES = {
   },
   mixVec3: {
     in: { a: 'vec3-val1-in', b: 'vec3-val2-in', mix: 'float-val3-in' },
+    out: { result: 'vec3-out' },
+  },
+  smoothstepFloat: {
+    in: { low: 'float-val1-in', high: 'float-val2-in', value: 'float-val3-in' },
+    out: { result: 'float-out' },
+  },
+  smoothstepVec3: {
+    in: { low: 'vec3-val1-in', high: 'vec3-val2-in', value: 'vec3-val3-in' },
     out: { result: 'vec3-out' },
   },
   vertexData: {
@@ -162,6 +174,8 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
     data: { operationVal: 'Sin' },
   },
   mixFloat: { type: 'mixFloat', data: {} },
+  smoothstepFloat: { type: 'smoothstepFloat', data: {} },
+  smoothstepVec3: { type: 'smoothstepVec3', data: {} },
   separate: { type: 'separate', data: {} },
   combine: { type: 'combine', data: {} },
   float: { type: 'float', data: { value: 0 } },
