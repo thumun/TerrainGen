@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Node } from 'reactflow';
 
 import NodeGraph from './node-graph';
@@ -44,6 +44,9 @@ export default function Editor() {
   // hook owning node + edge state, and react flow
   const nodeGraph = useNodeGraph({ initialNodes });
 
+  // TODO: figure out preview nodes
+  const previewNodes = useMemo(() => [], []);
+
   return (
     <div className="mx-auto grid h-screen max-h-[1800px] w-full max-w-[2400px] grid-rows-[auto_1fr] overflow-hidden">
       <header className="bg-zinc-700 px-8 py-4">
@@ -54,8 +57,7 @@ export default function Editor() {
         <div className="flex flex-col">
           <Toolbar nodeGraph={nodeGraph} />
           <div className="relative grow">
-            {/* TODO: figure out preview nodes */}
-            <NodeGraphCanvas previewNodes={[]} />
+            <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph
               nodeGraph={nodeGraph}
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
