@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Node } from 'reactflow';
 
 import NodeGraph from './node-graph';
@@ -9,6 +9,7 @@ import Toolbar from './toolbar';
 
 import { useNodeGraph } from '@/hooks/use-node-graph';
 import type * as nodeTypes from '@/lib/graph/node-types';
+import type { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 import * as scene from '@/lib/scene';
 
 const initialNodes: (Node & nodeTypes.All)[] = [
@@ -27,6 +28,14 @@ const initialNodes: (Node & nodeTypes.All)[] = [
 ];
 
 export default function Editor() {
+  const terrainRendererRef = useRef<TerrainRenderer | undefined>(undefined);
+
+  const setUniform = useCallback((key: string, value: number | [number, number, number]) => {
+    terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
+    // TODO: also set uniform for instancing pipeline(s)
+    // terrainRendererRef.current?.setInstancingPipelineUniform(key, value);
+  }, []);
+
   const [displacePipelineConfig, setDisplacePipelineConfig] = useState<
     scene.DisplacePipeline | undefined
   >(undefined);
@@ -62,6 +71,7 @@ export default function Editor() {
               nodeGraph={nodeGraph}
               onDisplacePipelineUpdate={setDisplacePipelineConfig}
               onInstancingPipelineUpdate={setInstancingPipelineConfig}
+              onUniformUpdate={setUniform}
             />
           </div>
         </div>
@@ -70,6 +80,7 @@ export default function Editor() {
         <div className="relative flex flex-col overflow-clip border-l-2 border-zinc-900">
           <div className="relative aspect-4/3">
             <TerrainCanvas
+              rendererRef={terrainRendererRef}
               displacePipeline={displacePipelineConfig}
               instancingPipeline={instancingPipelineConfig}
               globalParams={globalParams}

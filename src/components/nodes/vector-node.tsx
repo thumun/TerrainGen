@@ -3,6 +3,7 @@ import { useReactFlow, type NodeProps } from 'reactflow';
 import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
+import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.vector;
@@ -10,9 +11,14 @@ type VectorNodeData = nodeTypes.Vector['data'];
 
 function VectorNode({ id, data, ...props }: NodeProps<VectorNodeData>) {
   const { setNodes } = useReactFlow();
+  const { setUniform: setDisplacePipelineUniform } = useGraphGlobals();
 
   const onChange = (axis: 'x' | 'y' | 'z', value: number) => {
-    helpers.updateNodeData<VectorNodeData>({ id, setNodes, newData: { [axis]: value } });
+    const newData = { ...data, [axis]: value };
+    helpers.updateNodeData<VectorNodeData>({ id, setNodes, newData });
+
+    const uniformKey = `hdlkey_${id}_${HANDLES.out.result}`.replaceAll('-', '_');
+    setDisplacePipelineUniform(uniformKey, [newData.x, newData.y, newData.z]);
   };
 
   return (
