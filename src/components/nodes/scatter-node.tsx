@@ -24,6 +24,7 @@ function ScatterNode({ id, data, ...props }: NodeProps<ScatterNodeData>) {
         value={data.instances}
         valueType="u32"
         onChange={(newValue) => onChange('instances', newValue)}
+        min={1}
       />
 
       <TerrainGenNode.HandleInput label="Mask" handleId={HANDLES.in.a} valueType="f32" />

@@ -133,7 +133,7 @@ function generatePipelines(
     }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: !scatterNode ? 2 : Math.max(scatterNode.data.instances, 2),
+      instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
       instancePositions: nodeMapping.getHandleKey({
         sourceNode: scatterNode,
         outgoingHandleId: scatterEdge.sourceHandle!,
