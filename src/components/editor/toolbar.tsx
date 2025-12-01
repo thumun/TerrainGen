@@ -1,4 +1,5 @@
 import * as Menubar from '@radix-ui/react-menubar';
+import type { Edge, Node } from 'reactflow';
 
 import * as styles from '@/components/common/styles';
 import type { UseNodeGraphResult } from '@/hooks/use-node-graph';
@@ -7,9 +8,10 @@ import * as serialize from '@/lib/graph/serialize';
 
 export type ToolbarProps = {
   nodeGraph: UseNodeGraphResult;
+  onLoadScene: (options: { nodes: Node[]; edges: Edge[] }) => void;
 };
 
-export default function Toolbar({ nodeGraph }: ToolbarProps) {
+export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
   const saveNodeGraph = () => {
     const serializedGraph = serialize.serializeReactFlowNodeGraph(nodeGraph);
     files.downloadStringAsFile({
@@ -28,6 +30,8 @@ export default function Toolbar({ nodeGraph }: ToolbarProps) {
     }
     nodeGraph.setNodes(result.graph.nodes);
     nodeGraph.setEdges(result.graph.edges);
+
+    onLoadScene({ nodes: result.graph.nodes, edges: result.graph.edges });
   };
 
   return (

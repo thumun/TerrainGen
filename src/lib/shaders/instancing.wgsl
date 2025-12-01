@@ -48,16 +48,19 @@ fn vs_main(in : VertexIn) -> VertexOut {
     );
 
     // do transformations
-    // let rot = instance_pts[in.instance_index].rotMat;
-    // let rotated = rot * local;   // apply orientation
-    // let world = vec4(pos + rotated, 1.0);
-    let world = vec4(pos + local, 1.0);
+    let rot = instance_pts[in.instance_index].rotMat;
+    let rotated = rot * local;   // apply orientation
+    let world = vec4(pos + rotated, 1.0);
+    //let world = vec4(pos + local, 1.0);
     let world_pos = camera.viewProjMat * world;
+
+    // transform normals too
+    let new_nor = rot * vert_nor;
 
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = vert_nor;
+    out.nor = new_nor;
     out.uv = vec2f(1.0, 1.0);
     return out;
 }
@@ -68,7 +71,18 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   // do lambertian shading
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
-  let color = vec3f(0.7, 0.3, 0.7) * diffuse;
+
+  var color = vec3f(0.0, 0.0, 0.0);
+  
+  if (diffuse > 0.75) {
+    color = vec3f(0.58, 1.0, 0.235);
+  } else if (diffuse > 0.5) {
+    color = vec3f(0.447, 0.749, 0.313);
+  } else if (diffuse > 0.25) {
+    color = vec3f(0.309, 0.490, 0.396);
+  } else {
+    color = vec3f(0.176, 0.235, 0.478);
+  }
 
   return vec4f(color, 1.0);
 }

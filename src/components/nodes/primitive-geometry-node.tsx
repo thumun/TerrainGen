@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useReactFlow, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
+import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.primGeo;
@@ -10,6 +12,7 @@ type PrimitiveGeometryData = nodeTypes.PrimitiveGeometry['data'];
 
 function PrimGeoNode({ id, data, ...props }: NodeProps<PrimitiveGeometryData>) {
   const { setNodes } = useReactFlow();
+  const { triggerNodePipelineUpdate } = useGraphGlobals();
 
   const onMeshPathChange = (value: string) => {
     helpers.updateNodeData<PrimitiveGeometryData>({
@@ -18,6 +21,10 @@ function PrimGeoNode({ id, data, ...props }: NodeProps<PrimitiveGeometryData>) {
       newData: { meshPath: value },
     });
   };
+
+  useEffect(() => {
+    triggerNodePipelineUpdate(id);
+  }, [data.meshPath, id, triggerNodePipelineUpdate]);
 
   return (
     <TerrainGenNode.Root title="Primitive Geometry" {...props}>

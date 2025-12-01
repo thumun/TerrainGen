@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { useReactFlow } from 'reactflow';
 
 import * as styles from '@/components/common/styles';
+import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 // referenced from here
@@ -25,7 +26,8 @@ type ContextMenuItem = {
 };
 
 export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: ContextMenuProps) {
-  const { addNodes, screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
+  const { createNode: createNodeAtPosition } = useGraphGlobals();
 
   const createNode = useCallback(
     (nodeType: nodeTypes.All['type']) => {
@@ -37,20 +39,13 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
         y: (state.top ?? 0) + pane.top,
       });
 
-      const baseNode = nodeTypes.NODE_PREFABS[nodeType];
+      createNodeAtPosition(nodeType, position);
 
-      const customNode = {
-        ...baseNode,
-        // TODO: maybe some more unique id, uuid perhaps?
-        id: `custom-node-${Date.now()}`,
-        position,
-      };
-
-      addNodes(customNode);
       if (closeMenu) closeMenu();
     },
-    [addNodes, closeMenu, reactFlowWrapper, screenToFlowPosition, state],
+    [closeMenu, createNodeAtPosition, reactFlowWrapper, screenToFlowPosition, state],
   );
+
   return (
     <DropdownMenu.Root open={state.show}>
       {/* hacky workaround: the trigger exists, but tiny as hell */}
@@ -113,6 +108,18 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                     Vector
                   </ContextMenuItem>
                   <ContextMenuItem onSelect={() => createNode('mixFloat')}>
+                    Float
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Smoothstep</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onSelect={() => createNode('smoothstepVec3')}>
+                    Vector
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={() => createNode('smoothstepFloat')}>
                     Float
                   </ContextMenuItem>
                 </ContextMenuSubContent>

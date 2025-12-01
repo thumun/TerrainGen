@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { type Mat4, mat4, type Vec3, vec3 } from 'wgpu-matrix';
+import { type Mat4, mat4, type Vec3, vec3, vec4 } from 'wgpu-matrix';
 
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -8,14 +8,15 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(208);
+  readonly buffer = new ArrayBuffer(224);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
-  private readonly cameraWidthView = new Float32Array(this.buffer, 192, 1);
-  private readonly cameraHeightView = new Float32Array(this.buffer, 196, 1);
-  private readonly nearPlaneView = new Float32Array(this.buffer, 200, 1);
-  private readonly farPlaneView = new Float32Array(this.buffer, 204, 1);
+  private readonly viewDirView = new Float32Array(this.buffer, 192, 4);
+  private readonly cameraWidthView = new Float32Array(this.buffer, 208, 1);
+  private readonly cameraHeightView = new Float32Array(this.buffer, 212, 1);
+  private readonly nearPlaneView = new Float32Array(this.buffer, 216, 1);
+  private readonly farPlaneView = new Float32Array(this.buffer, 220, 1);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
@@ -27,6 +28,10 @@ class CameraUniforms {
 
   set viewMat(mat: Float32Array) {
     this.viewMatView.set(mat.subarray(0, 16), 0);
+  }
+
+  set viewDir(dir: Float32Array) {
+    this.viewDirView.set(dir.subarray(0, 4), 0);
   }
 
   // width and height of camera
@@ -193,6 +198,14 @@ export class Camera {
 
     // set `this.uniforms.viewProjMat` to the newly calculated view proj mat
     this.uniforms.viewProjMat = viewProjMat;
+
+    // set view dir
+    this.uniforms.viewDir = vec4.create(
+      this.cameraFront.at(0),
+      this.cameraFront.at(1),
+      this.cameraFront.at(2),
+      1.0,
+    );
 
     // write to extra buffers needed for light clustering here
     this.uniforms.viewMat = viewMat;

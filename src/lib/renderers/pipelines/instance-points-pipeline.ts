@@ -8,7 +8,7 @@ export class InstancePointsPipeline {
 
   instancePoints: GPUBuffer;
 
-  instanceCount = 30;
+  instanceCount = 1;
   instanceCountBuffer: GPUBuffer;
 
   instancingBindGroupLayout: GPUBindGroupLayout;
@@ -30,11 +30,11 @@ export class InstancePointsPipeline {
     this.device = device;
     this.mesh = mesh;
     this.normalsComputePipeline = normalsComputePipeline;
-    this.instanceCount = instanceCount;
+    this.instanceCount = Math.max(1, instanceCount);
     this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
-      size: Math.max(this.instanceCount * (32 + 36), 32 + 36),
+      size: Math.max(this.instanceCount * 96, 96),
       usage:
         GPUBufferUsage.VERTEX |
         GPUBufferUsage.COPY_DST |

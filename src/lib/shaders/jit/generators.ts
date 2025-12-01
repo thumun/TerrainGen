@@ -74,6 +74,13 @@ export function generateCodeMixCode(instruction: instructions.Mix): GenerateCode
   return { code: `let ${write} = ${readA} * (1-${readMix}) + ${readB} * ${readMix};` };
 }
 
+export function generateSmoothstepCode(
+  instruction: instructions.Smoothstep,
+): GenerateCodeResult {
+  const { readLow, readHigh, readValue, write } = instruction.references;
+  return { code: `let ${write} = smoothstep(${readLow}, ${readHigh}, ${readValue});` };
+}
+
 const TRIG_FUNCTIONS = {
   sin: 'sin',
   cos: 'cos',
@@ -137,6 +144,10 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
   switch (instruction.type) {
     case 'math':
       return generateMathCode(instruction);
+    case 'mix':
+      return generateCodeMixCode(instruction);
+    case 'smoothstep':
+      return generateSmoothstepCode(instruction);
     case 'trig-math':
       return generateTrigMathCode(instruction);
     case 'separate-xyz':
@@ -147,7 +158,5 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
-    case 'mix':
-      return generateCodeMixCode(instruction);
   }
 }

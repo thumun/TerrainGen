@@ -20,16 +20,44 @@ export type PipelineNode = types.Node & nodeTypes.All;
  * @param nodeId  The ID of the node at which changes have been made (i.e. a connection is made)
  * @returns       An object containing any updated pipelines downstream from the provided node
  */
-export function generateUpdatedPipelines(
+export function generatePipelinesFromNode(
   nodeId: string,
   nodes: PipelineNode[],
   edges: types.Edge[],
-): OutputNodeUpdates {
+) {
   const downstreamNodeIds = new Set(traversal.getDownstreamNodeIds(nodeId, nodes, edges));
-  const downstreamNodes = nodes.filter((node) => downstreamNodeIds.has(node.id));
+
+  return generatePipelines([...downstreamNodeIds], nodes, edges);
+}
+
+/**
+ * Alternate entrypoint for pipeline generation, regenerating all existing pipelines
+ *
+ * @returns  An object containing all (existing) generated pipelines
+ */
+export function generateAllPipelines(nodes: PipelineNode[], edges: types.Edge[]) {
+  return generatePipelines(
+    nodes.map((node) => node.id),
+    nodes,
+    edges,
+  );
+}
+
+/**
+ * Internal entrypoint for pipeline generation, using a set of updated nodes.
+ *
+ * @param updatedNodeIds  All node IDs which have been affected by some change
+ * @returns               An object containing any updated pipelines downstream from the provided node
+ */
+function generatePipelines(
+  updatedNodeIds: string[],
+  nodes: PipelineNode[],
+  edges: types.Edge[],
+): OutputNodeUpdates {
+  const activeNodes = nodes.filter((node) => updatedNodeIds.includes(node.id));
 
   // find displace pipeline
-  const terrainNode = downstreamNodes.find((node) => node.type === 'terrain');
+  const terrainNode = activeNodes.find((node) => node.type === 'terrain');
   let displacePipeline: scene.DisplacePipeline | undefined = undefined;
   if (terrainNode) {
     const orderedDependencyNodes = traversal.getOrderedNodes(terrainNode.id, nodes, edges);
@@ -58,7 +86,7 @@ export function generateUpdatedPipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
-  const instancingNode = downstreamNodes.find((node) => node.type === 'instancing');
+  const instancingNode = activeNodes.find((node) => node.type === 'instancing');
   let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
 
   if (instancingNode) {
@@ -73,15 +101,15 @@ export function generateUpdatedPipelines(
       .filter((instruction) => instruction !== null);
 
     // Get inputs from the incoming edges of the instancing node
-    const positionEdge = edges.find(
+    const scatterEdge = edges.find(
       (edge) =>
         edge.target === instancingNode.id &&
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
     );
 
-    const positionNode = orderedDependencyNodes.find(
-      (node) => node.id === positionEdge?.source,
-    );
+    const scatterNode = orderedDependencyNodes.find(
+      (node) => node.id === scatterEdge?.source && node.type === 'scatter',
+    ) as (nodeTypes.Scatter & { id: string }) | undefined;
 
     const geometryEdge = edges.find(
       (edge) =>
@@ -96,28 +124,19 @@ export function generateUpdatedPipelines(
       | (nodeTypes.LoadGeometry & { id: string })
       | undefined;
 
-    const instCountEdge = edges.find(
-      (edge) =>
-        edge.target === instancingNode.id &&
-        edge.targetHandle === nodeTypes.HANDLES.instancing.in.instCount,
-    );
-    const instCountNode = orderedDependencyNodes.find(
-      (node) => node.id === instCountEdge?.source,
-    ) as (nodeTypes.UnsignedInt & { id: string }) | undefined;
-
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');
       return { displacePipeline };
-    } else if (!positionNode || !positionEdge) {
-      console.error('Instancing node requires a position input');
+    } else if (!scatterNode || !scatterEdge) {
+      console.error('Instancing node requires a scatter input');
       return { displacePipeline };
     }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: !instCountNode ? 2 : instCountNode.data.value,
+      instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
       instancePositions: nodeMapping.getHandleKey({
-        sourceNode: positionNode,
-        outgoingHandleId: positionEdge.sourceHandle!,
+        sourceNode: scatterNode,
+        outgoingHandleId: scatterEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
       fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
