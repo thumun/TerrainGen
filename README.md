@@ -102,7 +102,7 @@ This node allows for an input unsigned int variable.
   - [ ] Varied terrain type rendering (grass, rock, snow, etc)
 - [ ] 🔎 Real-time in-editor node previews
 - [x] 🌲 Mesh instancing across terrain
-  - [ ] Mesh import for instancing
+  - [x] Mesh import for instancing
 - [ ] 💾 Export to glTF or similar format
 
 #### Node types:
@@ -120,11 +120,11 @@ This node allows for an input unsigned int variable.
   - [x] Height
   - [ ] Terrain type
 - Scattering source
-  - [ ] Terrain height
+  - [x] Terrain height
   - [ ] Voronoi scattering
 - Scattering geometry
-  - [ ] Built-in objects: trees, rocks, bushes
-  - [ ] Primitive geometry: sphere, cube, plane, line
+  - [x] Built-in objects: trees, rocks, bushes
+  - [x] Primitive geometry: sphere, cube, plane, line
   - Custom models
     - [x] OBJ import
     - [ ] glTF import
