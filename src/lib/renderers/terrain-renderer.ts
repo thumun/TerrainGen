@@ -121,7 +121,7 @@ export class TerrainRenderer implements IRenderer {
         {
           // camera uniforms
           binding: 0,
-          visibility: GPUShaderStage.VERTEX,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
       ],
@@ -283,17 +283,6 @@ export class TerrainRenderer implements IRenderer {
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
     });
     this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
-
-    // instancer to draw the mesh we just created
-    // eventually replace instanceVertexBuffer and instanceIndexBuffer with a combined Mesh
-    this.indirectInstancer = new IndirectInstancer(
-      this.device,
-      this.instancePointsComputePipeline,
-      instanceVertexBuffer,
-      instanceIndexBuffer,
-      this.sceneUniformsBindGroupLayout,
-      this.webGPU,
-    );
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {

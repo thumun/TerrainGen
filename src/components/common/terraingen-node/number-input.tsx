@@ -5,6 +5,7 @@ export type NumberInputProps = {
   valueType: 'f32' | 'u32';
   onChange: (value: number) => void;
   label?: string;
+  min?: number;
 };
 
 const VALUE_TYPE_INFO = {
@@ -29,6 +30,7 @@ export default function NumberInput({
   valueType,
   onChange,
   label = 'Value',
+  min,
 }: NumberInputProps) {
   const { modifierKeys } = VALUE_TYPE_INFO[valueType];
 
@@ -37,6 +39,7 @@ export default function NumberInput({
       <span className="grow">{label}</span>
       <DraggableNumberInput
         value={value}
+        min={min}
         onChange={onChange}
         disablePointerLock
         modifierKeys={modifierKeys}

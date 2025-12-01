@@ -71,7 +71,18 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   // do lambertian shading
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
-  let color = vec3f(0.7, 0.3, 0.7) * diffuse;
+
+  var color = vec3f(0.0, 0.0, 0.0);
+  
+  if (diffuse > 0.75) {
+    color = vec3f(0.58, 1.0, 0.235);
+  } else if (diffuse > 0.5) {
+    color = vec3f(0.447, 0.749, 0.313);
+  } else if (diffuse > 0.25) {
+    color = vec3f(0.309, 0.490, 0.396);
+  } else {
+    color = vec3f(0.176, 0.235, 0.478);
+  }
 
   return vec4f(color, 1.0);
 }
