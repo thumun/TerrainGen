@@ -8,7 +8,7 @@ export class InstancePointsPipeline {
 
   instancePoints: GPUBuffer;
 
-  instanceCount = 30;
+  instanceCount = 2;
   instanceCountBuffer: GPUBuffer;
 
   instancingBindGroupLayout: GPUBindGroupLayout;

@@ -96,7 +96,7 @@ export function generateUpdatedPipelines(
       console.error('Instancing node requires a geometry input');
       return { displacePipeline };
     } else if (!scatterNode || !scatterEdge) {
-      console.error('Instancing node requires a position input');
+      console.error('Instancing node requires a scatter input');
       return { displacePipeline };
     }
 
