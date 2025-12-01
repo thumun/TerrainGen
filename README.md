@@ -54,7 +54,28 @@ This node allows for an input unsigned int variable.
 <img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" /> |
 | This node separates an input of type vec3f to three floats (x, y, z) | This node combines three float inputs into one vec3f |
 
-### 
+### Geometry Nodes 
+
+-- Will be added --
+
+### Operator Nodes 
+
+### Math 
+
+| Math | Trig Math | Mix |
+-------------------------- | -------------------------- | -------------------------- |
+<img width="352" height="325" alt="image" src="https://github.com/user-attachments/assets/56f5bf4e-05ad-45fc-996b-010a88bfa42c" /> | <img width="396" height="317" alt="image" src="https://github.com/user-attachments/assets/4da26921-8eb5-4b22-ab87-7a5bfe9fdff3" /> | <img width="370" height="334" alt="image" src="https://github.com/user-attachments/assets/c23e180c-956c-4230-b1f8-0e3f4d65aba2" /> |
+| This node can be used to apply one of the following operations (add, subtract, multiply, divide) to two inputs (float or vec3f) and returns a value of the same type | This node applies a trig function to an input value and returns a float output | This node linearly interporaltes between the two input values based on the mix value |
+
+### Noise 
+-- Will be added --
+
+### Output Nodes
+
+| Terrain | Instancing |
+-------------------------- | -------------------------- |
+<img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" /> |
+| This node triggers the terrain pipeline if the height float input is connected to a valid node. | This node triggers the instancing pipeline. The pipeline is only run/rerun if both the scatter and geometry inputs are connected to valid nodes. |
 
 ### Feature checklist
 
