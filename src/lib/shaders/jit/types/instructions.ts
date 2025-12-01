@@ -24,6 +24,16 @@ export type Mix = {
   };
 };
 
+export type Smoothstep = {
+  type: 'smoothstep';
+  references: {
+    readLow: util.ReferenceKey;
+    readHigh: util.ReferenceKey;
+    readValue: util.ReferenceKey;
+    write: util.ReferenceKey;
+  };
+};
+
 export type TrigMath = {
   type: 'trig-math';
   operation: 'sin' | 'cos' | 'tan';
@@ -58,7 +68,6 @@ export type CombineXYZ = {
 export type Vector = {
   type: 'vector';
   references: {
-    // TODO: add read inputs (uniform keys)
     write: util.ReferenceKey;
   };
 };
@@ -78,4 +87,12 @@ export type Noise = {
   };
 };
 
-export type All = Math | TrigMath | SeparateXYZ | CombineXYZ | Noise | Vector | Mix;
+export type All =
+  | Math
+  | Mix
+  | Smoothstep
+  | TrigMath
+  | SeparateXYZ
+  | CombineXYZ
+  | Vector
+  | Noise;

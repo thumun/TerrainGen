@@ -119,6 +119,18 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               </ContextMenuSub>
 
               <ContextMenuSub>
+                <ContextMenuSubTrigger>Smoothstep</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onSelect={() => createNode('smoothstepVec3')}>
+                    Vector
+                  </ContextMenuItem>
+                  <ContextMenuItem onSelect={() => createNode('smoothstepFloat')}>
+                    Float
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+
+              <ContextMenuSub>
                 <ContextMenuSubTrigger>Trigonometry</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   <ContextMenuItem onSelect={() => createNode('trigMathFloat')}>
