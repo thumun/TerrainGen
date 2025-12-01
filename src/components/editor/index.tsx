@@ -48,6 +48,10 @@ export default function Editor() {
   const previewNodes = useMemo(() => [], []);
 
   // callbacks for toolbar
+  const onClearScene = useCallback(() => {
+    nodeGraph.setNodes(initialNodes);
+    nodeGraph.setEdges([]);
+  }, [nodeGraph]);
   const onLoadScene = useCallback<ToolbarProps['onLoadScene']>(
     ({ nodes, edges }) => rebuildAllPipelines({ nodes: nodes as PipelineNode[], edges }),
     [rebuildAllPipelines],
@@ -61,7 +65,11 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <Toolbar nodeGraph={nodeGraph} onLoadScene={onLoadScene} />
+          <Toolbar
+            nodeGraph={nodeGraph}
+            onLoadScene={onLoadScene}
+            onClearScene={onClearScene}
+          />
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph

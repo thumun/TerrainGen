@@ -9,9 +9,10 @@ import * as serialize from '@/lib/graph/serialize';
 export type ToolbarProps = {
   nodeGraph: UseNodeGraphResult;
   onLoadScene: (options: { nodes: Node[]; edges: Edge[] }) => void;
+  onClearScene: () => void;
 };
 
-export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
+export default function Toolbar({ nodeGraph, onLoadScene, onClearScene }: ToolbarProps) {
   const saveNodeGraph = () => {
     const serializedGraph = serialize.serializeReactFlowNodeGraph(nodeGraph);
     files.downloadStringAsFile({
@@ -38,14 +39,18 @@ export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
     <div className="bg-zinc-900 text-zinc-400">
       <Menubar.Root>
         <Menubar.Menu>
-          <MenubarTrigger>File</MenubarTrigger>
+          <MenubarTrigger>Graph</MenubarTrigger>
           <Menubar.Portal>
             <Menubar.Content className={styles.selectViewport} align="start">
+              <MenubarItem onSelect={onClearScene} iconClassName="icon-[tabler--trash]">
+                Clear
+              </MenubarItem>
+
               <MenubarItem
                 onSelect={saveNodeGraph}
                 iconClassName="icon-[tabler--device-floppy]"
               >
-                Save node graph
+                Save to file
               </MenubarItem>
               <MenubarItem
                 onSelect={() => {
@@ -53,7 +58,7 @@ export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
                 }}
                 iconClassName="icon-[tabler--arrow-bar-up]"
               >
-                Import node graph from file
+                Import from file
               </MenubarItem>
             </Menubar.Content>
           </Menubar.Portal>
