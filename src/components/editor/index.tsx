@@ -51,7 +51,11 @@ export default function Editor() {
   const onClearScene = useCallback(() => {
     nodeGraph.setNodes(initialNodes);
     nodeGraph.setEdges([]);
+    terrainRendererRef.current?.disableDisplacePipeline();
+    terrainRendererRef.current?.disableInstancingPipeline();
+    // TODO: re-run compute pipeline to make flat plane.
   }, [nodeGraph]);
+
   const onLoadScene = useCallback<ToolbarProps['onLoadScene']>(
     ({ nodes, edges }) => rebuildAllPipelines({ nodes: nodes as PipelineNode[], edges }),
     [rebuildAllPipelines],
