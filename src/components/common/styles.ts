@@ -1,6 +1,6 @@
 /** An option in a select menu, highlighted violet/indigo when selected */
 export const selectOption =
-  'radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none';
+  'flex items-center gap-x-2 radix-highlighted:bg-linear-to-r radix-state-open:bg-zinc-800 radix-disabled:text-zinc-400 radix-disabled:grayscale radix-disabled:cursor-default cursor-pointer rounded-sm from-violet-600 to-indigo-600 px-3 py-1 focus-visible:outline-none';
 
 /** A sub-menu trigger, similar to `selectOption` but highlighted gray when open */
 export const subMenuTrigger =
