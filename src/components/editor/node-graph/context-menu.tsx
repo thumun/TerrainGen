@@ -77,6 +77,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
             <ContextMenuSubContent>
               <ContextMenuItem onSelect={() => createNode('vector')}>Vector</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('float')}>Float</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('unsignedInt')}>
+                Unsigned Int
+              </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('separate')}>
                 Separate XYZ
               </ContextMenuItem>
