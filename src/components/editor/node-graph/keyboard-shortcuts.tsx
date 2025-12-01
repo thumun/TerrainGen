@@ -21,6 +21,10 @@ export default function KeyboardShortcuts() {
         createNode('float', position);
       } else if (evt.key === 'u') {
         createNode('unsignedInt', position);
+      } else if (evt.key === 's') {
+        createNode('separate', position);
+      } else if (evt.key === 'c') {
+        createNode('combine', position);
       } else {
         return;
       }

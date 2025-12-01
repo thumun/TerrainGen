@@ -79,10 +79,10 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               <ContextMenuItem onSelect={() => createNode('unsignedInt')} shortcutHint="U">
                 Unsigned Int
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('separate')}>
+              <ContextMenuItem onSelect={() => createNode('separate')} shortcutHint="S">
                 Separate XYZ
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('combine')}>
+              <ContextMenuItem onSelect={() => createNode('combine')} shortcutHint="C">
                 Combine XYZ
               </ContextMenuItem>
             </ContextMenuSubContent>
