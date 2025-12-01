@@ -75,12 +75,8 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               Utility
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
-              <ContextMenuItem onSelect={() => createNode('vector')} underConstruction>
-                Vector
-              </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('float')} underConstruction>
-                Float
-              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('vector')}>Vector</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('float')}>Float</ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('separate')}>
                 Separate XYZ
               </ContextMenuItem>
@@ -128,9 +124,7 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                 </ContextMenuSubContent>
               </ContextMenuSub>
 
-              <ContextMenuItem onSelect={() => createNode('noise')} underConstruction>
-                Noise
-              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('noise')}>Noise</ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
 
