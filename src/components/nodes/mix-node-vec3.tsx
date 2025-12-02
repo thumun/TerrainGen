@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useReactFlow, type NodeProps } from 'reactflow';
+import { useReactFlow, useUpdateNodeInternals, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
@@ -11,18 +10,22 @@ type MixNodeData = nodeTypes.MixVec3['data'];
 const HANDLES = { vec3f: nodeTypes.HANDLES.mixVec3, f32: nodeTypes.HANDLES.mixFloat };
 
 function MixNodeVec3({ id, data, ...props }: NodeProps<MixNodeData>) {
-  const { setNodes } = useReactFlow();
+  const { setNodes, getEdges, setEdges } = useReactFlow();
+  const updateNodeInternals = useUpdateNodeInternals();
 
-  const [dataType, setDataType] = useState<'f32' | 'vec3f'>('f32');
+  const dataType: 'f32' | 'vec3f' = data.nodeType === 'Float' ? 'f32' : 'vec3f';
   const handles = HANDLES[dataType];
 
   const onNodeTypeChange = (nodeType: MixNodeData['nodeType']) => {
+    const edges = getEdges();
+    const updatedEdges = edges.filter((edge) => edge.source !== id && edge.target !== id);
+    setEdges(updatedEdges);
+
     helpers.updateNodeData<MixNodeData>({ id, setNodes, newData: { nodeType } });
-    if (nodeType === 'Float') {
-      setDataType('f32');
-    } else {
-      setDataType('vec3f');
-    }
+
+    requestAnimationFrame(() => {
+      updateNodeInternals(id);
+    });
   };
 
   return (
