@@ -12,7 +12,10 @@ export type Transform = Node<'transform'>;
 export type Noise = Node<'noise', { mode: 'FBM' | 'Worley' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' | 'Tan' }>;
-export type Math = Node<'math', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div'; nodeType: 'Vec3' | 'Float' }>;
+export type Math = Node<
+  'math',
+  { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div'; nodeType: 'Vec3' | 'Float' }
+>;
 export type MixFloat = Node<'mixFloat'>;
 export type Mix = Node<'mix', { nodeType: 'Vec3' | 'Float' }>;
 export type SmoothstepFloat = Node<'smoothstepFloat'>;

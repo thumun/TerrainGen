@@ -148,10 +148,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   }),
 
   math: (node, getIncomingHandleKey): instructions.Math => {
-
-    const handles = node.data.nodeType === 'Float'
-      ? nodeTypes.HANDLES.mathFloat
-      : nodeTypes.HANDLES.math;
+    const handles =
+      node.data.nodeType === 'Float' ? nodeTypes.HANDLES.mathFloat : nodeTypes.HANDLES.math;
     return {
       type: 'math',
       operation: mathOperationMapping[node.data.operationVal],
@@ -167,10 +165,8 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   },
 
   mix: (node, getIncomingHandleKey): instructions.Mix => {
-
-    const handles = node.data.nodeType === 'Float'
-      ? nodeTypes.HANDLES.mixFloat
-      : nodeTypes.HANDLES.mix;
+    const handles =
+      node.data.nodeType === 'Float' ? nodeTypes.HANDLES.mixFloat : nodeTypes.HANDLES.mix;
     return {
       type: 'mix',
       references: {
