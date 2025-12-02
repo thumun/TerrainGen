@@ -7,10 +7,10 @@ import * as TerrainGenNode from '@/components/common/terraingen-node';
 import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
-type MathVec3NodeData = nodeTypes.MathVec3['data'];
-const HANDLES = { vec3f: nodeTypes.HANDLES.mathVec3, f32: nodeTypes.HANDLES.mathFloat };
+type MathNodeData = nodeTypes.Math['data'];
+const HANDLES = { vec3f: nodeTypes.HANDLES.math, f32: nodeTypes.HANDLES.mathFloat };
 
-function MathNode({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
+function MathNode({ id, data, ...props }: NodeProps<MathNodeData>) {
   const { setNodes, getEdges, setEdges } = useReactFlow();
   const { triggerNodePipelineUpdate } = useGraphGlobals();
   const updateNodeInternals = useUpdateNodeInternals();
@@ -18,16 +18,16 @@ function MathNode({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
   const dataType: 'f32' | 'vec3f' = data.nodeType === 'Float' ? 'f32' : 'vec3f';
   const handles = HANDLES[dataType];
 
-  const onOperationChange = (operationVal: MathVec3NodeData['operationVal']) => {
-    helpers.updateNodeData<MathVec3NodeData>({ id, setNodes, newData: { operationVal } });
+  const onOperationChange = (operationVal: MathNodeData['operationVal']) => {
+    helpers.updateNodeData<MathNodeData>({ id, setNodes, newData: { operationVal } });
   };
 
-  const onNodeTypeChange = (nodeType: MathVec3NodeData['nodeType']) => {
+  const onNodeTypeChange = (nodeType: MathNodeData['nodeType']) => {
     const edges = getEdges();
     const updatedEdges = edges.filter((edge) => edge.source !== id && edge.target !== id);
     setEdges(updatedEdges);
 
-    helpers.updateNodeData<MathVec3NodeData>({ id, setNodes, newData: { nodeType } });
+    helpers.updateNodeData<MathNodeData>({ id, setNodes, newData: { nodeType } });
 
     requestAnimationFrame(() => {
       updateNodeInternals(id);

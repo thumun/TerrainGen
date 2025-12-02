@@ -12,9 +12,9 @@ export type Transform = Node<'transform'>;
 export type Noise = Node<'noise', { mode: 'FBM' | 'Worley' }>;
 export type MathFloat = Node<'mathFloat', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div' }>;
 export type TrigMathFloat = Node<'trigMathFloat', { operationVal: 'Sin' | 'Cos' | 'Tan' }>;
-export type MathVec3 = Node<'mathVec3', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div'; nodeType: 'Vec3' | 'Float' }>;
+export type Math = Node<'math', { operationVal: 'Add' | 'Sub' | 'Mult' | 'Div'; nodeType: 'Vec3' | 'Float' }>;
 export type MixFloat = Node<'mixFloat'>;
-export type MixVec3 = Node<'mixVec3', { nodeType: 'Vec3' | 'Float' }>;
+export type Mix = Node<'mix', { nodeType: 'Vec3' | 'Float' }>;
 export type SmoothstepFloat = Node<'smoothstepFloat'>;
 export type SmoothstepVec3 = Node<'smoothstepVec3'>;
 export type VertexData = Node<'vertexData'>;
@@ -35,9 +35,9 @@ export type All =
   | Noise
   | MathFloat
   | TrigMathFloat
-  | MathVec3
+  | Math
   | MixFloat
-  | MixVec3
+  | Mix
   | SmoothstepFloat
   | SmoothstepVec3
   | VertexData
@@ -82,7 +82,7 @@ export const HANDLES = {
     in: { input: 'float-in' },
     out: { result: 'float-out' },
   },
-  mathVec3: {
+  math: {
     in: { a: 'vec3-val1-in', b: 'vec3-val2-in' },
     out: { result: 'vec3-out' },
   },
@@ -90,7 +90,7 @@ export const HANDLES = {
     in: { a: 'float-val1-in', b: 'float-val2-in', mix: 'float-val3-in' },
     out: { result: 'float-out' },
   },
-  mixVec3: {
+  mix: {
     in: { a: 'vec3-val1-in', b: 'vec3-val2-in', mix: 'float-val3-in' },
     out: { result: 'vec3-out' },
   },
@@ -157,11 +157,11 @@ export type Handles = typeof HANDLES;
 export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType } } = {
   transform: { type: 'transform', data: {} },
   noise: { type: 'noise', data: { mode: 'FBM' } },
-  mathVec3: {
-    type: 'mathVec3',
+  math: {
+    type: 'math',
     data: { operationVal: 'Add', nodeType: 'Float' },
   },
-  mixVec3: { type: 'mixVec3', data: { nodeType: 'Float' } },
+  mix: { type: 'mix', data: { nodeType: 'Float' } },
   vertexData: { type: 'vertexData', data: {} },
   terrain: { type: 'terrain', data: {} },
   vector: { type: 'vector', data: { x: 0, y: 0, z: 0 } },

@@ -5,9 +5,9 @@ import * as helpers from './helpers';
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
-type MixNodeData = nodeTypes.MixVec3['data'];
+type MixNodeData = nodeTypes.Mix['data'];
 
-const HANDLES = { vec3f: nodeTypes.HANDLES.mixVec3, f32: nodeTypes.HANDLES.mixFloat };
+const HANDLES = { vec3f: nodeTypes.HANDLES.mix, f32: nodeTypes.HANDLES.mixFloat };
 
 function MixNode({ id, data, ...props }: NodeProps<MixNodeData>) {
   const { setNodes, getEdges, setEdges } = useReactFlow();

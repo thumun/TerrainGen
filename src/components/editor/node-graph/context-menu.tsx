@@ -94,21 +94,11 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuSub>
-                <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem onSelect={() => createNode('mathVec3')}>
-                    Vector
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
+                <ContextMenuItem onSelect={() => createNode('math')}>Math</ContextMenuItem>
               </ContextMenuSub>
 
               <ContextMenuSub>
-                <ContextMenuSubTrigger>Mix</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem onSelect={() => createNode('mixVec3')}>
-                    Vector
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
+                <ContextMenuItem onSelect={() => createNode('mix')}>Mix</ContextMenuItem>
               </ContextMenuSub>
 
               <ContextMenuSub>
