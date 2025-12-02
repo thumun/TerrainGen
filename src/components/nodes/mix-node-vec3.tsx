@@ -1,18 +1,54 @@
-import type { NodeProps } from 'reactflow';
+import { useState } from 'react';
+import { useReactFlow, type NodeProps } from 'reactflow';
+
+import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
 import * as nodeTypes from '@/lib/graph/node-types';
 
-const HANDLES = nodeTypes.HANDLES.mixVec3;
+type MixNodeData = nodeTypes.MixVec3['data'];
 
-function MixNodeVec3({ ...props }: NodeProps) {
+const HANDLES = { vec3f: nodeTypes.HANDLES.mixVec3, f32: nodeTypes.HANDLES.mixFloat };
+
+function MixNodeVec3({ id, data, ...props }: NodeProps<MixNodeData>) {
+  const { setNodes } = useReactFlow();
+
+  const [dataType, setDataType] = useState<'f32' | 'vec3f'>('f32');
+  const handles = HANDLES[dataType];
+
+  const onNodeTypeChange = (nodeType: MixNodeData['nodeType']) => {
+    helpers.updateNodeData<MixNodeData>({ id, setNodes, newData: { nodeType } });
+    if (nodeType === 'Float') {
+      setDataType('f32');
+    } else {
+      setDataType('vec3f');
+    }
+  };
+
   return (
-    <TerrainGenNode.Root title="Mix (Vec3)" {...props}>
-      <TerrainGenNode.HandleOutput handleId={HANDLES.out.result} valueType="vec3f" />
+    <TerrainGenNode.Root title="Mix" {...props}>
+      <TerrainGenNode.HandleOutput handleId={handles.out.result} valueType={dataType} />
 
-      <TerrainGenNode.HandleInput label="Value A" handleId={HANDLES.in.a} valueType="vec3f" />
-      <TerrainGenNode.HandleInput label="Value B" handleId={HANDLES.in.b} valueType="vec3f" />
-      <TerrainGenNode.HandleInput label="Mix Value" handleId={HANDLES.in.mix} valueType="f32" />
+      <TerrainGenNode.HandleInput
+        label="Value A"
+        handleId={handles.in.a}
+        valueType={dataType}
+      />
+      <TerrainGenNode.HandleInput
+        label="Value B"
+        handleId={handles.in.b}
+        valueType={dataType}
+      />
+      <TerrainGenNode.HandleInput label="Mix Value" handleId={handles.in.mix} valueType="f32" />
+      <TerrainGenNode.SelectInput
+        label="Type"
+        value={data.nodeType}
+        onChange={onNodeTypeChange}
+        options={[
+          { label: 'Vec3', value: 'Vec3' },
+          { label: 'Float', value: 'Float' },
+        ]}
+      />
     </TerrainGenNode.Root>
   );
 }
