@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useReactFlow, type NodeProps } from 'reactflow';
+import { useEffect } from 'react';
+import { useReactFlow, useUpdateNodeInternals, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
@@ -11,10 +11,11 @@ type MathVec3NodeData = nodeTypes.MathVec3['data'];
 const HANDLES = { vec3f: nodeTypes.HANDLES.mathVec3, f32: nodeTypes.HANDLES.mathFloat };
 
 function MathNodeVec3({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
-  const { setNodes } = useReactFlow();
+  const { setNodes, getEdges, setEdges } = useReactFlow();
   const { triggerNodePipelineUpdate } = useGraphGlobals();
+  const updateNodeInternals = useUpdateNodeInternals();
 
-  const [dataType, setDataType] = useState<'f32' | 'vec3f'>('f32');
+  const dataType: 'f32' | 'vec3f' = data.nodeType === 'Float' ? 'f32' : 'vec3f';
   const handles = HANDLES[dataType];
 
   const onOperationChange = (operationVal: MathVec3NodeData['operationVal']) => {
@@ -22,20 +23,23 @@ function MathNodeVec3({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
   };
 
   const onNodeTypeChange = (nodeType: MathVec3NodeData['nodeType']) => {
+    const edges = getEdges();
+    const updatedEdges = edges.filter((edge) => edge.source !== id && edge.target !== id);
+    setEdges(updatedEdges);
+
     helpers.updateNodeData<MathVec3NodeData>({ id, setNodes, newData: { nodeType } });
-    if (nodeType === 'Float') {
-      setDataType('f32');
-    } else {
-      setDataType('vec3f');
-    }
+
+    requestAnimationFrame(() => {
+      updateNodeInternals(id);
+    });
   };
 
   useEffect(() => {
     triggerNodePipelineUpdate(id);
-  }, [data.operationVal, id, triggerNodePipelineUpdate]);
+  }, [data.operationVal, data.nodeType, id, triggerNodePipelineUpdate]);
 
   return (
-    <TerrainGenNode.Root title="Math (Vec3)" {...props}>
+    <TerrainGenNode.Root title="Math" {...props}>
       <TerrainGenNode.HandleOutput handleId={handles.out.result} valueType={dataType} />
 
       <TerrainGenNode.HandleInput

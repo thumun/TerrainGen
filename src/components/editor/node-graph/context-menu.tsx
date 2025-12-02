@@ -99,9 +99,6 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                   <ContextMenuItem onSelect={() => createNode('mathVec3')}>
                     Vector
                   </ContextMenuItem>
-                  <ContextMenuItem onSelect={() => createNode('mathFloat')}>
-                    Float
-                  </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
 
@@ -110,9 +107,6 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
                 <ContextMenuSubContent>
                   <ContextMenuItem onSelect={() => createNode('mixVec3')}>
                     Vector
-                  </ContextMenuItem>
-                  <ContextMenuItem onSelect={() => createNode('mixFloat')}>
-                    Float
                   </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
