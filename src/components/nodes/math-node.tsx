@@ -10,7 +10,7 @@ import * as nodeTypes from '@/lib/graph/node-types';
 type MathVec3NodeData = nodeTypes.MathVec3['data'];
 const HANDLES = { vec3f: nodeTypes.HANDLES.mathVec3, f32: nodeTypes.HANDLES.mathFloat };
 
-function MathNodeVec3({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
+function MathNode({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
   const { setNodes, getEdges, setEdges } = useReactFlow();
   const { triggerNodePipelineUpdate } = useGraphGlobals();
   const updateNodeInternals = useUpdateNodeInternals();
@@ -78,4 +78,4 @@ function MathNodeVec3({ id, data, ...props }: NodeProps<MathVec3NodeData>) {
   );
 }
 
-export default MathNodeVec3;
+export default MathNode;

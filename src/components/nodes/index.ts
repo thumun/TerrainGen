@@ -5,8 +5,8 @@ import CombineNode from './combine-node';
 import FloatNode from './float-node';
 import InstancingNode from './instancing-node';
 import LoadGeoNode from './load-geometry-node';
-import MathNodeVec3 from './math-node-vec3';
-import MixNodeVec3 from './mix-node-vec3';
+import MathNode from './math-node';
+import MixNode from './mix-node';
 import NoiseNode from './noise-node';
 import PrimGeoNode from './primitive-geometry-node';
 import ScatterNode from './scatter-node';
@@ -24,8 +24,8 @@ export const nodeTypes: NodeTypes = {
   transform: TransformNode,
   noise: NoiseNode,
   trigMathFloat: TrigMathNodeFloat,
-  mathVec3: MathNodeVec3,
-  mixVec3: MixNodeVec3,
+  mathVec3: MathNode,
+  mixVec3: MixNode,
   smoothstepFloat: SmoothstepNodeFloat,
   smoothstepVec3: SmoothstepNodeVec3,
   vertexData: VertexDataNode,

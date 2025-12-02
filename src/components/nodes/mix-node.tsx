@@ -9,7 +9,7 @@ type MixNodeData = nodeTypes.MixVec3['data'];
 
 const HANDLES = { vec3f: nodeTypes.HANDLES.mixVec3, f32: nodeTypes.HANDLES.mixFloat };
 
-function MixNodeVec3({ id, data, ...props }: NodeProps<MixNodeData>) {
+function MixNode({ id, data, ...props }: NodeProps<MixNodeData>) {
   const { setNodes, getEdges, setEdges } = useReactFlow();
   const updateNodeInternals = useUpdateNodeInternals();
 
@@ -56,4 +56,4 @@ function MixNodeVec3({ id, data, ...props }: NodeProps<MixNodeData>) {
   );
 }
 
-export default MixNodeVec3;
+export default MixNode;
