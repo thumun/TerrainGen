@@ -1,5 +1,6 @@
-import { GLTFLoader } from '@loaders.gl/gltf';
-import { load, parse } from '@loaders.gl/core';
+import { GLTFLoader, type GLTFWithBuffers, type GLTFMesh, type GLTFMeshPrimitive, type GLTFMaterial, type GLTFSampler } from '@loaders.gl/gltf';
+import { forEach, load, parse } from '@loaders.gl/core';
+import type { Vec3 } from 'wgpu-matrix';
 
 // storage class for mesh uniforms
 class MeshUniforms {
@@ -15,6 +16,15 @@ class MeshUniforms {
     this.resolution[0] = resolution;
   }
 }
+
+const numComponents: { [key: string]: number } = {
+  "SCALAR": 1,
+  "VEC2": 2,
+  "VEC3": 3,
+  "VEC4": 4,
+  "MAT4": 16,
+};
+
 
 // template class
 export abstract class Mesh {
@@ -111,23 +121,6 @@ export class Plane extends Mesh {
   }
 }
 
-interface GLTFPrimitive {
-  attributes: {
-    POSITION: { value: Float32Array };
-    NORMAL?: { value: Float32Array };
-    TEXCOORD_0?: { value: Float32Array };
-  };
-  indices?: { value: Uint32Array | Uint16Array };
-}
-
-interface GLTFMesh {
-  primitives: GLTFPrimitive[];
-}
-
-interface GLTFData {
-  meshes?: GLTFMesh[];
-}
-
 export class OBJ extends Mesh {
   obj: Mesh | undefined;
 
@@ -204,49 +197,46 @@ export class OBJ extends Mesh {
   }
 
   async loadGltf(url: string) {
-    const gltf = (await load(url, GLTFLoader)) as GLTFData;
-    this.parseGltfContent(gltf);
-  }
+    console.log("load gltf");
+    const gltfWithBuffers = (await load(url, GLTFLoader)) as GLTFWithBuffers;
+    const gltf = gltfWithBuffers.json;
 
-  parseGltfFromBuffer(buffer: ArrayBuffer) {
-    void (async () => {
-      const gltf = (await parse(buffer, GLTFLoader)) as GLTFData;
-      this.parseGltfContent(gltf);
-    })();
-  }
+    console.log(gltf);
 
-  parseGltfContent(gltf: GLTFData) {
-    const mesh = gltf.meshes?.[0];
-    if (!mesh) return;
+    for (const mesh of gltf.meshes!) {
+      console.log("Current mesh name:", mesh.name);
 
-    const primitive = mesh.primitives[0];
+      for (const prim of mesh.primitives) {
+        let positions;
+        let normals;
+        let uvs;
 
-    const positions = primitive.attributes.POSITION.value;
+        // load positions
+        const posAccessor = gltf.accessors![prim.attributes["POSITION"]];
+        const posBufferView = gltf.bufferViews![posAccessor.bufferView!];
+        const posBuffer = gltfWithBuffers.buffers[posBufferView.buffer]
 
-    const normals =
-      primitive.attributes.NORMAL?.value || new Float32Array(positions.length).fill(0);
+        const byteOffset = (posBufferView.byteOffset ?? 0) + (posAccessor.byteOffset ?? 0) + posBuffer.byteOffset;
 
-    const uvs =
-      primitive.attributes.TEXCOORD_0?.value ||
-      new Float32Array((positions.length / 3) * 2).fill(0);
+        const posArrayLength = posAccessor.count * numComponents[posAccessor.type];
+        positions = new Float32Array(posBuffer.arrayBuffer, byteOffset, posArrayLength) // should be length 72
 
-    const indices = primitive.indices?.value || new Uint32Array(positions.length / 3);
+        console.log(positions);
 
-    const finalVertices: number[] = [];
-    for (let i = 0; i < positions.length / 3; i++) {
-      finalVertices.push(
-        positions[i * 3],
-        positions[i * 3 + 1],
-        positions[i * 3 + 2],
-        normals[i * 3],
-        normals[i * 3 + 1],
-        normals[i * 3 + 2],
-        uvs[i * 2],
-        uvs[i * 2 + 1],
-      );
+        // load indices
+        const idxAccessor = gltf.accessors![prim.indices!];
+        const idxBufferView = gltf.bufferViews![idxAccessor.bufferView!];
+        const idxBuffer = gltfWithBuffers.buffers[idxBufferView.buffer];
+
+        const idxOffset = (idxBufferView.byteOffset ?? 0) + (idxAccessor.byteOffset ?? 0) + idxBuffer.byteOffset;
+        const idxArrayLength = (positions.length / 3) * numComponents[idxAccessor.type];
+        console.log(idxArrayLength);
+
+        const idxArray = new Int32Array(idxBuffer.arrayBuffer, idxOffset, 16);
+        console.log(idxArray);
+
+      }
     }
-
-    this.vertices = new Float32Array(finalVertices);
-    this.indices = new Uint32Array(indices);
   }
+
 }
