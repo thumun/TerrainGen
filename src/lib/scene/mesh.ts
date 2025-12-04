@@ -221,10 +221,18 @@ export class OBJ extends Mesh {
         const posBufferView = gltf.bufferViews![posAccessor.bufferView!];
         const posBuffer = gltfWithBuffers.buffers[posBufferView.buffer]
 
-        const byteOffset = (posBufferView.byteOffset ?? 0) + (posAccessor.byteOffset ?? 0) + posBuffer.byteOffset;
-
+        const posByteOffset = (posBufferView.byteOffset ?? 0) + (posAccessor.byteOffset ?? 0) + posBuffer.byteOffset;
         const posArrayLength = posAccessor.count * numComponents[posAccessor.type];
-        const positions = new Float32Array(posBuffer.arrayBuffer, byteOffset, posArrayLength) // should be length 72
+        const positions = new Float32Array(posBuffer.arrayBuffer, posByteOffset, posArrayLength) // should be length 72
+
+        // load normals
+        const norAccessor = gltf.accessors![prim.attributes["NORMAL"]];
+        const norBufferView = gltf.bufferViews![norAccessor.bufferView!];
+        const norBuffer = gltfWithBuffers.buffers[norBufferView.buffer]
+
+        const norByteOffset = (norBufferView.byteOffset ?? 0) + (norAccessor.byteOffset ?? 0) + norBuffer.byteOffset;
+        const norArrayLength = norAccessor.count * numComponents[norAccessor.type];
+        const normals = new Float32Array(norBuffer.arrayBuffer, norByteOffset, norArrayLength) // should be length 72
 
         // load indices
         const idxAccessor = gltf.accessors![prim.indices!];
@@ -250,7 +258,11 @@ export class OBJ extends Mesh {
 
         // push these guys into the final array
         for (let i = 0; i < positions.length; i += 3) {
-          finalVertices.push(positions[i], positions[i + 1], positions[i + 2], 0, 1, 0, 1, 0);
+          finalVertices.push(
+            positions[i], positions[i + 1], positions[i + 2],
+            normals[i], normals[i + 1], normals[i + 2],
+            1, 0
+          );
         }
         for (let i = 0; i < idxArray!.length; i++) {
           finalIndices.push(idxArray![i]);
