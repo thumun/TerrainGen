@@ -194,9 +194,6 @@ export class OBJ extends Mesh {
 
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
-
-    console.log("final (obj):", finalVertices);
-    console.log("final (obj):", finalIndices);
   }
 
   async loadGltf(url: string): Promise<{ gltfWithBuffers: GLTFWithBuffers; gltf: GLTF; }> {
@@ -223,7 +220,7 @@ export class OBJ extends Mesh {
 
         const posByteOffset = (posBufferView.byteOffset ?? 0) + (posAccessor.byteOffset ?? 0) + posBuffer.byteOffset;
         const posArrayLength = posAccessor.count * numComponents[posAccessor.type];
-        const positions = new Float32Array(posBuffer.arrayBuffer, posByteOffset, posArrayLength) // should be length 72
+        const positions = new Float32Array(posBuffer.arrayBuffer, posByteOffset, posArrayLength);
 
         // load normals
         const norAccessor = gltf.accessors![prim.attributes["NORMAL"]];
@@ -232,7 +229,25 @@ export class OBJ extends Mesh {
 
         const norByteOffset = (norBufferView.byteOffset ?? 0) + (norAccessor.byteOffset ?? 0) + norBuffer.byteOffset;
         const norArrayLength = norAccessor.count * numComponents[norAccessor.type];
-        const normals = new Float32Array(norBuffer.arrayBuffer, norByteOffset, norArrayLength) // should be length 72
+        const normals = new Float32Array(norBuffer.arrayBuffer, norByteOffset, norArrayLength);
+
+        // load uvs
+        let uvs: Float32Array;
+        if (prim.attributes["TEXCOORD_0"]) {
+          const uvAccessor = gltf.accessors![prim.attributes["TEXCOORD_0"]];
+          const uvBufferView = gltf.bufferViews![uvAccessor.bufferView!];
+          const uvBuffer = gltfWithBuffers.buffers[uvBufferView.buffer]
+
+          const uvByteOffset = (uvBufferView.byteOffset ?? 0) + (uvAccessor.byteOffset ?? 0) + norBuffer.byteOffset;
+          const uvArrayLength = uvAccessor.count * numComponents[uvAccessor.type];
+          uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
+        } else {
+          const tempUVs: number[] = [];
+          for (let i = 0; i < positions.length / 3; i++) {
+            tempUVs.push(0, 1);
+          }
+          uvs = new Float32Array(tempUVs);
+        }
 
         // load indices
         const idxAccessor = gltf.accessors![prim.indices!];
@@ -257,11 +272,11 @@ export class OBJ extends Mesh {
         }
 
         // push these guys into the final array
-        for (let i = 0; i < positions.length; i += 3) {
+        for (let i = 0; i < positions.length / 3; i++) {
           finalVertices.push(
-            positions[i], positions[i + 1], positions[i + 2],
-            normals[i], normals[i + 1], normals[i + 2],
-            1, 0
+            positions[3 * i], positions[3 * i + 1], positions[3 * i + 2],
+            normals[3 * i], normals[3 * i + 1], normals[3 * i + 2],
+            uvs[2 * i], uvs[2 * i + 1]
           );
         }
         for (let i = 0; i < idxArray!.length; i++) {
