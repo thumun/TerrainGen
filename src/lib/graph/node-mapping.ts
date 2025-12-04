@@ -116,7 +116,19 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   terrain: () => null,
 
   // TODO: this transform functionality is not real until we have geometry
-  transform: dummyHandler,
+  transform: (node, getIncomingHandleKey): instructions.Transform => ({
+    type: 'transform',
+    references: {
+      geo: getIncomingHandleKey(nodeTypes.HANDLES.transform.in.geo),
+      translate: getIncomingHandleKey(nodeTypes.HANDLES.transform.in.translate),
+      rotate: getIncomingHandleKey(nodeTypes.HANDLES.transform.in.rotate),
+      scale: getIncomingHandleKey(nodeTypes.HANDLES.transform.in.scale),
+      write: getHandleKey({
+        sourceNode: node,
+        outgoingHandleId: nodeTypes.HANDLES.transform.out.result,
+      }),
+    },
+  }),
 
   mathFloat: dummyHandler,
   mixFloat: dummyHandler,

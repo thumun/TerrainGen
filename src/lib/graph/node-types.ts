@@ -69,7 +69,6 @@ export const HANDLES = {
       translate: 'vec3-trans-in',
       rotate: 'vec3-rotate-in',
       scale: 'vec3-scale-in',
-      uniformScale: 'float-scale-in',
     },
     out: { result: 'geo-out' },
   },

@@ -116,13 +116,32 @@ function generatePipelines(
         edge.target === instancingNode.id &&
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
     );
-    const geometryNode = orderedDependencyNodes.find(
-      (node) => node.id === geometryEdge?.source,
-    ) as
+
+    let geometryNode:
       | (nodeTypes.PrimitiveGeometry & { id: string })
       | (nodeTypes.BuiltinGeometry & { id: string })
       | (nodeTypes.LoadGeometry & { id: string })
       | undefined;
+
+    let currentNodeId = geometryEdge?.source;
+    while (currentNodeId) {
+      const node = orderedDependencyNodes.find((n) => n.id === currentNodeId);
+
+      if (!node) break;
+
+      if (node.type === 'primGeo' || node.type === 'builtinGeo' || node.type === 'loadGeo') {
+        geometryNode = node as typeof geometryNode;
+        break;
+      } else if (node.type === 'transform') {
+        // Find the geometry input of the transform node
+        const transformGeoEdge = edges.find(
+          (edge) => edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo
+        );
+        currentNodeId = transformGeoEdge?.source;
+      } else {
+        break;
+      }
+    }
 
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');

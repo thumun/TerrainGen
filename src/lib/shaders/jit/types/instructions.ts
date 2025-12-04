@@ -63,6 +63,17 @@ export type CombineXYZ = {
   };
 };
 
+export type Transform = {
+  type: 'transform';
+  references: {
+    geo: util.ReferenceKey;
+    translate: util.ReferenceKey;
+    rotate: util.ReferenceKey;
+    scale: util.ReferenceKey;
+    write: util.ReferenceKey;
+  };
+};
+
 // TODO: ideally, all nodes will have uniforms for any non-plugged-in input plug.
 //   This will have to do for now as a way of discretely creating uniforms.
 export type Vector = {
@@ -95,4 +106,5 @@ export type All =
   | SeparateXYZ
   | CombineXYZ
   | Vector
-  | Noise;
+  | Noise
+  | Transform;
