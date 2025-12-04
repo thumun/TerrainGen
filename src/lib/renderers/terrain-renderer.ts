@@ -241,6 +241,30 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
+  private getUniform(key: string): [number, number, number] {
+    if (!this.nodeGraphUniformConfig || !this.nodeGraphUniformLayout) {
+      console.warn(`Cannot get uniform value for key "${key}" - uniforms not configured`);
+      return [0, 0, 0];
+    }
+
+    const actualKey = key.startsWith('nodeGraphUniforms.')
+      ? key.replace('nodeGraphUniforms.', '')
+      : key;
+
+    const uniformConfig = this.nodeGraphUniformConfig.find((u) => u.key === actualKey);
+    if (!uniformConfig) {
+      console.warn(`Uniform config for key "${actualKey}" not found`);
+      return [0, 0, 0];
+    }
+
+    if (uniformConfig.type === 'vec3f' && Array.isArray(uniformConfig.initialValue)) {
+      return uniformConfig.initialValue;
+    }
+
+    console.warn(`Uniform "${actualKey}" is not a vec3f type`);
+    return [0, 0, 0];
+  }
+
   private createTransformMatrix(translate: [number, number, number], rotate: [number, number, number], scale: [number, number, number]): Float32Array {
     const matrix = new Float32Array(16);
 
