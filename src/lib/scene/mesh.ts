@@ -1,4 +1,4 @@
-import { GLTFLoader, type GLTFWithBuffers, type GLTFMesh, type GLTFMeshPrimitive, type GLTFMaterial, type GLTFSampler } from '@loaders.gl/gltf';
+import { GLTFLoader, type GLTFWithBuffers, type GLTF, type GLTFMesh, type GLTFMeshPrimitive, type GLTFMaterial, type GLTFSampler } from '@loaders.gl/gltf';
 import { forEach, load, parse } from '@loaders.gl/core';
 import type { Vec3 } from 'wgpu-matrix';
 
@@ -194,22 +194,27 @@ export class OBJ extends Mesh {
 
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
+
+    console.log("final (obj):", finalVertices);
+    console.log("final (obj):", finalIndices);
   }
 
-  async loadGltf(url: string) {
+  async loadGltf(url: string): Promise<{ gltfWithBuffers: GLTFWithBuffers; gltf: GLTF; }> {
     console.log("load gltf");
     const gltfWithBuffers = (await load(url, GLTFLoader)) as GLTFWithBuffers;
     const gltf = gltfWithBuffers.json;
+    return {
+      gltfWithBuffers, gltf
+    };
+  }
 
-    console.log(gltf);
+  parseGLTFContent(gltfWithBuffers: GLTFWithBuffers, gltf: GLTF) {
+    const finalVertices: number[] = [];
+    const finalIndices: number[] = [];
 
     for (const mesh of gltf.meshes!) {
-      console.log("Current mesh name:", mesh.name);
 
       for (const prim of mesh.primitives) {
-        let positions;
-        let normals;
-        let uvs;
 
         // load positions
         const posAccessor = gltf.accessors![prim.attributes["POSITION"]];
@@ -219,9 +224,7 @@ export class OBJ extends Mesh {
         const byteOffset = (posBufferView.byteOffset ?? 0) + (posAccessor.byteOffset ?? 0) + posBuffer.byteOffset;
 
         const posArrayLength = posAccessor.count * numComponents[posAccessor.type];
-        positions = new Float32Array(posBuffer.arrayBuffer, byteOffset, posArrayLength) // should be length 72
-
-        console.log(positions);
+        const positions = new Float32Array(posBuffer.arrayBuffer, byteOffset, posArrayLength) // should be length 72
 
         // load indices
         const idxAccessor = gltf.accessors![prim.indices!];
@@ -229,14 +232,34 @@ export class OBJ extends Mesh {
         const idxBuffer = gltfWithBuffers.buffers[idxBufferView.buffer];
 
         const idxOffset = (idxBufferView.byteOffset ?? 0) + (idxAccessor.byteOffset ?? 0) + idxBuffer.byteOffset;
-        const idxArrayLength = (positions.length / 3) * numComponents[idxAccessor.type];
-        console.log(idxArrayLength);
 
-        const idxArray = new Int32Array(idxBuffer.arrayBuffer, idxOffset, 16);
-        console.log(idxArray);
+        let idxArray: Uint16Array | Uint32Array | Uint8Array | undefined;
+        switch (idxAccessor.componentType) {
+          case 5121: // UNSIGNED_BYTE
+            idxArray = new Uint8Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          case 5123: // UNSIGNED_SHORT
+            idxArray = new Uint16Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          case 5125: // UNSIGNED_INT
+            idxArray = new Uint32Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          default:
+            break;
+        }
 
+        // push these guys into the final array
+        for (let i = 0; i < positions.length; i += 3) {
+          finalVertices.push(positions[i], positions[i + 1], positions[i + 2], 0, 1, 0, 1, 0);
+        }
+        for (let i = 0; i < idxArray!.length; i++) {
+          finalIndices.push(idxArray![i]);
+        }
       }
     }
+
+    this.vertices = new Float32Array(finalVertices);
+    this.indices = new Uint32Array(finalIndices);
   }
 
 }

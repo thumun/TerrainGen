@@ -514,7 +514,8 @@ export class TerrainRenderer implements IRenderer {
       if (config.outputs.fileType === 'obj') {
         mesh.parseObjContent(config.outputs.fileContent);
       } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
-        mesh.loadGltf(config.outputs.fileContent);
+        const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
+        mesh.parseGLTFContent(gltfWithBuffers, gltf);
       }
     } else {
       await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
