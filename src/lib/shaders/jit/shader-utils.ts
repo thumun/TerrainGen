@@ -1,6 +1,6 @@
 export const fbmNoise =
-	// TODO: import actual wgsl noise method
-	() => `fn fbm_noise(pos: vec3f, numOctaves: u32) -> f32 {
+  // TODO: import actual wgsl noise method
+  () => `fn fbm_noise(pos: vec3f, numOctaves: u32) -> f32 {
 	let result = 0.0;
 	let amplitude = 1.0;
 	let frequency = 0.005;
@@ -44,7 +44,8 @@ export const worleyNoise = () => `fn worley_noise(pos: vec3f) -> f32 {
 	return minDist;
 }`;
 
-export const createTransformMatrix = () => `fn create_transform_matrix(translate: vec3f, rotate: vec3f, scale: vec3f) -> mat4x4<f32> {
+export const createTransformMatrix =
+  () => `fn create_transform_matrix(translate: vec3f, rotate: vec3f, scale: vec3f) -> mat4x4<f32> {
   // Create rotation matrices for each axis
   let cx = cos(rotate.x);
   let sx = sin(rotate.x);
@@ -83,7 +84,8 @@ export const createTransformMatrix = () => `fn create_transform_matrix(translate
   );
 }`;
 
-export const applyTransformMatrix = () => `fn apply_transform_matrix(position: vec3f, transform: mat4x4<f32>) -> vec3f {
+export const applyTransformMatrix =
+  () => `fn apply_transform_matrix(position: vec3f, transform: mat4x4<f32>) -> vec3f {
   let pos4 = vec4f(position, 1.0);
   let transformed = transform * pos4;
   return transformed.xyz;

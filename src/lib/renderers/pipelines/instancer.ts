@@ -39,11 +39,13 @@ export class IndirectInstancer {
 
       this.transformBindGroupLayout = this.device.createBindGroupLayout({
         label: 'transform bind group layout',
-        entries: [{
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: 'uniform' },
-        }],
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: { type: 'uniform' },
+          },
+        ],
       });
 
       this.transformBindGroup = this.device.createBindGroup({
@@ -108,7 +110,7 @@ export class IndirectInstancer {
 
     const bindGroupLayouts = [
       sceneUniformsBindGroupLayout,
-      this.instancingPointsBindGroupLayout
+      this.instancingPointsBindGroupLayout,
     ];
     if (this.transformBindGroupLayout) {
       bindGroupLayouts.push(this.transformBindGroupLayout);

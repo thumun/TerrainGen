@@ -265,14 +265,21 @@ export class TerrainRenderer implements IRenderer {
     return [0, 0, 0];
   }
 
-  private createTransformMatrix(translate: [number, number, number], rotate: [number, number, number], scale: [number, number, number]): Float32Array {
+  private createTransformMatrix(
+    translate: [number, number, number],
+    rotate: [number, number, number],
+    scale: [number, number, number],
+  ): Float32Array {
     const matrix = new Float32Array(16);
 
     // Compute rotation matrices
     const [rx, ry, rz] = rotate;
-    const cx = Math.cos(rx), sx = Math.sin(rx);
-    const cy = Math.cos(ry), sy = Math.sin(ry);
-    const cz = Math.cos(rz), sz = Math.sin(rz);
+    const cx = Math.cos(rx),
+      sx = Math.sin(rx);
+    const cy = Math.cos(ry),
+      sy = Math.sin(ry);
+    const cz = Math.cos(rz),
+      sz = Math.sin(rz);
 
     // Combined rotation matrix (Z * Y * X)
     const r00 = cy * cz;

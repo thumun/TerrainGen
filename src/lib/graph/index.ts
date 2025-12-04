@@ -139,7 +139,8 @@ function generatePipelines(
 
         // Find the geometry input of the transform node
         const transformGeoEdge = edges.find(
-          (edge) => edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo
+          (edge) =>
+            edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo,
         );
         currentNodeId = transformGeoEdge?.source;
       } else {
@@ -158,22 +159,25 @@ function generatePipelines(
     let transformConfig: scene.TransformConfig | undefined;
     if (transformNode) {
       const translateEdge = edges.find(
-        (edge) => edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.translate
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.translate,
       );
       const rotateEdge = edges.find(
-        (edge) => edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate,
       );
       const scaleEdge = edges.find(
-        (edge) => edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.scale
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.scale,
       );
 
       if (translateEdge && rotateEdge && scaleEdge) {
-        const translateNode = orderedDependencyNodes.find(n => n.id === translateEdge.source);
-        const rotateNode = orderedDependencyNodes.find(n => n.id === rotateEdge.source);
-        const scaleNode = orderedDependencyNodes.find(n => n.id === scaleEdge.source);
+        const translateNode = orderedDependencyNodes.find((n) => n.id === translateEdge.source);
+        const rotateNode = orderedDependencyNodes.find((n) => n.id === rotateEdge.source);
+        const scaleNode = orderedDependencyNodes.find((n) => n.id === scaleEdge.source);
 
         transformConfig = {
           translate: nodeMapping.getHandleKey({
