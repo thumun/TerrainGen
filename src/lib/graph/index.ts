@@ -123,6 +123,8 @@ function generatePipelines(
       | (nodeTypes.LoadGeometry & { id: string })
       | undefined;
 
+    let transformNode: (nodeTypes.Transform & { id: string }) | undefined;
+
     let currentNodeId = geometryEdge?.source;
     while (currentNodeId) {
       const node = orderedDependencyNodes.find((n) => n.id === currentNodeId);
@@ -133,6 +135,8 @@ function generatePipelines(
         geometryNode = node as typeof geometryNode;
         break;
       } else if (node.type === 'transform') {
+        transformNode = node as nodeTypes.Transform & { id: string };
+
         // Find the geometry input of the transform node
         const transformGeoEdge = edges.find(
           (edge) => edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo
@@ -151,6 +155,43 @@ function generatePipelines(
       return { displacePipeline };
     }
 
+    let transformConfig: scene.TransformConfig | undefined;
+    if (transformNode) {
+      const translateEdge = edges.find(
+        (edge) => edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.translate
+      );
+      const rotateEdge = edges.find(
+        (edge) => edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate
+      );
+      const scaleEdge = edges.find(
+        (edge) => edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.scale
+      );
+
+      if (translateEdge && rotateEdge && scaleEdge) {
+        const translateNode = orderedDependencyNodes.find(n => n.id === translateEdge.source);
+        const rotateNode = orderedDependencyNodes.find(n => n.id === rotateEdge.source);
+        const scaleNode = orderedDependencyNodes.find(n => n.id === scaleEdge.source);
+
+        transformConfig = {
+          translate: nodeMapping.getHandleKey({
+            sourceNode: translateNode!,
+            outgoingHandleId: translateEdge.sourceHandle!,
+          }),
+          rotate: nodeMapping.getHandleKey({
+            sourceNode: rotateNode!,
+            outgoingHandleId: rotateEdge.sourceHandle!,
+          }),
+          scale: nodeMapping.getHandleKey({
+            sourceNode: scaleNode!,
+            outgoingHandleId: scaleEdge.sourceHandle!,
+          }),
+        };
+      }
+    }
+
     const outputs: scene.InstancingPipeline['outputs'] = {
       instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
       instancePositions: nodeMapping.getHandleKey({
@@ -159,6 +200,7 @@ function generatePipelines(
       }),
       meshPath: geometryNode.data.meshPath,
       fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
+      transform: transformNode ? transformConfig : undefined,
     };
 
     instancingPipeline = {

@@ -106,5 +106,4 @@ export type All =
   | SeparateXYZ
   | CombineXYZ
   | Vector
-  | Noise
-  | Transform;
+  | Noise;

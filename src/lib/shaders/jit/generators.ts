@@ -125,14 +125,6 @@ export function generateVectorCode(instruction: instructions.Vector): GenerateCo
   return { code: `// write param: ${write}` };
 }
 
-export function generateTransformCode(instruction: instructions.Transform): GenerateCodeResult {
-  const { geo, translate, rotate, scale, write } = instruction.references;
-  return {
-    code: `let ${write}_matrix = create_transform_matrix(${translate}, ${rotate}, ${scale});\nlet ${write} = apply_transform_matrix(${geo}, ${write}_matrix);`,
-    utils: [shaderUtils.createTransformMatrix, shaderUtils.applyTransformMatrix]
-  };
-}
-
 export function generateNoiseCode(instruction: instructions.Noise): GenerateCodeResult {
   const { pos, scale, numOctaves, write } = instruction.references;
   const mode = instruction.method === 'fbm' ? 'fbm_noise' : 'worley_noise';
@@ -166,7 +158,5 @@ export function generateCode(instruction: instructions.All): GenerateCodeResult 
       return generateVectorCode(instruction);
     case 'noise':
       return generateNoiseCode(instruction);
-    case 'transform':
-      return generateTransformCode(instruction);
   }
 }
