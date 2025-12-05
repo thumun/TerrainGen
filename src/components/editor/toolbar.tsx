@@ -67,6 +67,19 @@ export default function Toolbar({ nodeGraph, onLoadScene, onClearScene }: Toolba
             </Menubar.Content>
           </Menubar.Portal>
         </Menubar.Menu>
+
+        <Menubar.Menu>
+          <MenubarTrigger>Help</MenubarTrigger>
+          <Menubar.Portal>
+            <Menubar.Content className={styles.selectViewport} align="start">
+              <Menubar.Group>
+                <MenubarItem onSelect={onClearScene} iconClassName="icon-[tabler--trash]">
+                  Load demo scene hello
+                </MenubarItem>
+              </Menubar.Group>
+            </Menubar.Content>
+          </Menubar.Portal>
+        </Menubar.Menu>
       </Menubar.Root>
     </div>
   );
