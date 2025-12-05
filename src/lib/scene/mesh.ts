@@ -244,23 +244,30 @@ export class OBJ extends Mesh {
         // load uvs
         let uvs: Float32Array;
         if (prim.attributes['TEXCOORD_0']) {
-          const uvAccessor = gltf.accessors![prim.attributes['TEXCOORD_0']];
+          const uvAccessorIndex = prim.attributes.TEXCOORD_0;
+          const uvAccessor = gltf.accessors![uvAccessorIndex];
           const uvBufferView = gltf.bufferViews![uvAccessor.bufferView!];
           const uvBuffer = gltfWithBuffers.buffers[uvBufferView.buffer];
 
           const uvByteOffset =
-            (uvBufferView.byteOffset ?? 0) +
-            (uvAccessor.byteOffset ?? 0) +
-            uvBuffer.byteOffset;
-          const uvArrayLength = uvAccessor.count * numComponents[uvAccessor.type];
+            (uvBufferView.byteOffset ?? 0) + (uvAccessor.byteOffset ?? 0) + uvBuffer.byteOffset;
+          const uvArrayLength = uvAccessor.count * 2;
           uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
         } else {
           const tempUVs: number[] = [];
           for (let i = 0; i < positions.length / 3; i++) {
-            tempUVs.push(0, 1);
+            if (i % 3 == 0) {
+              tempUVs.push(0, 1);
+            } else if (i % 3 == 1) {
+              tempUVs.push(1, 1);
+            } else {
+              tempUVs.push(0, 0);
+            }
           }
           uvs = new Float32Array(tempUVs);
         }
+
+        console.log("uvs", uvs);
 
         // load indices
         const idxAccessor = gltf.accessors![prim.indices!];
@@ -300,6 +307,7 @@ export class OBJ extends Mesh {
             uvs[2 * i + 1],
           );
         }
+
         for (let i = 0; i < idxArray!.length; i++) {
           finalIndices.push(idxArray![i]);
         }
@@ -337,7 +345,5 @@ export class OBJ extends Mesh {
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
     this.textures = finalBitmaps;
-
-    console.log(this.textures);
   }
 }

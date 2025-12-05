@@ -525,6 +525,15 @@ export class TerrainRenderer implements IRenderer {
       return;
     }
 
+    // unused for now
+    /* 
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+    console.log('custom instance shader:', customInstanceShader);
+    */
+
     // Create buffers for mesh
     const instanceVertexBuffer = this.device.createBuffer({
       size: mesh.vertices.byteLength,
@@ -538,13 +547,7 @@ export class TerrainRenderer implements IRenderer {
     });
     this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
 
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-
-    console.log('custom instance shader:', customInstanceShader);
-
+    // set uniforms
     this.nodeGraphUniformConfig = config.uniforms;
     const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
     this.nodeGraphUniformLayout = offsets;
@@ -606,6 +609,7 @@ export class TerrainRenderer implements IRenderer {
       instanceIndexBuffer,
       this.sceneUniformsBindGroupLayout,
       this.webGPU,
+      mesh.textures,
     );
   }
 

@@ -10,6 +10,10 @@ var<storage, read> vertices: array<f32>; // 8 floats per vertex
 @group(1) @binding(2)
 var<storage, read> indices: array<u32>;
 
+// insert binding for array of image textures
+@group(2) @binding(0) var ourSampler: sampler;
+@group(2) @binding(1) var ourTexture: texture_2d<f32>;
+
 struct VertexIn {
     @builtin(vertex_index) vertex_index: u32,
     @builtin(instance_index) instance_index: u32
@@ -46,12 +50,12 @@ fn vs_main(in : VertexIn) -> VertexOut {
         vertices[base + 4],
         vertices[base + 5],
     );
+    let vert_uv = vec2f(vertices[base + 6], vertices[base + 7]);
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
     let rotated = rot * local;   // apply orientation
     let world = vec4(pos + rotated, 1.0);
-    //let world = vec4(pos + local, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // transform normals too
@@ -61,7 +65,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.position = world_pos;
     out.pos = world_pos.xyz;
     out.nor = new_nor;
-    out.uv = vec2f(1.0, 1.0);
+    out.uv = vert_uv;
     return out;
 }
 
@@ -72,17 +76,21 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
 
-  var color = vec3f(0.0, 0.0, 0.0);
-  
-  if (diffuse > 0.75) {
-    color = vec3f(0.58, 1.0, 0.235);
-  } else if (diffuse > 0.5) {
-    color = vec3f(0.447, 0.749, 0.313);
-  } else if (diffuse > 0.25) {
-    color = vec3f(0.309, 0.490, 0.396);
-  } else {
-    color = vec3f(0.176, 0.235, 0.478);
-  }
+  let color = textureSample(ourTexture, ourSampler, in.uv);
+  //color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
+  return color;
 
-  return vec4f(color, 1.0);
+  // var color = vec3f(0.0, 0.0, 0.0);
+  
+  // if (diffuse > 0.75) {
+  //   color = vec3f(0.58, 1.0, 0.235);
+  // } else if (diffuse > 0.5) {
+  //   color = vec3f(0.447, 0.749, 0.313);
+  // } else if (diffuse > 0.25) {
+  //   color = vec3f(0.309, 0.490, 0.396);
+  // } else {
+  //   color = vec3f(0.176, 0.235, 0.478);
+  // }
+
+  // return vec4f(color, 1.0);
 }

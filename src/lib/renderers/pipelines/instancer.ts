@@ -13,6 +13,9 @@ export class IndirectInstancer {
 
   instancePointsComputePipeline: InstancePointsPipeline;
 
+  textureBindGroup: GPUBindGroup | undefined;
+  useTextures = false;
+
   constructor(
     device: GPUDevice,
     instancePointsComputePipeline: InstancePointsPipeline,
@@ -20,6 +23,7 @@ export class IndirectInstancer {
     instanceIndexBuffer: GPUBuffer,
     sceneUniformsBindGroupLayout: GPUBindGroupLayout,
     webGPU: WebGPUContext,
+    imageBitmaps?: ImageBitmap[]
   ) {
     this.device = device;
     this.instancePointsComputePipeline = instancePointsComputePipeline;
@@ -77,12 +81,33 @@ export class IndirectInstancer {
       ],
     });
 
+    const textureBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'texture bind group layout',
+      entries: [
+        {
+          // sampler type...
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+        {
+          // texture view
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: 'float',
+            viewDimension: '2d',
+          },
+        }
+      ],
+    });
+
     // create render pipeline for instancing as well
     this.instancingRenderPipeline = this.device.createRenderPipeline({
       label: 'instancing render pipeline',
       layout: this.device.createPipelineLayout({
         label: 'instancing pipeline layout',
-        bindGroupLayouts: [sceneUniformsBindGroupLayout, this.instancingPointsBindGroupLayout],
+        bindGroupLayouts: [sceneUniformsBindGroupLayout, this.instancingPointsBindGroupLayout, textureBindGroupLayout],
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -109,12 +134,54 @@ export class IndirectInstancer {
         ],
       },
     });
+
+    // create buffers for the image bitmaps
+    if (imageBitmaps) {
+      this.useTextures = true;
+      const source = imageBitmaps[0];
+      const texture = this.device.createTexture({
+        label: "FAT FUCKING TEXTURE!!!!",
+        format: 'rgba8unorm',
+        size: [source.width, source.height],
+        usage: GPUTextureUsage.TEXTURE_BINDING |
+          GPUTextureUsage.COPY_DST |
+          GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+
+      this.device.queue.copyExternalImageToTexture(
+        { source, flipY: true },
+        { texture },
+        { width: source.width, height: source.height },
+      );
+
+      const sampler = this.device.createSampler({
+        addressModeU: 'repeat',
+        addressModeV: 'repeat',
+        magFilter: 'linear',
+        minFilter: 'linear',
+        mipmapFilter: 'linear',
+      });
+
+      // create bind groups for textures here
+
+      this.textureBindGroup = this.device.createBindGroup({
+        label: 'texture bind group',
+        layout: textureBindGroupLayout,
+        entries: [
+          { binding: 0, resource: sampler },
+          { binding: 1, resource: texture.createView() },
+        ],
+      });
+    }
   }
 
   runRenderPass(renderPass: GPURenderPassEncoder, sceneUniforms: GPUBindGroup) {
     renderPass.setPipeline(this.instancingRenderPipeline);
     renderPass.setBindGroup(0, sceneUniforms);
     renderPass.setBindGroup(1, this.instancingPointsBindGroup);
+    if (this.textureBindGroup) {
+      renderPass.setBindGroup(2, this.textureBindGroup);
+    }
     renderPass.drawIndirect(this.indirectInstanceBuffer, 0);
   }
 }
