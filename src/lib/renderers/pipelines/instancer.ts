@@ -55,12 +55,7 @@ export class IndirectInstancer {
       });
     } else {
       // Create identity matrix as default
-      const identityMatrix = new Float32Array([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-      ]);
+      const identityMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
       this.transformBuffer = this.device.createBuffer({
         label: 'transform matrix buffer (identity)',
@@ -71,11 +66,13 @@ export class IndirectInstancer {
 
       this.transformBindGroupLayout = this.device.createBindGroupLayout({
         label: 'transform bind group layout',
-        entries: [{
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: 'uniform' },
-        }],
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: { type: 'uniform' },
+          },
+        ],
       });
 
       this.transformBindGroup = this.device.createBindGroup({

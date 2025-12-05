@@ -205,7 +205,7 @@ function generatePipelines(
       meshPath: geometryNode.data.meshPath,
       transform: transformConfig,
       fileContent:
-        geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent as string : undefined,
+        geometryNode.type === 'loadGeo' ? (geometryNode.data.fileContent as string) : undefined,
       fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
