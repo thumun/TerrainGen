@@ -136,7 +136,7 @@ export class IndirectInstancer {
     });
 
     // create buffers for the image bitmaps
-    if (imageBitmaps) {
+    if (imageBitmaps && imageBitmaps.length > 0) {
       this.useTextures = true;
       const source = imageBitmaps[0];
       const texture = this.device.createTexture({
@@ -179,7 +179,7 @@ export class IndirectInstancer {
     renderPass.setPipeline(this.instancingRenderPipeline);
     renderPass.setBindGroup(0, sceneUniforms);
     renderPass.setBindGroup(1, this.instancingPointsBindGroup);
-    if (this.textureBindGroup) {
+    if (this.useTextures) {
       renderPass.setBindGroup(2, this.textureBindGroup);
     }
     renderPass.drawIndirect(this.indirectInstanceBuffer, 0);

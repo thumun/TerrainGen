@@ -267,8 +267,6 @@ export class OBJ extends Mesh {
           uvs = new Float32Array(tempUVs);
         }
 
-        console.log("uvs", uvs);
-
         // load indices
         const idxAccessor = gltf.accessors![prim.indices!];
         const idxBufferView = gltf.bufferViews![idxAccessor.bufferView!];
@@ -332,12 +330,36 @@ export class OBJ extends Mesh {
         const byteLength = view.byteLength;
 
         const imageBytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
+        console.log(imageBytes);
 
         // create image (sus)
         const imageBitmap = await createImageBitmap(
           new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' })
         );
 
+        finalBitmaps.push(imageBitmap);
+      }
+      else {
+        // if there is no texture for base color, create a base color bitmap
+        const baseColor = gltfMaterial.pbrMetallicRoughness?.baseColorFactor;
+        const [r, g, b, a] = baseColor!.map(v => Math.round(v * 255));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 1;
+
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(0, 0, 1, 1);
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("Canvas toBlob() returned null"));
+          }, "image/png");
+        });
+        const imageBitmap = await createImageBitmap(blob);
+
+        console.log(imageBitmap);
         finalBitmaps.push(imageBitmap);
       }
     }

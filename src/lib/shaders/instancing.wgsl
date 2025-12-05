@@ -1,6 +1,8 @@
 @group(0) @binding(0)
 var<uniform> camera : CameraUniforms;
 
+// add another uniform for whether or not texture is being used
+
 @group(1) @binding(0)
 var<storage, read> instance_pts: array<InstanceVertex>; // 8 floats per instance- pos, nor, uv
 
