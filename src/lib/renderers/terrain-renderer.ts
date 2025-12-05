@@ -21,59 +21,69 @@ export type TerrainRendererGlobalParameters = {
 };
 
 export class TerrainRenderer implements IRenderer {
-  protected stage: Stage;
-  protected camera: Camera;
-  groundPlane: Plane;
+  private readonly stage: Stage;
+  private readonly camera: Camera;
+  private readonly groundPlane: Plane;
 
-  context: GPUCanvasContext;
-  device: GPUDevice;
+  private readonly context: GPUCanvasContext;
+  private readonly device: GPUDevice;
 
   // ------------------------------------------------------------------------------------------
-  // ------ Setup: buffers, layouts, pipeline
+  // ------ Static buffers, layouts, pipelines
   // ------------------------------------------------------------------------------------------
 
   // these uniform guys
-  sceneUniformsBindGroupLayout: GPUBindGroupLayout;
-  sceneUniformsBindGroup: GPUBindGroup;
-
-  depthTexture: GPUTexture;
-  depthTextureView: GPUTextureView;
-
-  pipeline: GPURenderPipeline;
+  private readonly sceneUniformsBindGroupLayout: GPUBindGroupLayout;
+  private readonly sceneUniformsBindGroup: GPUBindGroup;
 
   // terrain compute pipeline
-  terrainComputePipeline: TerrainPipeline;
+  private readonly terrainComputePipeline: TerrainPipeline;
+
+  // custom compute pipeline
+  private readonly customBindGroupLayout: GPUBindGroupLayout;
+  private readonly customBindGroup: GPUBindGroup;
+
+  private readonly customUniformBindGroupLayout: GPUBindGroupLayout;
+  private readonly customUniformBindGroup: GPUBindGroup;
+
+  // normals pipeline
+  private readonly normalsComputePipeline: NormalsPipeline;
+
+  // ------------------------------------------------------------------------------------------
+  // ------ Dynamic buffers, layouts, pipelines
+  // ------------------------------------------------------------------------------------------
+
+  // these have to be recreated per canvas resize
+  private depthTexture: GPUTexture;
+  private depthTextureView: GPUTextureView;
 
   // TODO: probably convert this into discriminated union with all of the
   //   relevant bindgroups/layouts/buffers, preventing invalid reads
-  displacePipelineConfigured: boolean = false;
-  instancingPipelineConfigured: boolean = false;
+  private displacePipelineConfigured: boolean = false;
+  // @ts-expect-error TODO: we will eventually use this!
+  //                        or maybe it should live in instancePointsComputePipeline
+  private instancingPipelineConfigured: boolean = false;
 
-  // custom compute pipeline (hopefully this works lol)
-  customBindGroupLayout: GPUBindGroupLayout;
-  customBindGroup: GPUBindGroup;
+  /** pipeline for creating points to instance on */
+  private instancePointsComputePipeline: InstancePointsPipeline;
 
-  customUniformBindGroupLayout: GPUBindGroupLayout;
-  customUniformBindGroup: GPUBindGroup;
+  /** instancing things */
+  private indirectInstancer: IndirectInstancer | undefined;
 
-  customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
-  customNodeGraphUniformsBindGroup: GPUBindGroup;
+  // custom uniform buffer bindings
+  private customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
+  private customNodeGraphUniformsBindGroup: GPUBindGroup;
 
-  customPipeline: GPUComputePipeline;
+  // custom uniform buffers
+  private nodeGraphUniformBuffer!: GPUBuffer;
+  private nodeGraphUniformLayout!: Map<string, number> | undefined;
+  private nodeGraphUniformConfig!: scene.DisplacePipeline['uniforms'] | undefined;
 
-  // normals pipeline
-  normalsComputePipeline: NormalsPipeline;
+  /** Custom displace pipeline, gets reconfigured whenever node structure is changed */
+  private customDisplacePipeline: GPUComputePipeline;
 
-  // pipeline for creating points to instance on
-  instancePointsComputePipeline: InstancePointsPipeline;
-
-  // instancing things
-  indirectInstancer: IndirectInstancer | undefined;
-
-  // uniform buffer vars
-  nodeGraphUniformBuffer!: GPUBuffer;
-  nodeGraphUniformLayout!: Map<string, number> | undefined;
-  nodeGraphUniformConfig!: scene.DisplacePipeline['uniforms'] | undefined;
+  /** overall render pipeline, must get recreated upon canvas resize */
+  private pipeline: GPURenderPipeline;
 
   private static VertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 32,
@@ -206,7 +216,7 @@ export class TerrainRenderer implements IRenderer {
       entries: [],
     });
 
-    this.customPipeline = this.device.createComputePipeline({
+    this.customDisplacePipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'custom compute pipeline layout',
@@ -249,7 +259,7 @@ export class TerrainRenderer implements IRenderer {
 
     // pass 2: run custom compute pipeline from node graph
     if (this.displacePipelineConfigured) {
-      computePass.setPipeline(this.customPipeline);
+      computePass.setPipeline(this.customDisplacePipeline);
       computePass.setBindGroup(0, this.customBindGroup);
       computePass.setBindGroup(1, this.customUniformBindGroup);
       computePass.setBindGroup(2, this.customNodeGraphUniformsBindGroup);
@@ -343,6 +353,8 @@ export class TerrainRenderer implements IRenderer {
     // run the pipeline
     const encoder = this.device.createCommandEncoder();
     const canvasTextureView = this.context.getCurrentTexture().createView();
+
+    // TODO: run directional light shadow mapping
 
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
@@ -451,7 +463,7 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    this.customPipeline = this.device.createComputePipeline({
+    this.customDisplacePipeline = this.device.createComputePipeline({
       label: 'custom compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'custom compute pipeline layout',
