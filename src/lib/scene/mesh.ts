@@ -31,6 +31,7 @@ export abstract class Mesh {
 
   vertexBuffer: GPUBuffer | undefined;
   indexBuffer: GPUBuffer | undefined;
+  textureBuffer: GPUBuffer[] | undefined;
 
   indirectBuffer: GPUBuffer | undefined;
 
@@ -124,6 +125,7 @@ export class OBJ extends Mesh {
 
   vertices: Float32Array<ArrayBuffer> | undefined;
   indices: Uint32Array<ArrayBuffer> | undefined;
+  textures: ImageBitmap[] | undefined;
 
   constructor() {
     super(1, 1);
@@ -204,9 +206,10 @@ export class OBJ extends Mesh {
     };
   }
 
-  parseGLTFContent(gltfWithBuffers: GLTFWithBuffers, gltf: GLTF) {
+  async parseGLTFContent(gltfWithBuffers: GLTFWithBuffers, gltf: GLTF) {
     const finalVertices: number[] = [];
     const finalIndices: number[] = [];
+    const finalBitmaps: ImageBitmap[] = [];
 
     for (const mesh of gltf.meshes!) {
       for (const prim of mesh.primitives) {
@@ -248,7 +251,7 @@ export class OBJ extends Mesh {
           const uvByteOffset =
             (uvBufferView.byteOffset ?? 0) +
             (uvAccessor.byteOffset ?? 0) +
-            norBuffer.byteOffset;
+            uvBuffer.byteOffset;
           const uvArrayLength = uvAccessor.count * numComponents[uvAccessor.type];
           uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
         } else {
@@ -303,7 +306,38 @@ export class OBJ extends Mesh {
       }
     }
 
+    // load textures here...
+    for (const gltfMaterial of gltf.materials!) {
+
+      // base color
+      if (gltfMaterial.pbrMetallicRoughness?.baseColorTexture) {
+        const texInfo = gltfMaterial.pbrMetallicRoughness?.baseColorTexture;
+        const gltfTexture = gltf.textures![texInfo.index];
+
+        const imageIndex = gltfTexture.source!;
+        const imageDef = gltf.images![imageIndex];
+
+        const view = gltf.bufferViews![imageDef.bufferView!];
+        const buffer = gltfWithBuffers.buffers[view.buffer];
+
+        const byteOffset = (view.byteOffset ?? 0) + buffer.byteOffset;
+        const byteLength = view.byteLength;
+
+        const imageBytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
+
+        // create image (sus)
+        const imageBitmap = await createImageBitmap(
+          new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' })
+        );
+
+        finalBitmaps.push(imageBitmap);
+      }
+    }
+
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
+    this.textures = finalBitmaps;
+
+    console.log(this.textures);
   }
 }
