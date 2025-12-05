@@ -53,6 +53,36 @@ export class IndirectInstancer {
         layout: this.transformBindGroupLayout,
         entries: [{ binding: 0, resource: { buffer: this.transformBuffer } }],
       });
+    } else {
+      // Create identity matrix as default
+      const identityMatrix = new Float32Array([
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+      ]);
+
+      this.transformBuffer = this.device.createBuffer({
+        label: 'transform matrix buffer (identity)',
+        size: 64,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+      this.device.queue.writeBuffer(this.transformBuffer, 0, identityMatrix);
+
+      this.transformBindGroupLayout = this.device.createBindGroupLayout({
+        label: 'transform bind group layout',
+        entries: [{
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: { type: 'uniform' },
+        }],
+      });
+
+      this.transformBindGroup = this.device.createBindGroup({
+        label: 'transform bind group (identity)',
+        layout: this.transformBindGroupLayout,
+        entries: [{ binding: 0, resource: { buffer: this.transformBuffer } }],
+      });
     }
 
     const drawArgs = new Uint32Array(4);

@@ -156,7 +156,7 @@ function generatePipelines(
       return { displacePipeline };
     }
 
-    let transformConfig: scene.TransformConfig | undefined;
+    let transformConfig: { translate: string; rotate: string; scale: string } | undefined;
     if (transformNode) {
       const translateEdge = edges.find(
         (edge) =>
@@ -204,7 +204,7 @@ function generatePipelines(
       }),
       meshPath: geometryNode.data.meshPath,
       fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
-      transform: transformNode ? transformConfig : undefined,
+      transform: transformConfig,
     };
 
     instancingPipeline = {
