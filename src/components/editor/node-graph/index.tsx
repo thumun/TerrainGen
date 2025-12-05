@@ -99,7 +99,10 @@ export default function NodeGraph({
         >
           <Background />
           <Controls />
-          <KeyboardShortcuts reactFlowWrapperRef={reactFlowWrapper} />
+          <KeyboardShortcuts
+            reactFlowWrapperRef={reactFlowWrapper}
+            onOpenContextMenu={onPaneContextMenu}
+          />
           <ContextMenu
             state={menuState}
             closeMenu={closeMenu}

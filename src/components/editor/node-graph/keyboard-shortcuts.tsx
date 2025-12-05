@@ -6,9 +6,13 @@ import { useMousePos } from '@/hooks/use-mouse-pos';
 
 export type KeyboardShortcutsProps = {
   reactFlowWrapperRef: RefObject<HTMLElement>;
+  onOpenContextMenu: () => void;
 };
 
-export default function KeyboardShortcuts({ reactFlowWrapperRef }: KeyboardShortcutsProps) {
+export default function KeyboardShortcuts({
+  reactFlowWrapperRef,
+  onOpenContextMenu,
+}: KeyboardShortcutsProps) {
   const { getMousePos } = useMousePos();
   const { createNode } = useGraphGlobals();
   const { screenToFlowPosition } = useReactFlow();
@@ -43,6 +47,8 @@ export default function KeyboardShortcuts({ reactFlowWrapperRef }: KeyboardShort
         createNode('separate', position);
       } else if (evt.key === 'c') {
         createNode('combine', position);
+      } else if (evt.key === 'A') {
+        onOpenContextMenu();
       }
     };
     document.addEventListener('keydown', onKeyDown);
@@ -50,7 +56,7 @@ export default function KeyboardShortcuts({ reactFlowWrapperRef }: KeyboardShort
     return () => {
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [createNode, getMousePos, reactFlowWrapperRef, screenToFlowPosition]);
+  }, [createNode, getMousePos, onOpenContextMenu, reactFlowWrapperRef, screenToFlowPosition]);
 
   return null;
 }
