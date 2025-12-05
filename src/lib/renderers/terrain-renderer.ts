@@ -1,5 +1,7 @@
 import path from 'path-browserify';
 
+import * as common from './common';
+
 import type { IRenderer } from '@/components/common/webgpu-canvas';
 import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
 import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
@@ -81,30 +83,6 @@ export class TerrainRenderer implements IRenderer {
 
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
-
-  private static VertexBufferLayout: GPUVertexBufferLayout = {
-    arrayStride: 32,
-    attributes: [
-      {
-        // pos
-        format: 'float32x3',
-        offset: 0,
-        shaderLocation: 0,
-      },
-      {
-        // nor
-        format: 'float32x3',
-        offset: 12,
-        shaderLocation: 1,
-      },
-      {
-        // uv
-        format: 'float32x2',
-        offset: 24,
-        shaderLocation: 2,
-      },
-    ],
-  };
 
   constructor(
     private webGPU: WebGPUContext,
@@ -314,7 +292,7 @@ export class TerrainRenderer implements IRenderer {
           label: 'naive vert shader',
           code: shaders.naiveVertSrc,
         }),
-        buffers: [TerrainRenderer.VertexBufferLayout],
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
       fragment: {
         module: this.device.createShaderModule({
