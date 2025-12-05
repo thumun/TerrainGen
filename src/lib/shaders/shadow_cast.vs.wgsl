@@ -8,7 +8,7 @@ struct VertexInput
 }
 
 @group(0) @binding(0) var<uniform> directionalLight : DirectionalLightUniforms;
-// struct has members `lightViewProjMatrix` and `lightPos`
+// struct has members 'lightViewProjMatrix' and 'lightPos'
 
 @vertex
 fn main(in: VertexInput) -> @builtin(position) vec4f
