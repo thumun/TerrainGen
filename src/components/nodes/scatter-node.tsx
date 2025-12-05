@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
 import { useReactFlow, type NodeProps } from 'reactflow';
 
 import * as helpers from './helpers';
 
 import * as TerrainGenNode from '@/components/common/terraingen-node';
-import { useGraphGlobals } from '@/hooks/use-graph-globals';
 import * as nodeTypes from '@/lib/graph/node-types';
 
 const HANDLES = nodeTypes.HANDLES.scatter;
@@ -12,15 +10,10 @@ type ScatterNodeData = nodeTypes.Scatter['data'];
 
 function ScatterNode({ id, data, ...props }: NodeProps<ScatterNodeData>) {
   const { setNodes } = useReactFlow();
-  const { triggerNodePipelineUpdate } = useGraphGlobals();
 
   const onChange = (key: 'instances' | 'threshold', value: number) => {
     helpers.updateNodeData<ScatterNodeData>({ id, setNodes, newData: { [key]: value } });
   };
-
-  useEffect(() => {
-    triggerNodePipelineUpdate(id);
-  }, [data.instances, data.threshold, id, triggerNodePipelineUpdate]);
 
   return (
     <TerrainGenNode.Root title="Scatter" {...props}>
