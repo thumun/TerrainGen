@@ -6,8 +6,7 @@ import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
 import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
-import { Camera } from '@/lib/scene/camera';
-import { OBJ as LoadedMesh, Plane } from '@/lib/scene/mesh';
+import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
@@ -22,8 +21,6 @@ export type TerrainRendererGlobalParameters = {
 
 export class TerrainRenderer implements IRenderer {
   private readonly stage: Stage;
-  private readonly camera: Camera;
-  private readonly groundPlane: Plane;
 
   private readonly context: GPUCanvasContext;
   private readonly device: GPUDevice;
@@ -116,11 +113,9 @@ export class TerrainRenderer implements IRenderer {
     this.device = webGPU.device;
     this.context = webGPU.context;
     this.stage = stage;
-    this.camera = stage.camera;
-    this.groundPlane = stage.groundPlane;
 
     // create vertex data
-    this.groundPlane.createBuffers(this.device);
+    this.stage.groundPlane.createBuffers(this.device);
 
     // set up bind groups, layouts, pipelines etc
 
@@ -144,7 +139,7 @@ export class TerrainRenderer implements IRenderer {
         {
           // camera uniforms
           binding: 0,
-          resource: { buffer: this.camera.uniformsBuffer },
+          resource: { buffer: this.stage.camera.uniformsBuffer },
         },
       ],
     });
@@ -159,7 +154,7 @@ export class TerrainRenderer implements IRenderer {
     this.pipeline = this.createRenderPipeline();
 
     // compute pipeline that creates the terrain
-    this.terrainComputePipeline = new TerrainPipeline(this.device, this.groundPlane);
+    this.terrainComputePipeline = new TerrainPipeline(this.device, this.stage.groundPlane);
 
     // ----------------------------------------------------------------------------------------
     // --------------------  CUSTOM COMPUTE PIPELINE
@@ -182,7 +177,7 @@ export class TerrainRenderer implements IRenderer {
     this.customBindGroup = this.device.createBindGroup({
       label: 'custom compute bind group',
       layout: this.customBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.groundPlane.vertexBuffer! } }],
+      entries: [{ binding: 0, resource: { buffer: this.stage.groundPlane.vertexBuffer! } }],
     });
 
     this.customUniformBindGroupLayout = this.device.createBindGroupLayout({
@@ -202,7 +197,7 @@ export class TerrainRenderer implements IRenderer {
     this.customUniformBindGroup = this.device.createBindGroup({
       label: 'custom compute uniform bind group',
       layout: this.customUniformBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.groundPlane.uniformsBuffer! } }],
+      entries: [{ binding: 0, resource: { buffer: this.stage.groundPlane.uniformsBuffer! } }],
     });
 
     this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
@@ -232,12 +227,12 @@ export class TerrainRenderer implements IRenderer {
     });
 
     // normals compute pipeline that generates normals for the mesh
-    this.normalsComputePipeline = new NormalsPipeline(this.device, this.groundPlane);
+    this.normalsComputePipeline = new NormalsPipeline(this.device, this.stage.groundPlane);
 
     // instancing compute pipeline to scatter points to instance on
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
-      this.groundPlane,
+      this.stage.groundPlane,
       this.normalsComputePipeline,
       2,
     );
@@ -263,7 +258,7 @@ export class TerrainRenderer implements IRenderer {
       computePass.setBindGroup(0, this.customBindGroup);
       computePass.setBindGroup(1, this.customUniformBindGroup);
       computePass.setBindGroup(2, this.customNodeGraphUniformsBindGroup);
-      computePass.dispatchWorkgroups(Math.ceil(this.groundPlane.numVertices / 64));
+      computePass.dispatchWorkgroups(Math.ceil(this.stage.groundPlane.numVertices / 64));
     }
 
     // pass 3: calculate terrain normals
@@ -348,7 +343,7 @@ export class TerrainRenderer implements IRenderer {
   }
 
   onFrame(frameInfo: { time: number; deltaTime: number }) {
-    this.camera.onFrame(frameInfo.deltaTime);
+    this.stage.camera.onFrame(frameInfo.deltaTime);
 
     // run the pipeline
     const encoder = this.device.createCommandEncoder();
@@ -376,9 +371,9 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
-    renderPass.setVertexBuffer(0, this.groundPlane.vertexBuffer);
-    renderPass.setIndexBuffer(this.groundPlane.indexBuffer!, 'uint32');
-    renderPass.drawIndexedIndirect(this.groundPlane.indirectBuffer!, 0);
+    renderPass.setVertexBuffer(0, this.stage.groundPlane.vertexBuffer);
+    renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
+    renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
 
     if (this.indirectInstancer) {
       this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
@@ -392,10 +387,10 @@ export class TerrainRenderer implements IRenderer {
   dispose() {
     // destroy all allocated buffers
     if (this.depthTexture) this.depthTexture.destroy();
-    if (this.groundPlane.vertexBuffer) this.groundPlane.vertexBuffer.destroy();
-    if (this.groundPlane.indexBuffer) this.groundPlane.indexBuffer.destroy();
-    if (this.groundPlane.indirectBuffer) this.groundPlane.indirectBuffer.destroy();
-    if (this.groundPlane.uniformsBuffer) this.groundPlane.uniformsBuffer.destroy();
+    if (this.stage.groundPlane.vertexBuffer) this.stage.groundPlane.vertexBuffer.destroy();
+    if (this.stage.groundPlane.indexBuffer) this.stage.groundPlane.indexBuffer.destroy();
+    if (this.stage.groundPlane.indirectBuffer) this.stage.groundPlane.indirectBuffer.destroy();
+    if (this.stage.groundPlane.uniformsBuffer) this.stage.groundPlane.uniformsBuffer.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
@@ -600,7 +595,7 @@ export class TerrainRenderer implements IRenderer {
     // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
       this.device,
-      this.groundPlane,
+      this.stage.groundPlane,
       this.normalsComputePipeline,
       config.outputs.instanceCount,
     );
@@ -626,7 +621,7 @@ export class TerrainRenderer implements IRenderer {
   }
 
   setMeshUniforms(size: number, resolution: number) {
-    this.groundPlane.updateUniforms(this.device, size, resolution);
+    this.stage.groundPlane.updateUniforms(this.device, size, resolution);
 
     const encoder = this.device.createCommandEncoder();
     this.runComputes(encoder);
