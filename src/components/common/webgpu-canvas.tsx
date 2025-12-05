@@ -7,6 +7,7 @@ import { Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
+import { DirectionalLight } from '@/lib/scene/directional-light';
 
 type PossiblyAwaitable<TArgs extends Array<unknown> = [], T = void> =
   | ((...args: TArgs) => T)
@@ -104,8 +105,9 @@ export default function WebGPUCanvas({
 
     // setup scene
     const camera = new Camera(webGPUContext);
+    const directionalLight = new DirectionalLight(webGPUContext);
     const mesh = new Plane(20, 100);
-    const stage = new Stage(camera, mesh);
+    const stage = new Stage(camera, directionalLight, mesh);
 
     const controller = new AbortController();
     const init = async () => {
