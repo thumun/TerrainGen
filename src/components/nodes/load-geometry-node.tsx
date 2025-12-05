@@ -17,7 +17,18 @@ function LoadGeoNode({ id, ...props }: NodeProps<LoadGeometryData>) {
 
     try {
       void (async () => {
-        const fileInfo = await file.text();
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+
+        let fileInfo: string | ArrayBuffer;
+
+        // Read as text for OBJ files, as ArrayBuffer for GLTF/GLB
+        if (fileExtension === 'obj') {
+          fileInfo = await file.text();
+        } else {
+          fileInfo = await file.arrayBuffer();
+        }
+
+        console.log('Loaded file:', file.name);
 
         helpers.updateNodeData<LoadGeometryData>({
           id,
@@ -25,6 +36,7 @@ function LoadGeoNode({ id, ...props }: NodeProps<LoadGeometryData>) {
           newData: {
             meshPath: file.name,
             fileContent: fileInfo,
+            fileType: fileExtension,
           },
         });
       })();
@@ -39,7 +51,7 @@ function LoadGeoNode({ id, ...props }: NodeProps<LoadGeometryData>) {
       <div className="noDrag relative flex flex-col space-y-2 rounded-md bg-slate-700/50 p-3">
         <input
           type="file"
-          accept=".obj"
+          accept=".obj, .gltf, .glb"
           onChange={onFileChange}
           className="text-sm file:mr-4 file:rounded-md file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-700"
         />

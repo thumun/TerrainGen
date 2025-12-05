@@ -23,7 +23,10 @@ export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
 export type PrimitiveGeometry = Node<'primGeo', { meshPath: string }>;
-export type LoadGeometry = Node<'loadGeo', { meshPath: string; fileContent: string }>;
+export type LoadGeometry = Node<
+  'loadGeo',
+  { meshPath: string; fileContent: string | ArrayBuffer; fileType: string }
+>;
 export type BuiltinGeometry = Node<'builtinGeo', { meshPath: string }>;
 export type Scatter = Node<'scatter', { instances: number; threshold: number }>;
 export type Instancing = Node<'instancing'>;
@@ -182,7 +185,7 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   scatter: { type: 'scatter', data: { instances: 0, threshold: 0 } },
   instancing: { type: 'instancing', data: {} },
   primGeo: { type: 'primGeo', data: { meshPath: '/models/cube.obj' } },
-  loadGeo: { type: 'loadGeo', data: { meshPath: '', fileContent: '' } },
+  loadGeo: { type: 'loadGeo', data: { meshPath: '', fileContent: '', fileType: '' } },
   builtinGeo: { type: 'builtinGeo', data: { meshPath: '/models/tree.obj' } },
   unsignedInt: { type: 'unsignedInt', data: { value: 0 } },
 };

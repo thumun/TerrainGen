@@ -35,7 +35,9 @@ function PrimGeoNode({ id, data, ...props }: NodeProps<PrimitiveGeometryData>) {
         onChange={onMeshPathChange}
         options={[
           { label: 'Cube', value: '/models/cube.obj' },
-          { label: 'Teapot', value: '/models/teapot.obj' },
+          { label: 'Icosphere', value: '/models/icosphere.obj' },
+          { label: 'Plane', value: '/models/plane.obj' },
+          { label: 'Round cube', value: '/models/roundcube.obj' },
         ]}
       />
     </TerrainGenNode.Root>

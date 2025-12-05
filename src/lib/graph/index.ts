@@ -139,7 +139,9 @@ function generatePipelines(
         outgoingHandleId: scatterEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
-      fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
+      fileContent:
+        geometryNode.type === 'loadGeo' ? (geometryNode.data.fileContent as string) : undefined,
+      fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
     instancingPipeline = {

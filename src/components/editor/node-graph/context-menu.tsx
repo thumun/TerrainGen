@@ -151,7 +151,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               <ContextMenuItem onSelect={() => createNode('primGeo')}>
                 Primitive Geometry
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('loadGeo')}>Load OBJ</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('loadGeo')}>
+                Load Mesh
+              </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('builtinGeo')}>
                 Built-in Geometry
               </ContextMenuItem>
