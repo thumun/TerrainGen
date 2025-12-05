@@ -29,6 +29,7 @@ export type InstancingShaderConfig = ShaderConfigBase & {
     meshPath: string;
     fileContent?: string;
     transform?: TransformConfig;
+    fileType?: string;
   };
 };
 

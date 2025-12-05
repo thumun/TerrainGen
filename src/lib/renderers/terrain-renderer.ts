@@ -7,7 +7,7 @@ import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
 import { Camera } from '@/lib/scene/camera';
-import { OBJ, Plane } from '@/lib/scene/mesh';
+import { OBJ as LoadedMesh, Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
@@ -342,7 +342,7 @@ export class TerrainRenderer implements IRenderer {
 
   async init_mesh() {
     // create test mesh
-    const testMesh = new OBJ();
+    const testMesh = new LoadedMesh();
     await testMesh.loadObj(path.join(import.meta.env.BASE_URL, '/models/cube.obj'));
 
     const instanceVertexBuffer = this.device.createBuffer({
@@ -580,14 +580,19 @@ export class TerrainRenderer implements IRenderer {
   async configureInstancingPipeline(config: scene.InstancingPipeline) {
     this.instancingPipelineConfigured = true;
 
+    console.log(config);
+
     // load obj from geo node
-    const mesh = new OBJ();
+    const mesh = new LoadedMesh();
 
     if (config.outputs.fileContent) {
-      // Parse directly from stored content
-      mesh.parseObjContent(config.outputs.fileContent);
+      if (config.outputs.fileType === 'obj') {
+        mesh.parseObjContent(config.outputs.fileContent);
+      } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
+        const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
+        mesh.parseGLTFContent(gltfWithBuffers, gltf);
+      }
     } else {
-      // Load from URL (for primGeo or builtinGeo)
       await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
     }
 
