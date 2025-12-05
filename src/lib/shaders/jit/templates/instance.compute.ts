@@ -32,12 +32,11 @@ ${body}
     let instancePos = ${posKey};
 
     ${maskKey ? `
-    // Evaluate mask and check against threshold
     let maskValue = ${maskKey};
     if (maskValue < ${threshold || 0.0}) {
         return;
     }
-    ` : ''}
+` : ''}
     
     instance_pts[vOffset + 0] = ${posKey}.x;
     instance_pts[vOffset + 1] = ${posKey}.y;
