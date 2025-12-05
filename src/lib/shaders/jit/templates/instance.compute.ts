@@ -2,7 +2,7 @@ import commonShaderContent from '@/lib/shaders/common.wgsl?raw';
 import * as shaders from '@/lib/shaders/jit/types/shaders';
 
 export const instanceComputeShaderTemplate: shaders.InstancingShaderTemplate = {
-  content: ({ uniforms, utils, body, posKey }) => `${commonShaderContent}
+    content: ({ uniforms, utils, body, posKey, maskKey, threshold }) => `${commonShaderContent}
 
 @group(0) @binding(0) var<storage, read_write> vertices: array<f32>;
 @group(0) @binding(1) var<storage, read_write> indices: array<u32>;
@@ -30,6 +30,14 @@ ${body}
 
     let vOffset = vertexOffset(id.x);
     let instancePos = ${posKey};
+
+    ${maskKey ? `
+    // Evaluate mask and check against threshold
+    let maskValue = ${maskKey};
+    if (maskValue < ${threshold || 0.0}) {
+        return;
+    }
+    ` : ''}
     
     instance_pts[vOffset + 0] = ${posKey}.x;
     instance_pts[vOffset + 1] = ${posKey}.y;

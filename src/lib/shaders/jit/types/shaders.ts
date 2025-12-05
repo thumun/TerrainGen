@@ -22,6 +22,8 @@ export type InstancingShaderConfig = ShaderConfigBase & {
     instancePositions: util.ReferenceKey;
     meshPath: string;
     fileContent?: string;
+    maskKey?: util.ReferenceKey;
+    threshold?: number;
   };
 };
 
@@ -37,6 +39,8 @@ type InstancingShaderTemplateValues = {
   utils: string;
   body: string;
   posKey: string;
+  maskKey?: string;
+  threshold?: number;
 };
 
 export type DisplaceShaderTemplate = {

@@ -132,6 +132,16 @@ function generatePipelines(
       return { displacePipeline };
     }
 
+    const maskEdge = edges.find(
+      (edge) =>
+        edge.target === scatterNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.scatter.in.a
+    );
+
+    const maskSourceNode = orderedDependencyNodes.find(
+      (node) => node.id === maskEdge?.source
+    );
+
     const outputs: scene.InstancingPipeline['outputs'] = {
       instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
       instancePositions: nodeMapping.getHandleKey({
@@ -140,6 +150,11 @@ function generatePipelines(
       }),
       meshPath: geometryNode.data.meshPath,
       fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
+      maskKey: maskSourceNode && maskEdge ? nodeMapping.getHandleKey({
+        sourceNode: maskSourceNode,
+        outgoingHandleId: maskEdge.sourceHandle!,
+      }) : undefined,
+      threshold: scatterNode.data.threshold,
     };
 
     instancingPipeline = {
