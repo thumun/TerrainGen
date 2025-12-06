@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import type { ContextMenuState } from '@/components/editor/node-graph/context-menu';
+import { useMousePos } from '@/hooks/use-mouse-pos';
 
 export type UseContextMenuOptions = {
   reactFlowWrapper: React.RefObject<HTMLElement>;
@@ -13,23 +14,26 @@ export type UseContextMenuOptions = {
  */
 export function useContextMenu({ reactFlowWrapper }: UseContextMenuOptions) {
   const [menuState, setMenuState] = useState<ContextMenuState>({ show: false });
+  const { getMousePos } = useMousePos();
 
   // logic for menu event
   const onPaneContextMenu = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault();
+    (event?: React.MouseEvent) => {
+      event?.preventDefault();
+
+      const mousePos = getMousePos();
 
       if (!reactFlowWrapper.current) return;
       const pane = reactFlowWrapper.current.getBoundingClientRect();
-      if (event.clientY > pane.height || event.clientX > pane.width) return;
+      if (mousePos.y > pane.height || mousePos.x > pane.width) return;
 
       setMenuState({
         show: true,
-        left: event.clientX - pane.left,
-        top: event.clientY - pane.top,
+        left: mousePos.x - pane.left,
+        top: mousePos.y - pane.top,
       });
     },
-    [reactFlowWrapper],
+    [getMousePos, reactFlowWrapper],
   );
 
   const closeMenu = useCallback(() => {
