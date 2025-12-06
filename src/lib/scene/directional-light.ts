@@ -116,8 +116,8 @@ export class DirectionalLight {
       const right = DirectionalLight.OrthographicSize;
       const bottom = -DirectionalLight.OrthographicSize;
       const top = DirectionalLight.OrthographicSize;
-      const near = -DirectionalLight.OrthographicSize;
-      const far = DirectionalLight.OrthographicSize;
+      const near = DirectionalLight.NearPlane;
+      const far = DirectionalLight.FarPlane;
       mat4.ortho(left, right, bottom, top, near, far, lightProjectionMatrix);
     }
     const lightViewProjMatrix = mat4.multiply(lightProjectionMatrix, lightViewMatrix);
