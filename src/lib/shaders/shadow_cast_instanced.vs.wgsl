@@ -7,6 +7,8 @@ struct VertexInput {
 // struct has members 'lightViewProjMatrix' and 'lightPos'
 
 @group(1) @binding(0) var<storage, read> instance_pts: array<InstanceVertex>; // 8 floats per instance- pos, nor, uv
+@group(1) @binding(1) var<storage, read> vertices: array<f32>; // 8 floats per vertex
+@group(1) @binding(2) var<storage, read> indices: array<u32>;
 
 @vertex
 fn vs_main(in : VertexInput) -> @builtin(position) vec4f {
