@@ -105,7 +105,8 @@ export default function WebGPUCanvas({
     // setup scene
     const camera = new Camera(webGPUContext);
     const mesh = new Plane(20, 100);
-    const stage = new Stage(camera, mesh);
+    const waterMesh = new Plane(20, 100);
+    const stage = new Stage(camera, mesh, waterMesh);
 
     const controller = new AbortController();
     const init = async () => {

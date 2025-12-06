@@ -114,6 +114,7 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   // only input/output nodes don't get any instructions!
   vertexData: () => null,
   terrain: () => null,
+  water: () => null,
 
   // TODO: this transform functionality is not real until we have geometry
   transform: dummyHandler,
@@ -299,4 +300,5 @@ export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> 
   builtinGeo: () => [],
   scatter: () => [],
   instancing: () => [],
+  water: () => [],
 };

@@ -8,6 +8,7 @@ import naiveFragRaw from './naive.fs.wgsl?raw';
 import naiveVertRaw from './naive.vs.wgsl?raw';
 import normalsComputeRaw from './normals.cs.wgsl?raw';
 import terrainComputeRaw from './terrain.cs.wgsl?raw';
+import waterComputeRaw from './water.cs.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
 
@@ -34,3 +35,4 @@ export const terrainComputeSrc: string = processShaderRaw(terrainComputeRaw);
 export const normalsComputeSrc: string = processShaderRaw(normalsComputeRaw);
 export const terrainPointsComputeSrc: string = processShaderRaw(instancePointsComputeRaw);
 export const instanceSrc: string = processShaderRaw(instancingRaw);
+export const waterComputeSrc: string = processShaderRaw(waterComputeRaw);
