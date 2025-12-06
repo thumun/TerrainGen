@@ -45,11 +45,8 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
 
   const rebuildPipelinesFromNode = useCallback(
     (nodeId: string, options: { nodes: graph.PipelineNode[]; edges: Edge[] }) => {
-      const { displacePipeline, waterPipeline, instancingPipeline } = graph.generatePipelinesFromNode(
-        nodeId,
-        options.nodes,
-        options.edges,
-      );
+      const { displacePipeline, waterPipeline, instancingPipeline } =
+        graph.generatePipelinesFromNode(nodeId, options.nodes, options.edges);
 
       if (displacePipeline) setDisplacePipeline(displacePipeline);
       if (waterPipeline) setWaterPipeline(waterPipeline);
@@ -60,10 +57,8 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
 
   const rebuildAllPipelines = useCallback(
     (options: { nodes: graph.PipelineNode[]; edges: Edge[] }) => {
-      const { displacePipeline, waterPipeline, instancingPipeline } = graph.generateAllPipelines(
-        options.nodes,
-        options.edges,
-      );
+      const { displacePipeline, waterPipeline, instancingPipeline } =
+        graph.generateAllPipelines(options.nodes, options.edges);
 
       if (displacePipeline) setDisplacePipeline(displacePipeline);
       if (waterPipeline) setWaterPipeline(waterPipeline);

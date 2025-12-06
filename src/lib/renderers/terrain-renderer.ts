@@ -16,7 +16,6 @@ import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/insta
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
-
 export type TerrainRendererGlobalParameters = {
   size: number;
   resolution: number;
@@ -39,7 +38,7 @@ export class TerrainRenderer implements IRenderer {
   // terrain compute pipeline
   private readonly terrainComputePipeline: TerrainPipeline;
 
-  // water compute pipeline  
+  // water compute pipeline
   private readonly waterComputePipeline: WaterPipeline;
 
   // custom compute pipeline
@@ -288,9 +287,7 @@ export class TerrainRenderer implements IRenderer {
     this.customWaterBindGroup = this.device.createBindGroup({
       label: 'custom water compute bind group',
       layout: this.customWaterBindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.stage.waterPlane.vertexBuffer! } },
-      ],
+      entries: [{ binding: 0, resource: { buffer: this.stage.waterPlane.vertexBuffer! } }],
     });
 
     this.customWaterUniformBindGroupLayout = this.device.createBindGroupLayout({
@@ -328,7 +325,10 @@ export class TerrainRenderer implements IRenderer {
       label: 'custom water compute pipeline',
       layout: this.device.createPipelineLayout({
         label: 'custom water compute pipeline layout',
-        bindGroupLayouts: [this.customWaterBindGroupLayout, this.customWaterUniformBindGroupLayout],
+        bindGroupLayouts: [
+          this.customWaterBindGroupLayout,
+          this.customWaterUniformBindGroupLayout,
+        ],
       }),
       compute: {
         module: this.device.createShaderModule({
