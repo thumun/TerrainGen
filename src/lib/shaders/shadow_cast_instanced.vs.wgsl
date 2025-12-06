@@ -10,14 +10,8 @@ struct VertexInput {
 
 @vertex
 fn vs_main(in : VertexInput) -> @builtin(position) vec4f {
-
-    let vOffset = in.instance_index * 8u;
-
      // get point position
     var pos = instance_pts[in.instance_index].pos;
-
-    // point nor for testing...
-    var nor = normalize(instance_pts[in.instance_index].nor);
 
     let idx = indices[in.vertex_index];
     let base = idx * 8u;
