@@ -1,7 +1,8 @@
 import { mat4, vec3, type Vec3 } from 'wgpu-matrix';
 
 import * as common from '@/lib/renderers/common';
-import { shadowCastVertSrc } from '@/lib/shaders/shaders';
+import type * as mesh from '@/lib/scene/mesh';
+import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
 export class DirectionalLight {
@@ -23,9 +24,9 @@ export class DirectionalLight {
     lightPos: new Float32Array(this.directionalLightUniformsValues, 64, 3),
   };
 
-  // @ts-expect-error TODO: eventually we will read this!
+  private readonly uniformsBindGroup: GPUBindGroup;
+
   private readonly shadowDepthTextureView: GPUTextureView;
-  // @ts-expect-error TODO: eventually we will read this!
   private readonly shadowPipeline: GPURenderPipeline;
 
   public constructor(
@@ -62,7 +63,7 @@ export class DirectionalLight {
     // ------ Initialize layouts
     // ----------------------------------------------------------------------------------------
 
-    const uniformsBufferLayout = device.createBindGroupLayout({
+    const uniformsBindGroupLayout = device.createBindGroupLayout({
       label: 'uniform bind group layout',
       entries: [
         {
@@ -73,8 +74,19 @@ export class DirectionalLight {
       ],
     });
 
+    this.uniformsBindGroup = device.createBindGroup({
+      label: 'directional light uniforms bind group',
+      layout: uniformsBindGroupLayout,
+      entries: [
+        {
+          binding: 0, // directionalLightUniforms
+          resource: this.directionalLightUniformsBuffer,
+        },
+      ],
+    });
+
     const shadowPipelineLayout = device.createPipelineLayout({
-      bindGroupLayouts: [uniformsBufferLayout],
+      bindGroupLayouts: [uniformsBindGroupLayout],
     });
 
     // ----------------------------------------------------------------------------------------
@@ -85,7 +97,7 @@ export class DirectionalLight {
       layout: shadowPipelineLayout,
       vertex: {
         module: device.createShaderModule({
-          code: shadowCastVertSrc,
+          code: shaders.shadowCastVertSrc,
         }),
         buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
@@ -134,10 +146,38 @@ export class DirectionalLight {
     );
   }
 
-  // TODO: implement this based on existing render logic
-  // public doShadowMapping({ meshes }: { meshes: Mesh[] }) {
-  //   meshes.forEach((mesh) => {
-  //
-  //   });
-  // }
+  /**
+   * Runs a render pass filling out the depth texture associated with
+   * `this.shadowDepthTextureView`.
+   */
+  public onFrame({ encoder, meshes }: { encoder: GPUCommandEncoder; meshes: mesh.Mesh[] }) {
+    const shadowPass = encoder.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: {
+        view: this.shadowDepthTextureView,
+        depthClearValue: 1.0,
+        depthLoadOp: 'clear',
+        depthStoreOp: 'store',
+      },
+    });
+    shadowPass.setPipeline(this.shadowPipeline);
+    shadowPass.setBindGroup(0, this.uniformsBindGroup);
+
+    meshes.forEach((mesh) => {
+      if (!mesh.indexBuffer) {
+        console.warn('Mesh index buffer not set up for mesh', mesh);
+        return;
+      }
+      if (!mesh.indirectBuffer) {
+        console.warn('Mesh indirect buffer not set up for mesh', mesh);
+        return;
+      }
+
+      shadowPass.setVertexBuffer(0, mesh.vertexBuffer);
+      shadowPass.setIndexBuffer(mesh.indexBuffer, 'uint16');
+      shadowPass.drawIndexedIndirect(mesh.indirectBuffer, 0);
+    });
+
+    shadowPass.end();
+  }
 }
