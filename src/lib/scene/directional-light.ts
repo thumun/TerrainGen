@@ -186,7 +186,7 @@ export class DirectionalLight {
         }
 
         shadowPass.setVertexBuffer(0, mesh.vertexBuffer);
-        shadowPass.setIndexBuffer(mesh.indexBuffer, 'uint16');
+        shadowPass.setIndexBuffer(mesh.indexBuffer, 'uint32');
         shadowPass.drawIndexedIndirect(mesh.indirectBuffer, 0);
       });
 
