@@ -676,17 +676,20 @@ export class TerrainRenderer implements IRenderer {
 
     let transformMatrix: Float32Array | undefined;
     if (config.outputs.transform) {
-      const translate = typeof config.outputs.transform.translate === 'string'
-        ? this.getUniform(config.outputs.transform.translate)
-        : [0, 0, 0] as [number, number, number];
+      const translate =
+        typeof config.outputs.transform.translate === 'string'
+          ? this.getUniform(config.outputs.transform.translate)
+          : ([0, 0, 0] as [number, number, number]);
 
-      const rotate = typeof config.outputs.transform.rotate === 'string'
-        ? this.getUniform(config.outputs.transform.rotate)
-        : [0, 0, 0] as [number, number, number];
+      const rotate =
+        typeof config.outputs.transform.rotate === 'string'
+          ? this.getUniform(config.outputs.transform.rotate)
+          : ([0, 0, 0] as [number, number, number]);
 
-      const scale = typeof config.outputs.transform.scale === 'string'
-        ? this.getUniform(config.outputs.transform.scale)
-        : [1, 1, 1] as [number, number, number];
+      const scale =
+        typeof config.outputs.transform.scale === 'string'
+          ? this.getUniform(config.outputs.transform.scale)
+          : ([1, 1, 1] as [number, number, number]);
 
       transformMatrix = this.createTransformMatrix(translate, rotate, scale);
     }
