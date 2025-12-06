@@ -273,7 +273,7 @@ export class TerrainRenderer implements IRenderer {
     const matrix = new Float32Array(16);
 
     // Compute rotation matrices
-    const [rx, ry, rz] = rotate;
+    const [rx, rz, ry] = rotate;
     const cx = Math.cos(rx),
       sx = Math.sin(rx);
     const cy = Math.cos(ry),
@@ -298,19 +298,19 @@ export class TerrainRenderer implements IRenderer {
     matrix[2] = r20 * scale[0];
     matrix[3] = 0;
 
-    matrix[4] = r01 * scale[1];
-    matrix[5] = r11 * scale[1];
-    matrix[6] = r21 * scale[1];
+    matrix[4] = r01 * scale[2];
+    matrix[5] = r11 * scale[2];
+    matrix[6] = r21 * scale[2];
     matrix[7] = 0;
 
-    matrix[8] = r02 * scale[2];
-    matrix[9] = r12 * scale[2];
-    matrix[10] = r22 * scale[2];
+    matrix[8] = r02 * scale[1];
+    matrix[9] = r12 * scale[1];
+    matrix[10] = r22 * scale[1];
     matrix[11] = 0;
 
     matrix[12] = translate[0];
-    matrix[13] = translate[1];
-    matrix[14] = translate[2];
+    matrix[13] = translate[2];
+    matrix[14] = translate[1];
     matrix[15] = 1;
 
     return matrix;
@@ -676,9 +676,17 @@ export class TerrainRenderer implements IRenderer {
 
     let transformMatrix: Float32Array | undefined;
     if (config.outputs.transform) {
-      const translate = this.getUniform(config.outputs.transform.translate);
-      const rotate = this.getUniform(config.outputs.transform.rotate);
-      const scale = this.getUniform(config.outputs.transform.scale);
+      const translate = typeof config.outputs.transform.translate === 'string'
+        ? this.getUniform(config.outputs.transform.translate)
+        : [0, 0, 0] as [number, number, number];
+
+      const rotate = typeof config.outputs.transform.rotate === 'string'
+        ? this.getUniform(config.outputs.transform.rotate)
+        : [0, 0, 0] as [number, number, number];
+
+      const scale = typeof config.outputs.transform.scale === 'string'
+        ? this.getUniform(config.outputs.transform.scale)
+        : [1, 1, 1] as [number, number, number];
 
       transformMatrix = this.createTransformMatrix(translate, rotate, scale);
     }
