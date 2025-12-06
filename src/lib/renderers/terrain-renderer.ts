@@ -107,6 +107,12 @@ export class TerrainRenderer implements IRenderer {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
+        {
+          // directional light
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
       ],
     });
 
@@ -118,6 +124,11 @@ export class TerrainRenderer implements IRenderer {
           // camera uniforms
           binding: 0,
           resource: { buffer: this.stage.camera.uniformsBuffer },
+        },
+        {
+          // directional light
+          binding: 1,
+          resource: { buffer: this.stage.directionalLight.directionalLightUniformsBuffer },
         },
       ],
     });

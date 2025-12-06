@@ -15,7 +15,7 @@ export class DirectionalLight {
   private static readonly DirectionalLightUniformsByteSize = 80;
 
   // Uniforms
-  private readonly directionalLightUniformsBuffer: GPUBuffer;
+  public readonly directionalLightUniformsBuffer: GPUBuffer;
 
   private readonly directionalLightUniformsValues = new ArrayBuffer(
     DirectionalLight.DirectionalLightUniformsByteSize,
