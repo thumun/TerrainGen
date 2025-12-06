@@ -10,6 +10,7 @@ import type * as util from '@/lib/shaders/jit/types/util';
 export type OutputNodeUpdates = {
   displacePipeline?: scene.DisplacePipeline;
   instancingPipeline?: scene.InstancingPipeline;
+  waterPipeline?: scene.WaterPipeline;
 };
 
 export type PipelineNode = types.Node & nodeTypes.All;
@@ -86,6 +87,35 @@ function generatePipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
+  // find water pipeline
+  const waterNode = activeNodes.find((node) => node.type === 'water');
+  let waterPipeline: scene.WaterPipeline | undefined = undefined;
+  if (waterNode) {
+    const orderedDependencyNodes = traversal.getOrderedNodes(waterNode.id, nodes, edges);
+
+    // generate uniforms
+    const uniforms = orderedDependencyNodes.flatMap(getUniforms);
+
+    // generate instruction set
+    const instructionSet = orderedDependencyNodes
+      .map((node) => getInstruction(node, orderedDependencyNodes, edges))
+      .filter((instruction) => instruction !== null);
+
+    // Get height key from the incoming edge of the water node
+    const heightEdge = edges.find((edge) => edge.target === waterNode.id);
+    const heightEdgeSourceNode = orderedDependencyNodes.find(
+      (node) => node.id === heightEdge?.source,
+    );
+    const outputs: scene.WaterPipeline['outputs'] = {
+      height: nodeMapping.getHandleKey({
+        sourceNode: heightEdgeSourceNode!,
+        outgoingHandleId: heightEdge!.sourceHandle!,
+      }),
+    };
+
+    waterPipeline = { instructionSet, uniforms, outputs };
+  }
+
   const instancingNode = activeNodes.find((node) => node.type === 'instancing');
   let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
 
@@ -151,7 +181,7 @@ function generatePipelines(
     };
   }
 
-  return { displacePipeline, instancingPipeline };
+  return { displacePipeline, waterPipeline, instancingPipeline };
 }
 
 function getInstruction(
