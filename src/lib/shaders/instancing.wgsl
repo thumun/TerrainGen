@@ -78,7 +78,8 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
 
-  let color = textureSample(ourTexture, ourSampler, in.uv);
+  let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
+  let color = textureSample(ourTexture, ourSampler, texcoord);
   //color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
   return color;
 

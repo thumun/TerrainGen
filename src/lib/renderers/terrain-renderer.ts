@@ -533,7 +533,7 @@ export class TerrainRenderer implements IRenderer {
     }
 
     // unused for now
-    /* 
+    /*
     const customInstanceShader = jit.generateInstanceShaderCode(
       config,
       instanceComputeShaderTemplate,

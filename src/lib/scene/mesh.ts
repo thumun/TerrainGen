@@ -265,7 +265,7 @@ export class OBJ extends Mesh {
 
         // load uvs
         let uvs: Float32Array;
-        if (prim.attributes['TEXCOORD_0']) {
+        if (prim.attributes.TEXCOORD_0 !== undefined) {
           const uvAccessorIndex = prim.attributes.TEXCOORD_0;
           const uvAccessor = gltf.accessors![uvAccessorIndex];
           const uvBufferView = gltf.bufferViews![uvAccessor.bufferView!];
@@ -275,6 +275,8 @@ export class OBJ extends Mesh {
             (uvBufferView.byteOffset ?? 0) + (uvAccessor.byteOffset ?? 0) + uvBuffer.byteOffset;
           const uvArrayLength = uvAccessor.count * 2;
           uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
+
+          console.log("not hardcoded", uvs);
         } else {
           const tempUVs: number[] = [];
           for (let i = 0; i < positions.length / 3; i++) {
@@ -287,6 +289,7 @@ export class OBJ extends Mesh {
             }
           }
           uvs = new Float32Array(tempUVs);
+          console.log("hardcoded", uvs);
         }
 
         // load indices
@@ -317,9 +320,9 @@ export class OBJ extends Mesh {
         // push these guys into the final array
         for (let i = 0; i < positions.length / 3; i++) {
           finalVertices.push(
-            positions[3 * i],
-            positions[3 * i + 1],
-            positions[3 * i + 2],
+            positions[3 * i] * 40.0,
+            positions[3 * i + 1] * 40.0,
+            positions[3 * i + 2] * 40.0,
             normals[3 * i],
             normals[3 * i + 1],
             normals[3 * i + 2],
@@ -352,7 +355,6 @@ export class OBJ extends Mesh {
         const byteLength = view.byteLength;
 
         const imageBytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
-        console.log(imageBytes);
 
         // create image (sus)
         const imageBitmap = await createImageBitmap(
