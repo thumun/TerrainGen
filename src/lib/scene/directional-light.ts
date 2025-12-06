@@ -2,6 +2,7 @@ import { mat4, vec3, type Vec3 } from 'wgpu-matrix';
 
 import * as common from '@/lib/renderers/common';
 import type * as mesh from '@/lib/scene/mesh';
+import * as instancer from '@/lib/renderers/pipelines/instancer';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -110,7 +111,7 @@ export class DirectionalLight {
   }
 
   /**
-   * Updates uniforms
+   * Updates uniforms based on a vector direction towards an incoming light.
    */
   public setLightDirection(device: GPUDevice, options: { direction: Vec3; target?: Vec3 }) {
     const { direction, target = vec3.fromValues(0, 0, 0) } = options;
@@ -150,8 +151,16 @@ export class DirectionalLight {
    * Runs a render pass filling out the depth texture associated with
    * `this.shadowDepthTextureView`.
    */
-  public onFrame({ encoder, meshes }: { encoder: GPUCommandEncoder; meshes: mesh.Mesh[] }) {
-    const shadowPass = encoder.beginRenderPass({
+  public onFrame({
+    encoder,
+    meshes,
+    instancers,
+  }: {
+    encoder: GPUCommandEncoder;
+    meshes: mesh.Mesh[];
+    instancers: instancer.IndirectInstancer[];
+  }) {
+    const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [],
       depthStencilAttachment: {
         view: this.shadowDepthTextureView,
@@ -159,25 +168,40 @@ export class DirectionalLight {
         depthLoadOp: 'clear',
         depthStoreOp: 'store',
       },
-    });
-    shadowPass.setPipeline(this.shadowPipeline);
-    shadowPass.setBindGroup(0, this.uniformsBindGroup);
+    };
 
-    meshes.forEach((mesh) => {
-      if (!mesh.indexBuffer) {
-        console.warn('Mesh index buffer not set up for mesh', mesh);
-        return;
-      }
-      if (!mesh.indirectBuffer) {
-        console.warn('Mesh indirect buffer not set up for mesh', mesh);
-        return;
-      }
+    {
+      const shadowPass = encoder.beginRenderPass(renderPassDescriptor);
+      shadowPass.setPipeline(this.shadowPipeline);
+      shadowPass.setBindGroup(0, this.uniformsBindGroup);
 
-      shadowPass.setVertexBuffer(0, mesh.vertexBuffer);
-      shadowPass.setIndexBuffer(mesh.indexBuffer, 'uint16');
-      shadowPass.drawIndexedIndirect(mesh.indirectBuffer, 0);
-    });
+      meshes.forEach((mesh) => {
+        if (!mesh.indexBuffer) {
+          console.warn('Mesh index buffer not set up for mesh', mesh);
+          return;
+        }
+        if (!mesh.indirectBuffer) {
+          console.warn('Mesh indirect buffer not set up for mesh', mesh);
+          return;
+        }
 
-    shadowPass.end();
+        shadowPass.setVertexBuffer(0, mesh.vertexBuffer);
+        shadowPass.setIndexBuffer(mesh.indexBuffer, 'uint16');
+        shadowPass.drawIndexedIndirect(mesh.indirectBuffer, 0);
+      });
+
+      shadowPass.end();
+    }
+
+    {
+      const instancedShadowPass = encoder.beginRenderPass(renderPassDescriptor);
+      instancedShadowPass.setPipeline(this.instancedShadowPipeline); // TODO: create this pipeline
+      instancedShadowPass.setBindGroup(0, this.uniformsBindGroup);
+
+      instancers.forEach((instancer) => {
+        instancedShadowPass.setBindGroup(1, instancer.instancingPointsBindGroup);
+        instancedShadowPass.drawIndirect(instancer.indirectInstanceBuffer, 0);
+      });
+    }
   }
 }
