@@ -97,14 +97,11 @@ export class DirectionalLight {
     });
   }
 
-  private static readonly UpVector = vec3.fromValues(0, 1, 0);
-  private static readonly DefaultTarget = vec3.fromValues(0, 0, 0);
-
   /**
    * Updates uniforms
    */
   public setLightDirection(device: GPUDevice, options: { direction: Vec3; target?: Vec3 }) {
-    const { direction, target = DirectionalLight.DefaultTarget } = options;
+    const { direction, target = vec3.fromValues(0, 0, 0) } = options;
 
     const desiredLightDistance =
       (DirectionalLight.FarPlane - DirectionalLight.NearPlane) / 2 + DirectionalLight.NearPlane;
@@ -112,7 +109,7 @@ export class DirectionalLight {
     const lightOffset = vec3.mulScalar(lightDirection, desiredLightDistance);
     const lightPos = vec3.add(target, lightOffset);
 
-    const lightViewMatrix = mat4.lookAt(lightPos, target, DirectionalLight.UpVector);
+    const lightViewMatrix = mat4.lookAt(lightPos, target, vec3.fromValues(0, 1, 0));
     const lightProjectionMatrix = mat4.create();
     {
       const left = -DirectionalLight.OrthographicSize;
