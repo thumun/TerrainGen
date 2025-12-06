@@ -103,6 +103,7 @@ export class TerrainRenderer implements IRenderer {
   private waterNodeGraphUniformConfig!: scene.WaterPipeline['uniforms'] | undefined;
 
   private customWaterDisplacePipeline: GPUComputePipeline;
+  private waterRenderPipeline: GPURenderPipeline;
 
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
@@ -178,6 +179,7 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+    this.waterRenderPipeline = this.createWaterRenderPipeline();
 
     // compute pipeline that creates the terrain
     this.terrainComputePipeline = new TerrainPipeline(this.device, this.stage.groundPlane);
@@ -442,6 +444,50 @@ export class TerrainRenderer implements IRenderer {
     });
   }
 
+  private createWaterRenderPipeline() {
+    return this.device.createRenderPipeline({
+      layout: this.device.createPipelineLayout({
+        label: 'water pipeline layout',
+        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
+      }),
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: 'less',
+        format: 'depth24plus',
+      },
+      vertex: {
+        module: this.device.createShaderModule({
+          label: 'water vert shader',
+          code: shaders.naiveVertSrc,
+        }),
+        buffers: [TerrainRenderer.VertexBufferLayout],
+      },
+      fragment: {
+        module: this.device.createShaderModule({
+          label: 'water frag shader',
+          code: shaders.waterFragSrc,
+        }),
+        targets: [
+          {
+            format: this.webGPU.canvasFormat,
+            blend: {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            },
+          },
+        ],
+      },
+    });
+  }
+
   configureWaterPipeline(config: scene.WaterPipeline) {
     this.waterPipelineConfigured = true;
 
@@ -587,6 +633,7 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+    this.waterRenderPipeline = this.createWaterRenderPipeline();
   }
 
   onFrame(frameInfo: { time: number; deltaTime: number }) {
@@ -623,6 +670,8 @@ export class TerrainRenderer implements IRenderer {
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
 
     // Render water plane
+    renderPass.setPipeline(this.waterRenderPipeline);
+    renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
     renderPass.setVertexBuffer(0, this.stage.waterPlane.vertexBuffer);
     renderPass.setIndexBuffer(this.stage.waterPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.waterPlane.indirectBuffer!, 0);
