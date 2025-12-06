@@ -56,7 +56,7 @@ export class DirectionalLight {
     /** Holds struct DirectionalLightUniforms (found in common.wgsl) */
     this.directionalLightUniformsBuffer = device.createBuffer({
       label: 'directional light uniforms buffer',
-      size: 80,
+      size: DirectionalLight.DirectionalLightUniformsByteSize,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     this.setLightDirection(device, { direction: lightDirection, target: lightTarget });
