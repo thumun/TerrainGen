@@ -193,7 +193,7 @@ export class DirectionalLight {
     meshes: mesh.Mesh[];
     instancers: instancer.IndirectInstancer[];
   }) {
-    const renderPassDescriptor: GPURenderPassDescriptor = {
+    const renderPassDescriptor = {
       colorAttachments: [],
       depthStencilAttachment: {
         view: this.shadowDepthTextureView,
@@ -201,7 +201,16 @@ export class DirectionalLight {
         depthLoadOp: 'clear',
         depthStoreOp: 'store',
       },
-    };
+    } satisfies GPURenderPassDescriptor;
+
+    // instanced render pass shouldn't clear existing data
+    const renderPassInstancedDescriptor = {
+      ...renderPassDescriptor,
+      depthStencilAttachment: {
+        ...renderPassDescriptor.depthStencilAttachment,
+        depthLoadOp: 'load',
+      },
+    } satisfies GPURenderPassDescriptor;
 
     {
       const shadowPass = encoder.beginRenderPass(renderPassDescriptor);
@@ -227,7 +236,7 @@ export class DirectionalLight {
     }
 
     if (DirectionalLight.ENABLE_INSTANCE_SHADOWS) {
-      const instancedShadowPass = encoder.beginRenderPass(renderPassDescriptor);
+      const instancedShadowPass = encoder.beginRenderPass(renderPassInstancedDescriptor);
       instancedShadowPass.setPipeline(this.shadowPipelineInstanced);
       instancedShadowPass.setBindGroup(0, this.uniformsBindGroup);
 
