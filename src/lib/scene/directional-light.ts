@@ -7,8 +7,8 @@ import type { WebGPUContext } from '@/lib/webgpu-context';
 export class DirectionalLight {
   // Static config
   private static readonly NearPlane = 0.0;
-  private static readonly FarPlane = 200;
-  private static readonly OrthographicSize = 400;
+  private static readonly FarPlane = 50;
+  private static readonly OrthographicSize = 25;
 
   private static readonly DirectionalLightUniformsByteSize = 80;
 
@@ -28,9 +28,16 @@ export class DirectionalLight {
   // @ts-expect-error TODO: eventually we will read this!
   private readonly shadowPipeline: GPURenderPipeline;
 
-  public constructor(webGPU: WebGPUContext, options: { depthTextureSize?: number } = {}) {
+  public constructor(
+    webGPU: WebGPUContext,
+    options: { depthTextureSize?: number; lightDirection?: Vec3; lightTarget?: Vec3 } = {},
+  ) {
     const { device } = webGPU;
-    const { depthTextureSize = 2048 } = options;
+    const {
+      depthTextureSize = 2048,
+      lightDirection = vec3.fromValues(0.2, 0.6, 0.1),
+      lightTarget,
+    } = options;
 
     // ----------------------------------------------------------------------------------------
     // ------ Initialize buffers
@@ -49,6 +56,7 @@ export class DirectionalLight {
       size: 80,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
+    this.setLightDirection(device, { direction: lightDirection, target: lightTarget });
 
     // ----------------------------------------------------------------------------------------
     // ------ Initialize layouts
