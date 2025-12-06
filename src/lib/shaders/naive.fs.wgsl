@@ -1,7 +1,6 @@
 // default fragment shader
 
-override shadowDepthTextureSize: f32 = 2048.0;
-override shadowBias: f32 = 0.001;
+override shadowBias: f32 = 0.002;
 
 struct FragmentInput
 {
