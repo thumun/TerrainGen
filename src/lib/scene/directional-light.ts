@@ -129,7 +129,7 @@ export class DirectionalLight {
       layout: shadowPipelineLayoutInstanced,
       vertex: {
         module: device.createShaderModule({
-          code: shaders.shadowCastVertSrc,
+          code: shaders.shadowCastInstancedVertSrc,
         }),
         buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
