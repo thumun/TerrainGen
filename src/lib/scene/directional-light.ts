@@ -27,7 +27,7 @@ export class DirectionalLight {
 
   private readonly uniformsBindGroup: GPUBindGroup;
 
-  private readonly shadowDepthTextureView: GPUTextureView;
+  public readonly shadowDepthTextureView: GPUTextureView;
   private readonly shadowPipeline: GPURenderPipeline;
   private readonly shadowPipelineInstanced: GPURenderPipeline;
 
@@ -38,7 +38,7 @@ export class DirectionalLight {
     const { device } = webGPU;
     const {
       depthTextureSize = 2048,
-      lightDirection = vec3.fromValues(0.2, 0.3, 0.1),
+      lightDirection = vec3.fromValues(0.2, 0.25, 0.1),
       lightTarget,
     } = options;
 

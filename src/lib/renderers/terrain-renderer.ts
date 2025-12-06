@@ -113,6 +113,18 @@ export class TerrainRenderer implements IRenderer {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'depth' },
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
       ],
     });
 
@@ -129,6 +141,21 @@ export class TerrainRenderer implements IRenderer {
           // directional light
           binding: 1,
           resource: { buffer: this.stage.directionalLight.directionalLightUniformsBuffer },
+        },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          resource: this.stage.directionalLight.shadowDepthTextureView,
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          resource: this.device.createSampler({
+            addressModeU: 'clamp-to-edge',
+            addressModeV: 'clamp-to-edge',
+            magFilter: 'linear',
+            minFilter: 'linear',
+          }),
         },
       ],
     });
