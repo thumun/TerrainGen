@@ -323,12 +323,17 @@ export class TerrainRenderer implements IRenderer {
   onFrame(frameInfo: { time: number; deltaTime: number }) {
     this.stage.camera.onFrame(frameInfo.deltaTime);
 
-    // run the pipeline
     const encoder = this.device.createCommandEncoder();
+
+    // run shadowmapping
+    this.stage.directionalLight.onFrame({
+      encoder,
+      meshes: [this.stage.groundPlane],
+      instancers: [...(this.indirectInstancer ? [this.indirectInstancer] : [])],
+    });
+
+    // run our main render pass
     const canvasTextureView = this.context.getCurrentTexture().createView();
-
-    // TODO: run directional light shadow mapping
-
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
       colorAttachments: [
