@@ -178,7 +178,7 @@ export class DirectionalLight {
     );
   }
 
-  private static readonly ENABLE_INSTANCE_SHADOWS = false;
+  private static readonly EnableInstanceShadows = false;
 
   /**
    * Runs a render pass filling out the depth texture associated with
@@ -235,7 +235,7 @@ export class DirectionalLight {
       shadowPass.end();
     }
 
-    if (DirectionalLight.ENABLE_INSTANCE_SHADOWS) {
+    if (DirectionalLight.EnableInstanceShadows) {
       const instancedShadowPass = encoder.beginRenderPass(renderPassInstancedDescriptor);
       instancedShadowPass.setPipeline(this.shadowPipelineInstanced);
       instancedShadowPass.setBindGroup(0, this.uniformsBindGroup);
