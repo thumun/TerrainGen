@@ -36,9 +36,8 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
   const setUniform = useCallback(
     (key: string, value: number | [number, number, number]) => {
       console.log('setting uniform', key, 'to', value);
-      // Try terrain pipeline first
+      // double check if ok to set both
       terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
-      // Also try water pipeline (it will log a warning if not found, which is fine)
       terrainRendererRef.current?.setWaterPipelineUniform(key, value);
     },
     [terrainRendererRef],
