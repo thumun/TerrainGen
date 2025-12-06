@@ -134,10 +134,10 @@ export class OBJ extends Mesh {
   async loadObj(url: string) {
     const response = await fetch(url);
     const text = await response.text();
-    this.parseObjContent(text);
+    await this.parseObjContent(text);
   }
 
-  parseObjContent(text: string) {
+  async parseObjContent(text: string) {
     const positions: number[][] = [];
     const normals: number[][] = [];
     const uvs: number[][] = [];
@@ -192,8 +192,30 @@ export class OBJ extends Mesh {
       }
     }
 
+    // set grey texture for obj by default
+    let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+    const [r, g, b, a] = baseColor!.map(v => Math.round(v * 255));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.fillRect(0, 0, 1, 1);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas toBlob() returned null"));
+      }, "image/png");
+    });
+    const imageBitmap = await createImageBitmap(blob);
+
+    console.log(imageBitmap);
+
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
+    this.textures = [imageBitmap];
   }
 
   async loadGltf(url: string): Promise<{ gltfWithBuffers: GLTFWithBuffers; gltf: GLTF }> {
@@ -341,7 +363,12 @@ export class OBJ extends Mesh {
       }
       else {
         // if there is no texture for base color, create a base color bitmap
-        const baseColor = gltfMaterial.pbrMetallicRoughness?.baseColorFactor;
+        let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+
+        if (gltfMaterial.pbrMetallicRoughness && gltfMaterial.pbrMetallicRoughness.baseColorFactor) {
+          baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor
+        }
+
         const [r, g, b, a] = baseColor!.map(v => Math.round(v * 255));
 
         const canvas = document.createElement("canvas");
