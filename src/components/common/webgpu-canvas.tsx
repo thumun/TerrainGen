@@ -3,11 +3,11 @@ import type { RefObject } from 'react';
 
 import { useGPUDevice } from '@/hooks/use-gpu-device';
 import { Camera } from '@/lib/scene/camera';
+import { DirectionalLight } from '@/lib/scene/directional-light';
 import { Plane } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 import { initWebGPU } from '@/lib/webgpu-context';
-import { DirectionalLight } from '@/lib/scene/directional-light';
 
 type PossiblyAwaitable<TArgs extends Array<unknown> = [], T = void> =
   | ((...args: TArgs) => T)
