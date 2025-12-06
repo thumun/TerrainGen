@@ -22,7 +22,7 @@ export class DirectionalLight {
   );
   private readonly directionalLightUniformsViews = {
     lightViewProjMatrix: new Float32Array(this.directionalLightUniformsValues, 0, 16),
-    lightPos: new Float32Array(this.directionalLightUniformsValues, 64, 3),
+    lightDir: new Float32Array(this.directionalLightUniformsValues, 64, 3),
   };
 
   private readonly uniformsBindGroup: GPUBindGroup;
@@ -33,13 +33,13 @@ export class DirectionalLight {
 
   public constructor(
     webGPU: WebGPUContext,
-    options: { depthTextureSize?: number; lightDirection?: Vec3; lightTarget?: Vec3 } = {},
+    options: { depthTextureSize?: number; lightDirection?: Vec3; lightCenter?: Vec3 } = {},
   ) {
     const { device } = webGPU;
     const {
       depthTextureSize = 2048,
       lightDirection = vec3.fromValues(0.2, 0.25, 0.1),
-      lightTarget,
+      lightCenter: lightCenter,
     } = options;
 
     // ----------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ export class DirectionalLight {
       size: DirectionalLight.DirectionalLightUniformsByteSize,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-    this.setLightDirection(device, { direction: lightDirection, target: lightTarget });
+    this.setLightDirection(device, { direction: lightDirection, center: lightCenter });
 
     // ----------------------------------------------------------------------------------------
     // ------ Initialize layouts
@@ -144,16 +144,16 @@ export class DirectionalLight {
   /**
    * Updates uniforms based on a vector direction towards an incoming light.
    */
-  public setLightDirection(device: GPUDevice, options: { direction: Vec3; target?: Vec3 }) {
-    const { direction, target = vec3.fromValues(0, 0, 0) } = options;
+  public setLightDirection(device: GPUDevice, options: { direction: Vec3; center?: Vec3 }) {
+    const { direction, center = vec3.fromValues(0, 0, 0) } = options;
 
     const desiredLightDistance =
       (DirectionalLight.FarPlane - DirectionalLight.NearPlane) / 2 + DirectionalLight.NearPlane;
     const lightDirection = vec3.normalize(direction);
     const lightOffset = vec3.mulScalar(lightDirection, desiredLightDistance);
-    const lightPos = vec3.add(target, lightOffset);
+    const lightPos = vec3.add(center, lightOffset);
 
-    const lightViewMatrix = mat4.lookAt(lightPos, target, vec3.fromValues(0, 1, 0));
+    const lightViewMatrix = mat4.lookAt(lightPos, center, vec3.fromValues(0, 1, 0));
     const lightProjectionMatrix = mat4.create();
     {
       const left = -DirectionalLight.OrthographicSize;
@@ -168,7 +168,7 @@ export class DirectionalLight {
 
     // copy to our ArrayBuffer
     this.directionalLightUniformsViews.lightViewProjMatrix.set(lightViewProjMatrix);
-    this.directionalLightUniformsViews.lightPos.set(lightPos);
+    this.directionalLightUniformsViews.lightDir.set(lightDirection);
 
     // copy from host to device
     device.queue.writeBuffer(

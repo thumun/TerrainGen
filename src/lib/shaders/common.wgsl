@@ -13,7 +13,7 @@ struct CameraUniforms {
 
 struct DirectionalLightUniforms {
     lightViewProjMatrix: mat4x4f,
-    lightPos: vec3f,
+    lightDir: vec3f,
 }
 
 struct MeshUniforms {

@@ -21,7 +21,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
   let isShadowed = shadowSample < in.shadow_pos.z - shadowBias;
 
   // do lambertian shading
-  let lightDir = normalize(directionalLightUniforms.lightPos);
+  let lightDir = normalize(directionalLightUniforms.lightDir);
   var directionalLightStrength = max(dot(in.nor, lightDir), 0.0);
   if isShadowed {
       directionalLightStrength = mix(directionalLightStrength, 0.0, 0.95);
