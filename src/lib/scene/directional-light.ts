@@ -1,8 +1,8 @@
 import { mat4, vec3, type Vec3 } from 'wgpu-matrix';
 
 import * as common from '@/lib/renderers/common';
-import type * as mesh from '@/lib/scene/mesh';
 import * as instancer from '@/lib/renderers/pipelines/instancer';
+import type * as mesh from '@/lib/scene/mesh';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -29,6 +29,7 @@ export class DirectionalLight {
 
   private readonly shadowDepthTextureView: GPUTextureView;
   private readonly shadowPipeline: GPURenderPipeline;
+  private readonly shadowPipelineInstanced: GPURenderPipeline;
 
   public constructor(
     webGPU: WebGPUContext,
@@ -37,7 +38,7 @@ export class DirectionalLight {
     const { device } = webGPU;
     const {
       depthTextureSize = 2048,
-      lightDirection = vec3.fromValues(0.2, 0.6, 0.1),
+      lightDirection = vec3.fromValues(0.2, 0.3, 0.1),
       lightTarget,
     } = options;
 
@@ -75,6 +76,17 @@ export class DirectionalLight {
       ],
     });
 
+    const instancePointsBindGroupLayout = device.createBindGroupLayout({
+      label: 'instance points bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: { type: 'read-only-storage' },
+        },
+      ],
+    });
+
     this.uniformsBindGroup = device.createBindGroup({
       label: 'directional light uniforms bind group',
       layout: uniformsBindGroupLayout,
@@ -90,12 +102,31 @@ export class DirectionalLight {
       bindGroupLayouts: [uniformsBindGroupLayout],
     });
 
+    const shadowPipelineLayoutInstanced = device.createPipelineLayout({
+      bindGroupLayouts: [uniformsBindGroupLayout, instancePointsBindGroupLayout],
+    });
+
     // ----------------------------------------------------------------------------------------
     // ------ Initialize pipeline
     // ----------------------------------------------------------------------------------------
 
     this.shadowPipeline = device.createRenderPipeline({
       layout: shadowPipelineLayout,
+      vertex: {
+        module: device.createShaderModule({
+          code: shaders.shadowCastVertSrc,
+        }),
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
+      },
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: 'less',
+        format: 'depth32float',
+      },
+    });
+
+    this.shadowPipelineInstanced = device.createRenderPipeline({
+      layout: shadowPipelineLayoutInstanced,
       vertex: {
         module: device.createShaderModule({
           code: shaders.shadowCastVertSrc,
@@ -147,6 +178,8 @@ export class DirectionalLight {
     );
   }
 
+  private static readonly ENABLE_INSTANCE_SHADOWS = false;
+
   /**
    * Runs a render pass filling out the depth texture associated with
    * `this.shadowDepthTextureView`.
@@ -193,15 +226,17 @@ export class DirectionalLight {
       shadowPass.end();
     }
 
-    {
+    if (DirectionalLight.ENABLE_INSTANCE_SHADOWS) {
       const instancedShadowPass = encoder.beginRenderPass(renderPassDescriptor);
-      instancedShadowPass.setPipeline(this.instancedShadowPipeline); // TODO: create this pipeline
+      instancedShadowPass.setPipeline(this.shadowPipelineInstanced);
       instancedShadowPass.setBindGroup(0, this.uniformsBindGroup);
 
       instancers.forEach((instancer) => {
         instancedShadowPass.setBindGroup(1, instancer.instancingPointsBindGroup);
         instancedShadowPass.drawIndirect(instancer.indirectInstanceBuffer, 0);
       });
+
+      instancedShadowPass.end();
     }
   }
 }
