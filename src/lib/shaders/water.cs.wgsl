@@ -32,7 +32,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
         let vOffset = vertexOffset(id.x);
         vertices[vOffset + 0] = x;               // pos.x
-        vertices[vOffset + 1] = 0.0;             // pos.y (height - will be set by custom pipeline)
+        vertices[vOffset + 1] = 0.0;             // pos.y
         vertices[vOffset + 2] = z;               // pos.z
         vertices[vOffset + 3] = 0.0;             // nor.x
         vertices[vOffset + 4] = 1.0;             // nor.y

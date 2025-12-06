@@ -122,7 +122,7 @@ export default function WebGPUCanvas({
         height: divRef.current.clientHeight,
       });
 
-      let lastTime = Date.now();
+      let lastTime = 0;
       const doFrame = (time: number) => {
         if (!rendererRef.current) return;
         // TODO: probably add some kind of stats profiling stuff
