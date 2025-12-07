@@ -10,6 +10,7 @@ import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
+import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/instance.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
@@ -606,15 +607,6 @@ export class TerrainRenderer implements IRenderer {
       return;
     }
 
-    // unused for now
-    /*
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-    console.log('custom instance shader:', customInstanceShader);
-    */
-
     // Create buffers for mesh
     const instanceVertexBuffer = this.device.createBuffer({
       size: mesh.vertices.byteLength,
@@ -667,7 +659,16 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    console.log('num instances:', config.outputs.instanceCount);
+    // create custom instancing shader
+    if (!config.outputs.maskKey) {
+      config.outputs.maskKey = "terrainPos.y";
+    }
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+
+    console.log('custom instance shader:', customInstanceShader);
 
     // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
@@ -675,6 +676,7 @@ export class TerrainRenderer implements IRenderer {
       this.stage.groundPlane,
       this.normalsComputePipeline,
       config.outputs.instanceCount,
+      customInstanceShader,
     );
 
     const encoder = this.device.createCommandEncoder();
