@@ -156,7 +156,7 @@ export class IndirectInstancer {
             sampleType: 'float',
             viewDimension: '2d-array',
           },
-        }
+        },
       ],
     });
     const bindGroupLayouts = [
@@ -199,11 +199,11 @@ export class IndirectInstancer {
             blend: {
               color: {
                 srcFactor: 'one',
-                dstFactor: 'one-minus-src-alpha'
+                dstFactor: 'one-minus-src-alpha',
               },
               alpha: {
                 srcFactor: 'one',
-                dstFactor: 'one-minus-src-alpha'
+                dstFactor: 'one-minus-src-alpha',
               },
             },
           },
@@ -214,14 +214,15 @@ export class IndirectInstancer {
     // create buffers for the image bitmaps
     const firstSource = imageBitmaps![0];
     this.textureArray = this.device.createTexture({
-      label: "FAT FUCKING TEXTURE!!!!",
+      label: 'FAT FUCKING TEXTURE!!!!',
       format: 'rgba8unorm',
       size: {
         width: firstSource.width,
         height: firstSource.height,
         depthOrArrayLayers: 20,
       },
-      usage: GPUTextureUsage.TEXTURE_BINDING |
+      usage:
+        GPUTextureUsage.TEXTURE_BINDING |
         GPUTextureUsage.COPY_DST |
         GPUTextureUsage.RENDER_ATTACHMENT,
     });
@@ -231,7 +232,11 @@ export class IndirectInstancer {
 
       this.device.queue.copyExternalImageToTexture(
         { source: source, flipY: true },
-        { texture: this.textureArray, premultipliedAlpha: true, origin: { x: 0, y: 0, z: i + 1 }, },
+        {
+          texture: this.textureArray,
+          premultipliedAlpha: true,
+          origin: { x: 0, y: 0, z: i + 1 },
+        },
         { width: source.width, height: source.height },
       );
     }
@@ -249,17 +254,17 @@ export class IndirectInstancer {
       layout: textureBindGroupLayout,
       entries: [
         {
-          binding: 0, resource: sampler
+          binding: 0,
+          resource: sampler,
         },
         {
           binding: 1,
           resource: this.textureArray.createView({
-            dimension: "2d-array",
+            dimension: '2d-array',
           }),
         },
       ],
     });
-
   }
 
   runRenderPass(renderPass: GPURenderPassEncoder, sceneUniforms: GPUBindGroup) {

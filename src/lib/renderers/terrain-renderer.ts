@@ -661,7 +661,7 @@ export class TerrainRenderer implements IRenderer {
 
     // create custom instancing shader
     if (!config.outputs.maskKey) {
-      config.outputs.maskKey = "terrainPos.y";
+      config.outputs.maskKey = 'terrainPos.y';
     }
     const customInstanceShader = jit.generateInstanceShaderCode(
       config,
