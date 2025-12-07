@@ -608,8 +608,6 @@ export class TerrainRenderer implements IRenderer {
   async configureInstancingPipeline(configs: scene.InstancingPipeline[]) {
     this.indirectInstancers = [];
 
-    //this.instancingPipelineConfigured = true;
-
     for (const config of configs) {
       console.log(config);
 
