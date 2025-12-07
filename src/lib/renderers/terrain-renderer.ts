@@ -12,6 +12,7 @@ import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
 import { displaceComputeShaderTemplate } from '@/lib/shaders/jit/templates/displace.compute';
+import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/instance.compute';
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
