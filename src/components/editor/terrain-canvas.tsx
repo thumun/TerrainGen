@@ -13,7 +13,7 @@ export type TerrainCanvasProps = {
 
 const createRenderer: WebGPUCanvasProps['createRenderer'] = async (webGPU, stage) => {
   const renderer = new TerrainRenderer(webGPU, stage);
-  await renderer.init_mesh();
+  await renderer.load_skybox('/skyboxes/sky.hdr');
   return renderer;
 };
 

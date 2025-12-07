@@ -8,6 +8,7 @@ import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
 import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
+import { decodeRGBE } from '@/lib/scene/io-rgbe-main/src/decode';
 import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
@@ -83,6 +84,9 @@ export class TerrainRenderer implements IRenderer {
 
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
+
+  // skybox
+  private skyboxTexture: GPUTexture | undefined;
 
   constructor(
     private webGPU: WebGPUContext,
@@ -361,24 +365,44 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
   }
 
-  async init_mesh() {
+  async load_skybox(url: string) {
     // create test mesh
-    const testMesh = new LoadedMesh();
-    await testMesh.loadObj(path.join(import.meta.env.BASE_URL, '/models/cube.obj'));
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+    const hdr = decodeRGBE(view);
 
-    const instanceVertexBuffer = this.device.createBuffer({
-      label: 'instancing vertex buffer',
-      size: testMesh.vertices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, testMesh.vertices!);
+    // convert rgb to rgba
+    const rgbaData = new Float32Array(hdr.width * hdr.height * 4);
 
-    const instanceIndexBuffer = this.device.createBuffer({
-      label: 'instancing index buffer',
-      size: testMesh.indices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    for (let i = 0, j = 0; i < hdr.data.length; i += 3, j += 4) {
+      rgbaData[j + 0] = hdr.data[i + 0];
+      rgbaData[j + 1] = hdr.data[i + 1];
+      rgbaData[j + 2] = hdr.data[i + 2];
+      rgbaData[j + 3] = 1.0; // alpha always 1
+    }
+
+    console.log(rgbaData);
+
+    // create rectangular texture
+    this.skyboxTexture = this.device.createTexture({
+      label: "hdr texture",
+      size: [hdr.width, hdr.height],
+      format: "rgba32float",
+      usage:
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.RENDER_ATTACHMENT,
     });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
+
+    this.device.queue.writeTexture(
+      { texture: this.skyboxTexture },
+      rgbaData,
+      {
+        bytesPerRow: hdr.width * 16,  // 8 bytes per pixel in rgba16float
+      },
+      [hdr.width, hdr.height]
+    );
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -487,6 +511,7 @@ export class TerrainRenderer implements IRenderer {
     if (this.stage.groundPlane.indexBuffer) this.stage.groundPlane.indexBuffer.destroy();
     if (this.stage.groundPlane.indirectBuffer) this.stage.groundPlane.indirectBuffer.destroy();
     if (this.stage.groundPlane.uniformsBuffer) this.stage.groundPlane.uniformsBuffer.destroy();
+    if (this.skyboxTexture) this.skyboxTexture.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
