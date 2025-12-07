@@ -123,7 +123,7 @@ export class TerrainRenderer implements IRenderer {
           // shadowmap sampler
           binding: 3,
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          sampler: { type: 'filtering' },
+          sampler: { type: 'non-filtering' },
         },
       ],
     });
@@ -153,8 +153,8 @@ export class TerrainRenderer implements IRenderer {
           resource: this.device.createSampler({
             addressModeU: 'clamp-to-edge',
             addressModeV: 'clamp-to-edge',
-            magFilter: 'linear',
-            minFilter: 'linear',
+            magFilter: 'nearest',
+            minFilter: 'nearest',
           }),
         },
       ],
