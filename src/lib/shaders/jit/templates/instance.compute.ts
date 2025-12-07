@@ -11,7 +11,10 @@ export const instanceComputeShaderTemplate: shaders.InstancingShaderTemplate = {
 
 @group(2) @binding(0)
 var<storage, read_write> instance_pts: array<InstanceVertex>;
-@group(2) @binding(1) var<uniform> instanceCount: u32;
+@group(2) @binding(1) 
+var<uniform> instanceCount: u32;
+// @group(2) @binding(2)
+// var<storage, read_write> createdInstances: atomic<u32>;
 
 ${uniforms}
 
@@ -25,6 +28,19 @@ fn hash11(n: f32) -> f32 {
 }
 
 ${utils}
+
+fn generateCode(v: u32) -> f32 {
+    let terrainPos = vec3f(
+        vertices[v],
+        0.0,
+        vertices[v + 2u],
+    );
+
+    ${body}
+
+    let maskKey = ${maskKey};
+    return maskKey;
+}
 
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
@@ -82,10 +98,11 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let v_tl = vertexOffset(idx_tl);
     let v_tr = vertexOffset(idx_tr);
 
-    let h_bl = vertices[v_bl + 1];
-    let h_br = vertices[v_br + 1];
-    let h_tl = vertices[v_tl + 1];
-    let h_tr = vertices[v_tr + 1];
+    // run generated code on each of them also. this kinda sucks 
+    let h_bl = generateCode(v_bl);
+    let h_br = generateCode(v_br);
+    let h_tl = generateCode(v_tl);
+    let h_tr = generateCode(v_tr);
 
     // normals for each point also
     let nor_bl = vec3f(vertices[v_bl + 3], vertices[v_bl + 4], vertices[v_bl + 5]);

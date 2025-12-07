@@ -61,11 +61,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
-
-    let transformed_local = (transform_matrix * vec4f(local, 1.0)).xyz;
-
-    let rotated = rot * transformed_local;   // apply orientation
-    let world = vec4(pos + rotated, 1.0);
+    let rotated = rot * local;
+    let world = transform_matrix * vec4(pos + rotated, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // transform normals too
@@ -74,8 +71,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
         transform_matrix[1].xyz,
         transform_matrix[2].xyz
     );
-    let transformed_nor = normal_matrix * vert_nor;
-    let new_nor = rot * transformed_nor;
+    let transformed_nor = rot * vert_nor;
+    let new_nor = normalize(normal_matrix * transformed_nor);
 
     // set output
     out.position = world_pos;

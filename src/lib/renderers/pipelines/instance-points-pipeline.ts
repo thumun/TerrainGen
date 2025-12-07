@@ -10,6 +10,7 @@ export class InstancePointsPipeline {
 
   instanceCount = 1;
   instanceCountBuffer: GPUBuffer;
+  //numCreatedInstancesBuffer: GPUBuffer;
 
   instancingBindGroupLayout: GPUBindGroupLayout;
   instancingBindGroup: GPUBindGroup;
@@ -52,6 +53,12 @@ export class InstancePointsPipeline {
     });
     this.device.queue.writeBuffer(this.instanceCountBuffer, 0, numInstances);
 
+    // this.numCreatedInstancesBuffer = device.createBuffer({
+    //   label: "buffer for how many valid points have been created",
+    //   size: 4,
+    //   usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+    // });
+
     this.instancingBindGroupLayout = this.device.createBindGroupLayout({
       label: 'instancing bind group layout',
       entries: [
@@ -64,12 +71,21 @@ export class InstancePointsPipeline {
           },
         },
         {
+          // number of instances
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           buffer: {
             type: 'uniform',
           },
         },
+        // {
+        //   // count how many instances we made
+        //   binding: 2,
+        //   visibility: GPUShaderStage.COMPUTE,
+        //   buffer: {
+        //     type: 'storage',
+        //   },
+        // },
       ],
     });
 
