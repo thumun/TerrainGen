@@ -9,6 +9,8 @@ export type InstancingPipeline = jitShaders.InstancingShaderConfig;
 
 export type WaterPipeline = jitShaders.DisplaceShaderConfig;
 
+export type TransformConfig = jitShaders.TransformConfig;
+
 export type PreviewNode = {
   bar: string;
 };

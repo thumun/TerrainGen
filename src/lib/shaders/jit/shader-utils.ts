@@ -43,3 +43,50 @@ export const worleyNoise = () => `fn worley_noise(pos: vec3f) -> f32 {
 
 	return minDist;
 }`;
+
+export const createTransformMatrix =
+  () => `fn create_transform_matrix(translate: vec3f, rotate: vec3f, scale: vec3f) -> mat4x4<f32> {
+  // Create rotation matrices for each axis
+  let cx = cos(rotate.x);
+  let sx = sin(rotate.x);
+  let cy = cos(rotate.y);
+  let sy = sin(rotate.y);
+  let cz = cos(rotate.z);
+  let sz = sin(rotate.z);
+  
+  // Rotation matrix (ZYX order - yaw, pitch, roll)
+  let rotX = mat3x3<f32>(
+    vec3f(1.0, 0.0, 0.0),
+    vec3f(0.0, cx, -sx),
+    vec3f(0.0, sx, cx)
+  );
+  
+  let rotY = mat3x3<f32>(
+    vec3f(cy, 0.0, sy),
+    vec3f(0.0, 1.0, 0.0),
+    vec3f(-sy, 0.0, cy)
+  );
+  
+  let rotZ = mat3x3<f32>(
+    vec3f(cz, -sz, 0.0),
+    vec3f(sz, cz, 0.0),
+    vec3f(0.0, 0.0, 1.0)
+  );
+  
+  let rotation = rotZ * rotY * rotX;
+  
+  // Combine scale, rotation, and translation into 4x4 matrix
+  return mat4x4<f32>(
+    vec4f(rotation[0] * scale.x, 0.0),
+    vec4f(rotation[1] * scale.y, 0.0),
+    vec4f(rotation[2] * scale.z, 0.0),
+    vec4f(translate, 1.0)
+  );
+}`;
+
+export const applyTransformMatrix =
+  () => `fn apply_transform_matrix(position: vec3f, transform: mat4x4<f32>) -> vec3f {
+  let pos4 = vec4f(position, 1.0);
+  let transformed = transform * pos4;
+  return transformed.xyz;
+}`;
