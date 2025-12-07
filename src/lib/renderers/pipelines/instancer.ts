@@ -13,8 +13,8 @@ export class IndirectInstancer {
 
   instancePointsComputePipeline: InstancePointsPipeline;
 
-  textureBindGroup: GPUBindGroup | undefined;
-  useTextures = false;
+  textureBindGroup: GPUBindGroup;
+  textureArray: GPUTexture;
 
   transformBuffer: GPUBuffer | undefined;
   transformBindGroupLayout: GPUBindGroupLayout | undefined;
@@ -212,61 +212,62 @@ export class IndirectInstancer {
     });
 
     // create buffers for the image bitmaps
-    if (imageBitmaps && imageBitmaps.length > 0) {
-      this.useTextures = true;
-      const source = imageBitmaps[0];
-      const texture = this.device.createTexture({
-        label: "FAT FUCKING TEXTURE!!!!",
-        format: 'rgba8unorm',
-        size: {
-          width: source.width,
-          height: source.height,
-          depthOrArrayLayers: 20,
-        },
-        usage: GPUTextureUsage.TEXTURE_BINDING |
-          GPUTextureUsage.COPY_DST |
-          GPUTextureUsage.RENDER_ATTACHMENT,
-      });
+    const firstSource = imageBitmaps![0];
+    this.textureArray = this.device.createTexture({
+      label: "FAT FUCKING TEXTURE!!!!",
+      format: 'rgba8unorm',
+      size: {
+        width: firstSource.width,
+        height: firstSource.height,
+        depthOrArrayLayers: 20,
+      },
+      usage: GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    for (let i = 0; i < imageBitmaps!.length; i++) {
+      const source = imageBitmaps![i];
 
       this.device.queue.copyExternalImageToTexture(
         { source: source, flipY: true },
-        { texture: texture, premultipliedAlpha: true, origin: { x: 0, y: 0, z: 1 }, },
+        { texture: this.textureArray, premultipliedAlpha: true, origin: { x: 0, y: 0, z: i + 1 }, },
         { width: source.width, height: source.height },
       );
-
-      const sampler = this.device.createSampler({
-        addressModeU: 'repeat',
-        addressModeV: 'repeat',
-        magFilter: 'linear',
-        minFilter: 'linear',
-        mipmapFilter: 'linear',
-      });
-
-      this.textureBindGroup = this.device.createBindGroup({
-        label: 'texture bind group',
-        layout: textureBindGroupLayout,
-        entries: [
-          {
-            binding: 0, resource: sampler
-          },
-          {
-            binding: 1,
-            resource: texture.createView({
-              dimension: "2d-array",
-            }),
-          },
-        ],
-      });
     }
+
+    const sampler = this.device.createSampler({
+      addressModeU: 'repeat',
+      addressModeV: 'repeat',
+      magFilter: 'linear',
+      minFilter: 'linear',
+      mipmapFilter: 'linear',
+    });
+
+    this.textureBindGroup = this.device.createBindGroup({
+      label: 'texture bind group',
+      layout: textureBindGroupLayout,
+      entries: [
+        {
+          binding: 0, resource: sampler
+        },
+        {
+          binding: 1,
+          resource: this.textureArray.createView({
+            dimension: "2d-array",
+          }),
+        },
+      ],
+    });
+
   }
 
   runRenderPass(renderPass: GPURenderPassEncoder, sceneUniforms: GPUBindGroup) {
     renderPass.setPipeline(this.instancingRenderPipeline);
     renderPass.setBindGroup(0, sceneUniforms);
     renderPass.setBindGroup(1, this.instancingPointsBindGroup);
-    if (this.useTextures) {
-      renderPass.setBindGroup(2, this.textureBindGroup);
-    }
+    renderPass.setBindGroup(2, this.textureBindGroup);
+
     if (this.transformBindGroup) {
       renderPass.setBindGroup(3, this.transformBindGroup);
     }
