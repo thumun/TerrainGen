@@ -8,15 +8,16 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(224);
+  readonly buffer = new ArrayBuffer(288);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
-  private readonly viewDirView = new Float32Array(this.buffer, 192, 4);
-  private readonly cameraWidthView = new Float32Array(this.buffer, 208, 1);
-  private readonly cameraHeightView = new Float32Array(this.buffer, 212, 1);
-  private readonly nearPlaneView = new Float32Array(this.buffer, 216, 1);
-  private readonly farPlaneView = new Float32Array(this.buffer, 220, 1);
+  private readonly rotMatView = new Float32Array(this.buffer, 192, 16);
+  private readonly viewDirView = new Float32Array(this.buffer, 256, 4);
+  private readonly cameraWidthView = new Float32Array(this.buffer, 272, 1);
+  private readonly cameraHeightView = new Float32Array(this.buffer, 276, 1);
+  private readonly nearPlaneView = new Float32Array(this.buffer, 280, 1);
+  private readonly farPlaneView = new Float32Array(this.buffer, 284, 1);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
@@ -28,6 +29,10 @@ class CameraUniforms {
 
   set viewMat(mat: Float32Array) {
     this.viewMatView.set(mat.subarray(0, 16), 0);
+  }
+
+  set rotMat(mat: Float32Array) {
+    this.rotMatView.set(mat.subarray(0, 16), 0);
   }
 
   set viewDir(dir: Float32Array) {
@@ -195,6 +200,13 @@ export class Camera {
     const lookPos = vec3.add(this.cameraPos, vec3.scale(this.cameraFront, 1));
     const viewMat = mat4.lookAt(this.cameraPos, lookPos, [0, 1, 0]);
     const viewProjMat = mat4.mul(this.projMat, viewMat);
+
+    const rotMat = mat4.clone(viewMat);
+    rotMat[12] = 0.0;
+    rotMat[13] = 0.0;
+    rotMat[14] = 0.0;
+
+    this.uniforms.rotMat = rotMat;
 
     // set `this.uniforms.viewProjMat` to the newly calculated view proj mat
     this.uniforms.viewProjMat = viewProjMat;

@@ -9,6 +9,7 @@ import naiveVertRaw from './naive.vs.wgsl?raw';
 import normalsComputeRaw from './normals.cs.wgsl?raw';
 import shadowCastVertRaw from './shadow_cast.vs.wgsl?raw';
 import shadowCastInstancedVertRaw from './shadow_cast_instanced.vs.wgsl?raw';
+import skyRaw from './sky.wgsl?raw';
 import terrainComputeRaw from './terrain.cs.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
@@ -38,3 +39,4 @@ export const terrainPointsComputeSrc: string = processShaderRaw(instancePointsCo
 export const instanceSrc: string = processShaderRaw(instancingRaw);
 export const shadowCastVertSrc: string = processShaderRaw(shadowCastVertRaw);
 export const shadowCastInstancedVertSrc: string = processShaderRaw(shadowCastInstancedVertRaw);
+export const skySrc: string = processShaderRaw(skyRaw);
