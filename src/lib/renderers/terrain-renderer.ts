@@ -628,6 +628,15 @@ export class TerrainRenderer implements IRenderer {
       return;
     }
 
+    // unused for now
+    /*
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+    console.log('custom instance shader:', customInstanceShader);
+    */
+
     // Create buffers for mesh
     const instanceVertexBuffer = this.device.createBuffer({
       size: mesh.vertices.byteLength,
