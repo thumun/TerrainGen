@@ -1,5 +1,7 @@
 import path from 'path-browserify';
 
+import * as common from './common';
+
 import type { IRenderer } from '@/components/common/webgpu-canvas';
 import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
 import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
@@ -82,30 +84,6 @@ export class TerrainRenderer implements IRenderer {
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
 
-  private static VertexBufferLayout: GPUVertexBufferLayout = {
-    arrayStride: 32,
-    attributes: [
-      {
-        // pos
-        format: 'float32x3',
-        offset: 0,
-        shaderLocation: 0,
-      },
-      {
-        // nor
-        format: 'float32x3',
-        offset: 12,
-        shaderLocation: 1,
-      },
-      {
-        // uv
-        format: 'float32x2',
-        offset: 24,
-        shaderLocation: 2,
-      },
-    ],
-  };
-
   constructor(
     private webGPU: WebGPUContext,
     stage: Stage,
@@ -129,6 +107,24 @@ export class TerrainRenderer implements IRenderer {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
+        {
+          // directional light
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'depth' },
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          sampler: { type: 'non-filtering' },
+        },
       ],
     });
 
@@ -140,6 +136,26 @@ export class TerrainRenderer implements IRenderer {
           // camera uniforms
           binding: 0,
           resource: { buffer: this.stage.camera.uniformsBuffer },
+        },
+        {
+          // directional light
+          binding: 1,
+          resource: { buffer: this.stage.directionalLight.directionalLightUniformsBuffer },
+        },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          resource: this.stage.directionalLight.shadowDepthTextureView,
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          resource: this.device.createSampler({
+            addressModeU: 'clamp-to-edge',
+            addressModeV: 'clamp-to-edge',
+            magFilter: 'nearest',
+            minFilter: 'nearest',
+          }),
         },
       ],
     });
@@ -389,7 +405,7 @@ export class TerrainRenderer implements IRenderer {
           label: 'naive vert shader',
           code: shaders.naiveVertSrc,
         }),
-        buffers: [TerrainRenderer.VertexBufferLayout],
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
       fragment: {
         module: this.device.createShaderModule({
@@ -420,12 +436,17 @@ export class TerrainRenderer implements IRenderer {
   onFrame(frameInfo: { time: number; deltaTime: number }) {
     this.stage.camera.onFrame(frameInfo.deltaTime);
 
-    // run the pipeline
     const encoder = this.device.createCommandEncoder();
+
+    // run shadowmapping
+    this.stage.directionalLight.onFrame({
+      encoder,
+      meshes: [this.stage.groundPlane],
+      instancers: [...(this.indirectInstancer ? [this.indirectInstancer] : [])],
+    });
+
+    // run our main render pass
     const canvasTextureView = this.context.getCurrentTexture().createView();
-
-    // TODO: run directional light shadow mapping
-
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
       colorAttachments: [

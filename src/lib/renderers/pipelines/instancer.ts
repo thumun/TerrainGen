@@ -159,11 +159,13 @@ export class IndirectInstancer {
         },
       ],
     });
+
     const bindGroupLayouts = [
       sceneUniformsBindGroupLayout,
       this.instancingPointsBindGroupLayout,
       textureBindGroupLayout,
     ];
+
     if (this.transformBindGroupLayout) {
       bindGroupLayouts.push(this.transformBindGroupLayout);
     }
