@@ -19,7 +19,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams }: Terrai
         <input
           type="range"
           min={1}
-          max={20}
+          max={100}
           step={1}
           value={globalParams.size}
           onChange={(e) => {

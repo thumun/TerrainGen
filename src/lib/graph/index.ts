@@ -212,14 +212,14 @@ function generatePipelines(
       maskKey:
         maskSourceNode && maskEdge
           ? nodeMapping.getHandleKey({
-            sourceNode: maskSourceNode,
-            outgoingHandleId: maskEdge.sourceHandle!,
-          })
+              sourceNode: maskSourceNode,
+              outgoingHandleId: maskEdge.sourceHandle!,
+            })
           : undefined,
       threshold: scatterNode.data.threshold,
       transform: transformConfig,
       fileContent:
-        geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent as string : undefined,
+        geometryNode.type === 'loadGeo' ? (geometryNode.data.fileContent as string) : undefined,
       fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 

@@ -30,6 +30,7 @@ struct VertexOut {
     @location(1) nor : vec3f,
     @location(2) uv : vec2f,
     @location(3) @interpolate(flat) tex_id: u32,
+    @location(4) @interpolate(flat) used: u32,
 };
 
 @vertex
@@ -43,6 +44,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // point nor for testing...
     var nor = normalize(instance_pts[in.instance_index].nor);
+
+    var used = instance_pts[in.instance_index].used;
 
     let idx = indices[in.vertex_index];
     let base = idx * 9u;
@@ -61,11 +64,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
-
-    let transformed_local = (transform_matrix * vec4f(local, 1.0)).xyz;
-
-    let rotated = rot * transformed_local;   // apply orientation
-    let world = vec4(pos + rotated, 1.0);
+    let rotated = rot * local;
+    let world = transform_matrix * vec4(pos + rotated, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // transform normals too
@@ -74,8 +74,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
         transform_matrix[1].xyz,
         transform_matrix[2].xyz
     );
-    let transformed_nor = normal_matrix * vert_nor;
-    let new_nor = rot * transformed_nor;
+    let transformed_nor = rot * vert_nor;
+    let new_nor = normalize(normal_matrix * transformed_nor);
 
     // set output
     out.position = world_pos;
@@ -83,12 +83,17 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.nor = normalize(new_nor);
     out.uv = vert_uv;
     out.tex_id = texture_id;
+    out.used = used;
     return out;
 }
 
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4f
 {
+  if (in.used == 0u) {
+    discard;
+  }
+
   // do lambertian shading
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
@@ -99,7 +104,7 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
 
   if (color.a < 0.5) {
     discard;
-}
+  }
 
   return color;
 

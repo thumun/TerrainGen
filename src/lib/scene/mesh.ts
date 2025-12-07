@@ -194,20 +194,20 @@ export class OBJ extends Mesh {
 
     // set grey texture for obj by default
     const baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
-    const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
+    const [r, g, b, a] = baseColor.map((v) => Math.round(v * 255));
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 1;
 
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
     ctx.fillRect(0, 0, 1, 1);
 
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (blob) resolve(blob);
-        else reject(new Error("Canvas toBlob() returned null"));
-      }, "image/png");
+        else reject(new Error('Canvas toBlob() returned null'));
+      }, 'image/png');
     });
     const imageBitmap = await createImageBitmap(blob);
 
@@ -335,12 +335,10 @@ export class OBJ extends Mesh {
           finalIndices.push(idxArray![i] + vertexOffset);
         }
       }
-
     }
 
     // load textures here...
     for (const gltfMaterial of gltf.materials!) {
-
       // base color
       if (gltfMaterial.pbrMetallicRoughness?.baseColorTexture) {
         const texInfo = gltfMaterial.pbrMetallicRoughness?.baseColorTexture;
@@ -359,33 +357,91 @@ export class OBJ extends Mesh {
 
         // create image (sus)
         const imageBitmap = await createImageBitmap(
-          new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' })
+          new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' }),
         );
 
         finalBitmaps.push(imageBitmap);
-      }
-      else {
+      } else {
         // if there is no texture for base color, create a base color bitmap
         let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
 
-        if (gltfMaterial.pbrMetallicRoughness && gltfMaterial.pbrMetallicRoughness.baseColorFactor) {
-          baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor
+        if (
+          gltfMaterial.pbrMetallicRoughness &&
+          gltfMaterial.pbrMetallicRoughness.baseColorFactor
+        ) {
+          baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor;
         }
 
-        const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
+        const [r, g, b, a] = baseColor.map((v) => Math.round(v * 255));
 
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = canvas.height = 1;
 
-        const ctx = canvas.getContext("2d")!;
+        const ctx = canvas.getContext('2d')!;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.fillRect(0, 0, 1, 1);
 
         const blob = await new Promise<Blob>((resolve, reject) => {
           canvas.toBlob((blob) => {
             if (blob) resolve(blob);
-            else reject(new Error("Canvas toBlob() returned null"));
-          }, "image/png");
+            else reject(new Error('Canvas toBlob() returned null'));
+          }, 'image/png');
+        });
+        const imageBitmap = await createImageBitmap(blob);
+
+        finalBitmaps.push(imageBitmap);
+      }
+    }
+
+    // load textures here...
+    for (const gltfMaterial of gltf.materials!) {
+      // base color
+      if (gltfMaterial.pbrMetallicRoughness?.baseColorTexture) {
+        const texInfo = gltfMaterial.pbrMetallicRoughness?.baseColorTexture;
+        const gltfTexture = gltf.textures![texInfo.index];
+
+        const imageIndex = gltfTexture.source!;
+        const imageDef = gltf.images![imageIndex];
+
+        const view = gltf.bufferViews![imageDef.bufferView!];
+        const buffer = gltfWithBuffers.buffers[view.buffer];
+
+        const byteOffset = (view.byteOffset ?? 0) + buffer.byteOffset;
+        const byteLength = view.byteLength;
+
+        const imageBytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
+
+        // create image (sus)
+        const imageBitmap = await createImageBitmap(
+          new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' }),
+        );
+
+        finalBitmaps.push(imageBitmap);
+      } else {
+        // if there is no texture for base color, create a base color bitmap
+        let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+
+        if (
+          gltfMaterial.pbrMetallicRoughness &&
+          gltfMaterial.pbrMetallicRoughness.baseColorFactor
+        ) {
+          baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor;
+        }
+
+        const [r, g, b, a] = baseColor.map((v) => Math.round(v * 255));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(0, 0, 1, 1);
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Canvas toBlob() returned null'));
+          }, 'image/png');
         });
         const imageBitmap = await createImageBitmap(blob);
 
@@ -396,7 +452,5 @@ export class OBJ extends Mesh {
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
     this.textures = finalBitmaps;
-
-    console.log("textures", finalBitmaps);
   }
 }
