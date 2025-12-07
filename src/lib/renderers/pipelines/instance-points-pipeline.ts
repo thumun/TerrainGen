@@ -35,7 +35,7 @@ export class InstancePointsPipeline {
     this.customInstanceCode = customInstanceCode;
     this.instancePoints = this.device.createBuffer({
       label: 'instancing points vertex buffer',
-      size: Math.max(this.instanceCount * 96, 96),
+      size: Math.max(this.instanceCount * 112, 112),
       usage:
         GPUBufferUsage.VERTEX |
         GPUBufferUsage.COPY_DST |

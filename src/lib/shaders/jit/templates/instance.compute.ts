@@ -2,7 +2,7 @@ import commonShaderContent from '@/lib/shaders/common.wgsl?raw';
 import * as shaders from '@/lib/shaders/jit/types/shaders';
 
 export const instanceComputeShaderTemplate: shaders.InstancingShaderTemplate = {
-  content: ({ uniforms, utils, body, posKey, maskKey, threshold }) => `${commonShaderContent}
+    content: ({ uniforms, utils, body, posKey, maskKey, threshold }) => `${commonShaderContent}
 
 @group(0) @binding(0) var<storage, read_write> vertices: array<f32>;
 @group(0) @binding(1) var<storage, read_write> indices: array<u32>;
@@ -60,7 +60,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
     // let instancePos = ${posKey};
     let maskKey = ${maskKey};
-    let threshold = ${threshold};
+    let threshold = f32(${threshold});
 
     let subdivisions = u32(meshUniforms.resolution);
     let size = meshUniforms.size;
@@ -127,6 +127,12 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     instance_pts[id.x].nor = vec3<f32>(normal.x, normal.y, normal.z);
     instance_pts[id.x].uv = vec2<f32>(0.0, 0.0);
     instance_pts[id.x].rotMat = rot;
+
+    if (height < threshold) {
+        instance_pts[id.x].used = 0u;
+    } else {
+        instance_pts[id.x].used = 1u;
+    }
 }
 `,
 };

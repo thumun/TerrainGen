@@ -30,6 +30,7 @@ struct VertexOut {
     @location(1) nor : vec3f,
     @location(2) uv : vec2f,
     @location(3) @interpolate(flat) tex_id: u32,
+    @location(4) @interpolate(flat) used: u32,
 };
 
 @vertex
@@ -43,6 +44,8 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // point nor for testing...
     var nor = normalize(instance_pts[in.instance_index].nor);
+
+    var used = instance_pts[in.instance_index].used;
 
     let idx = indices[in.vertex_index];
     let base = idx * 9u;
@@ -80,12 +83,17 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.nor = normalize(new_nor);
     out.uv = vert_uv;
     out.tex_id = texture_id;
+    out.used = used;
     return out;
 }
 
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4f
 {
+  if (in.used == 0u) {
+    discard;
+  }
+
   // do lambertian shading
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
