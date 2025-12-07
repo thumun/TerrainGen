@@ -4,10 +4,10 @@ var<uniform> camera : CameraUniforms;
 // add another uniform for whether or not texture is being used
 
 @group(1) @binding(0)
-var<storage, read> instance_pts: array<InstanceVertex>; // 8 floats per instance- pos, nor, uv
+var<storage, read> instance_pts: array<InstanceVertex>;
 
 @group(1) @binding(1)
-var<storage, read> vertices: array<f32>; // 8 floats per vertex
+var<storage, read> vertices: array<f32>; // 8 floats + 1 u32 per vertex
 
 @group(1) @binding(2)
 var<storage, read> indices: array<u32>;
@@ -78,9 +78,9 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
 
-  //let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
-  //let color = textureSample(ourTexture, ourSampler, texcoord, 1);
-  let color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
+  let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
+  let color = textureSample(ourTexture, ourSampler, texcoord, 1);
+  //let color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
 
   if (color.w < 0) {
     discard;

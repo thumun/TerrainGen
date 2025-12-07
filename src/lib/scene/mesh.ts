@@ -193,8 +193,8 @@ export class OBJ extends Mesh {
     }
 
     // set grey texture for obj by default
-    let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
-    const [r, g, b, a] = baseColor!.map(v => Math.round(v * 255));
+    const baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+    const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
 
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = 1;
@@ -369,7 +369,7 @@ export class OBJ extends Mesh {
           baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor
         }
 
-        const [r, g, b, a] = baseColor!.map(v => Math.round(v * 255));
+        const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
 
         const canvas = document.createElement("canvas");
         canvas.width = canvas.height = 1;
