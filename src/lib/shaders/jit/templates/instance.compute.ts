@@ -99,10 +99,15 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let v_tr = vertexOffset(idx_tr);
 
     // run generated code on each of them also. this kinda sucks 
-    let h_bl = generateCode(v_bl);
-    let h_br = generateCode(v_br);
-    let h_tl = generateCode(v_tl);
-    let h_tr = generateCode(v_tr);
+    let mask_bl = generateCode(v_bl);
+    let mask_br = generateCode(v_br);
+    let mask_tl = generateCode(v_tl);
+    let mask_tr = generateCode(v_tr);
+
+    let h_bl = vertices[v_bl + 1];
+    let h_br = vertices[v_br + 1];
+    let h_tl = vertices[v_tl + 1];
+    let h_tr = vertices[v_tr + 1];
 
     // normals for each point also
     let nor_bl = vec3f(vertices[v_bl + 3], vertices[v_bl + 4], vertices[v_bl + 5]);
@@ -115,6 +120,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let fz = fract(lz / step);
 
     let height = mix(mix(h_bl, h_br, fx), mix(h_tl, h_tr, fx), fz);
+    let mask = mix(mix(mask_bl, mask_br, fx), mix(mask_tl, mask_tr, fx), fz);
     let normal = normalize(mix(mix(nor_bl, nor_br, fx), mix(nor_tl, nor_tr, fx), fz));
 
     // do all the annoying calc in here, then store it in instance_pts...
@@ -128,7 +134,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     instance_pts[id.x].uv = vec2<f32>(0.0, 0.0);
     instance_pts[id.x].rotMat = rot;
 
-    if (height < threshold) {
+    if (mask < threshold) {
         instance_pts[id.x].used = 0u;
     } else {
         instance_pts[id.x].used = 1u;
