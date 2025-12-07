@@ -112,7 +112,7 @@ export const HANDLES = {
     out: { position: 'vec3-pos-out' },
   },
   terrain: {
-    in: { height: 'float-trans-in' },
+    in: { height: 'float-trans-in', waterHeight: 'float-waterHeight-in' },
     out: {},
   },
   separate: {

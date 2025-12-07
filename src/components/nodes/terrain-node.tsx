@@ -9,6 +9,11 @@ function TerrainNode({ ...props }: NodeProps) {
   return (
     <TerrainGenNode.Root title="Terrain (Output)" {...props}>
       <TerrainGenNode.HandleInput label="Height" handleId={HANDLES.in.height} valueType="f32" />
+      <TerrainGenNode.HandleInput
+        label="Water Height"
+        handleId={HANDLES.in.waterHeight}
+        valueType="f32"
+      />
     </TerrainGenNode.Root>
   );
 }

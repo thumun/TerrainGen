@@ -81,6 +81,11 @@ export class TerrainRenderer implements IRenderer {
   private nodeGraphUniformLayout!: Map<string, number> | undefined;
   private nodeGraphUniformConfig!: scene.DisplacePipeline['uniforms'] | undefined;
 
+  private waterHeightUniformBuffer: GPUBuffer;
+  private waterHeightBindGroupLayout: GPUBindGroupLayout;
+  private waterHeightBindGroup: GPUBindGroup;
+  private currentWaterHeight: number = 0.0;
+
   /** Custom displace pipeline, gets reconfigured whenever node structure is changed */
   private customDisplacePipeline: GPUComputePipeline;
 
@@ -166,6 +171,41 @@ export class TerrainRenderer implements IRenderer {
           // camera uniforms
           binding: 0,
           resource: { buffer: this.stage.camera.uniformsBuffer },
+        },
+      ],
+    });
+
+    this.waterHeightUniformBuffer = this.device.createBuffer({
+      label: 'water height uniform',
+      size: 16, // f32 with padding
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    // Initialize with 0
+    this.device.queue.writeBuffer(
+      this.waterHeightUniformBuffer,
+      0,
+      new Float32Array([0.0])
+    );
+
+    this.waterHeightBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'water height bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.waterHeightBindGroup = this.device.createBindGroup({
+      label: 'water height bind group',
+      layout: this.waterHeightBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: this.waterHeightUniformBuffer },
         },
       ],
     });
@@ -416,7 +456,7 @@ export class TerrainRenderer implements IRenderer {
     return this.device.createRenderPipeline({
       layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
-        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
+        bindGroupLayouts: [this.sceneUniformsBindGroupLayout, this.waterHeightBindGroupLayout],
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -665,6 +705,7 @@ export class TerrainRenderer implements IRenderer {
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
+    renderPass.setBindGroup(1, this.waterHeightBindGroup);
     renderPass.setVertexBuffer(0, this.stage.groundPlane.vertexBuffer);
     renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
@@ -709,6 +750,17 @@ export class TerrainRenderer implements IRenderer {
     // consensus after discussion: should use struct.
 
     // also TODO: reuse code between this and our constructor
+
+    if (config.outputs.waterHeight) {
+      console.log('Water height output key:', config.outputs.waterHeight);
+
+      const waterHeightKey = config.outputs.waterHeight.replace('nodeGraphUniforms.', '');
+      const waterHeightUniform = config.uniforms.find(u => u.key === waterHeightKey);
+
+      if (waterHeightUniform && waterHeightUniform.type === 'f32' && waterHeightUniform.initialValue !== null) {
+        this.setWaterHeightForTerrain(waterHeightUniform.initialValue);
+      }
+    }
 
     const customComputeShader = jit.generateDisplaceShaderCode(
       config,
@@ -962,5 +1014,15 @@ export class TerrainRenderer implements IRenderer {
     this.runComputes(encoder);
     this.device.queue.submit([encoder.finish()]);
     console.log('rerunning compute after uniform update');
+  }
+
+  setWaterHeightForTerrain(height: number) {
+    this.currentWaterHeight = height;
+    this.device.queue.writeBuffer(
+      this.waterHeightUniformBuffer,
+      0,
+      new Float32Array([height])
+    );
+    console.log('Updated water height for terrain fragment shader:', height);
   }
 }

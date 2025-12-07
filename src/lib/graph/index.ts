@@ -76,12 +76,26 @@ function generatePipelines(
     const heightEdgeSourceNode = orderedDependencyNodes.find(
       (node) => node.id === heightEdge?.source,
     );
+
+    const waterHeightEdge = edges.find(
+      (edge) => edge.target === terrainNode.id && edge.targetHandle === nodeTypes.HANDLES.terrain.in.waterHeight
+    );
+    const waterHeightSourceNode = waterHeightEdge
+      ? orderedDependencyNodes.find((node) => node.id === waterHeightEdge.source)
+      : undefined;
+
     const outputs: scene.DisplacePipeline['outputs'] = {
       height: nodeMapping.getHandleKey({
         // TODO: wow these type assertions are awesome (evil as fuck)
         sourceNode: heightEdgeSourceNode!,
         outgoingHandleId: heightEdge!.sourceHandle!,
       }),
+      waterHeight: waterHeightSourceNode && waterHeightEdge
+        ? nodeMapping.getHandleKey({
+          sourceNode: waterHeightSourceNode,
+          outgoingHandleId: waterHeightEdge.sourceHandle!,
+        })
+        : undefined,
     };
 
     displacePipeline = { instructionSet, uniforms, outputs };
@@ -111,6 +125,7 @@ function generatePipelines(
         sourceNode: heightEdgeSourceNode!,
         outgoingHandleId: heightEdge!.sourceHandle!,
       }),
+      waterHeight: undefined,
     };
 
     waterPipeline = { instructionSet, uniforms, outputs };
