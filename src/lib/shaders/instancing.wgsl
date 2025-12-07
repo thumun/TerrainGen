@@ -16,6 +16,9 @@ var<storage, read> indices: array<u32>;
 @group(2) @binding(0) var ourSampler: sampler;
 @group(2) @binding(1) var ourTexture: texture_2d_array<f32>;
 
+@group(3) @binding(0)
+var<uniform> transform_matrix: mat4x4<f32>;
+
 struct VertexIn {
     @builtin(vertex_index) vertex_index: u32,
     @builtin(instance_index) instance_index: u32
@@ -56,17 +59,26 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
-    let rotated = rot * local;   // apply orientation
+
+    let transformed_local = (transform_matrix * vec4f(local, 1.0)).xyz;
+
+    let rotated = rot * transformed_local;   // apply orientation
     let world = vec4(pos + rotated, 1.0);
     let world_pos = camera.viewProjMat * world;
 
     // transform normals too
-    let new_nor = rot * vert_nor;
+    let normal_matrix = mat3x3<f32>(
+        transform_matrix[0].xyz,
+        transform_matrix[1].xyz,
+        transform_matrix[2].xyz
+    );
+    let transformed_nor = normal_matrix * vert_nor;
+    let new_nor = rot * transformed_nor;
 
     // set output
     out.position = world_pos;
     out.pos = world_pos.xyz;
-    out.nor = new_nor;
+    out.nor = normalize(new_nor);
     out.uv = vert_uv;
     return out;
 }

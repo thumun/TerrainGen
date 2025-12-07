@@ -29,7 +29,7 @@ export type InstructionGenerator<
 ) => TInstruction | null;
 
 /**
- * A collection of methods per known node type (i.e. 'mathVec3') which generate an instruction
+ * A collection of methods per known node type (i.e. 'math') which generate an instruction
  * based on a given node's content.
  */
 export type InstructionMapping<TNode extends { type: string }, TInstruction> = {
@@ -74,7 +74,7 @@ export function getHandleKey({
 }
 
 const mathOperationMapping: {
-  [key in nodeTypes.MathVec3['data']['operationVal']]: instructions.Math['operation'];
+  [key in nodeTypes.Math['data']['operationVal']]: instructions.Math['operation'];
 } = {
   Add: 'add',
   Sub: 'sub',
@@ -118,6 +118,9 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
   // TODO: this transform functionality is not real until we have geometry
   transform: dummyHandler,
 
+  mathFloat: dummyHandler,
+  mixFloat: dummyHandler,
+
   noise: (node, getIncomingHandleKey): instructions.Noise => ({
     type: 'noise',
     method: noiseTypeMapping[node.data.mode],
@@ -132,18 +135,6 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
     },
   }),
 
-  mathFloat: (node, getIncomingHandleKey): instructions.Math => ({
-    type: 'math',
-    operation: mathOperationMapping[node.data.operationVal],
-    references: {
-      readA: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.a),
-      readB: getIncomingHandleKey(nodeTypes.HANDLES.mathFloat.in.b),
-      write: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mathFloat.out.result,
-      }),
-    },
-  }),
   trigMathFloat: (node, getIncomingHandleKey): instructions.TrigMath => ({
     type: 'trig-math',
     operation: trigOperationMapping[node.data.operationVal],
@@ -155,43 +146,40 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
       }),
     },
   }),
-  mathVec3: (node, getIncomingHandleKey): instructions.Math => ({
-    type: 'math',
-    operation: mathOperationMapping[node.data.operationVal],
-    references: {
-      readA: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.a),
-      readB: getIncomingHandleKey(nodeTypes.HANDLES.mathVec3.in.b),
-      write: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mathVec3.out.result,
-      }),
-    },
-  }),
 
-  mixFloat: (node, getIncomingHandleKey): instructions.Mix => ({
-    type: 'mix',
-    references: {
-      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.a),
-      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.b),
-      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixFloat.in.mix),
-      write: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mixFloat.out.result,
-      }),
-    },
-  }),
-  mixVec3: (node, getIncomingHandleKey): instructions.Mix => ({
-    type: 'mix',
-    references: {
-      readA: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.a),
-      readB: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.b),
-      readMix: getIncomingHandleKey(nodeTypes.HANDLES.mixVec3.in.mix),
-      write: getHandleKey({
-        sourceNode: node,
-        outgoingHandleId: nodeTypes.HANDLES.mixVec3.out.result,
-      }),
-    },
-  }),
+  math: (node, getIncomingHandleKey): instructions.Math => {
+    const handles =
+      node.data.nodeType === 'Float' ? nodeTypes.HANDLES.mathFloat : nodeTypes.HANDLES.math;
+    return {
+      type: 'math',
+      operation: mathOperationMapping[node.data.operationVal],
+      references: {
+        readA: getIncomingHandleKey(handles.in.a),
+        readB: getIncomingHandleKey(handles.in.b),
+        write: getHandleKey({
+          sourceNode: node,
+          outgoingHandleId: handles.out.result,
+        }),
+      },
+    };
+  },
+
+  mix: (node, getIncomingHandleKey): instructions.Mix => {
+    const handles =
+      node.data.nodeType === 'Float' ? nodeTypes.HANDLES.mixFloat : nodeTypes.HANDLES.mix;
+    return {
+      type: 'mix',
+      references: {
+        readA: getIncomingHandleKey(handles.in.a),
+        readB: getIncomingHandleKey(handles.in.b),
+        readMix: getIncomingHandleKey(handles.in.mix),
+        write: getHandleKey({
+          sourceNode: node,
+          outgoingHandleId: handles.out.result,
+        }),
+      },
+    };
+  },
 
   smoothstepFloat: (node, getIncomingHandleKey): instructions.Smoothstep => ({
     type: 'smoothstep',
@@ -257,11 +245,11 @@ export const INSTRUCTION_MAPPING: InstructionMapping<nodeTypes.All, instructions
 };
 
 export const UNIFORM_MAPPING: UniformMapping<nodeTypes.All, util.UniformConfig> = {
-  mathVec3: () => [],
+  math: () => [],
   mathFloat: () => [],
   trigMathFloat: () => [],
   mixFloat: () => [],
-  mixVec3: () => [],
+  mix: () => [],
   smoothstepFloat: () => [],
   smoothstepVec3: () => [],
   noise: () => [],

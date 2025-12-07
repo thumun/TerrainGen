@@ -246,6 +246,81 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
+  private getUniform(key: string): [number, number, number] {
+    if (!this.nodeGraphUniformConfig || !this.nodeGraphUniformLayout) {
+      console.warn(`Cannot get uniform value for key "${key}" - uniforms not configured`);
+      return [0, 0, 0];
+    }
+
+    const actualKey = key.startsWith('nodeGraphUniforms.')
+      ? key.replace('nodeGraphUniforms.', '')
+      : key;
+
+    const uniformConfig = this.nodeGraphUniformConfig.find((u) => u.key === actualKey);
+    if (!uniformConfig) {
+      console.warn(`Uniform config for key "${actualKey}" not found`);
+      return [0, 0, 0];
+    }
+
+    if (uniformConfig.type === 'vec3f' && Array.isArray(uniformConfig.initialValue)) {
+      return uniformConfig.initialValue;
+    }
+
+    console.warn(`Uniform "${actualKey}" is not a vec3f type`);
+    return [0, 0, 0];
+  }
+
+  private createTransformMatrix(
+    translate: [number, number, number],
+    rotate: [number, number, number],
+    scale: [number, number, number],
+  ): Float32Array {
+    const matrix = new Float32Array(16);
+
+    // Compute rotation matrices
+    const [rx, rz, ry] = rotate;
+    const cx = Math.cos(rx),
+      sx = Math.sin(rx);
+    const cy = Math.cos(ry),
+      sy = Math.sin(ry);
+    const cz = Math.cos(rz),
+      sz = Math.sin(rz);
+
+    // Combined rotation matrix (Z * Y * X)
+    const r00 = cy * cz;
+    const r01 = cy * sz;
+    const r02 = -sy;
+    const r10 = sx * sy * cz - cx * sz;
+    const r11 = sx * sy * sz + cx * cz;
+    const r12 = sx * cy;
+    const r20 = cx * sy * cz + sx * sz;
+    const r21 = cx * sy * sz - sx * cz;
+    const r22 = cx * cy;
+
+    // Apply scale and build matrix (column-major for WebGPU)
+    matrix[0] = r00 * scale[0];
+    matrix[1] = r10 * scale[0];
+    matrix[2] = r20 * scale[0];
+    matrix[3] = 0;
+
+    matrix[4] = r01 * scale[2];
+    matrix[5] = r11 * scale[2];
+    matrix[6] = r21 * scale[2];
+    matrix[7] = 0;
+
+    matrix[8] = r02 * scale[1];
+    matrix[9] = r12 * scale[1];
+    matrix[10] = r22 * scale[1];
+    matrix[11] = 0;
+
+    matrix[12] = translate[0];
+    matrix[13] = translate[2];
+    matrix[14] = translate[1];
+    matrix[15] = 1;
+
+    return matrix;
+  }
+
   private runComputes(encoder: GPUCommandEncoder) {
     const computePass = encoder.beginComputePass();
 
@@ -609,6 +684,26 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
     this.device.queue.submit([encoder.finish()]);
 
+    let transformMatrix: Float32Array | undefined;
+    if (config.outputs.transform) {
+      const translate =
+        typeof config.outputs.transform.translate === 'string'
+          ? this.getUniform(config.outputs.transform.translate)
+          : ([0, 0, 0] as [number, number, number]);
+
+      const rotate =
+        typeof config.outputs.transform.rotate === 'string'
+          ? this.getUniform(config.outputs.transform.rotate)
+          : ([0, 0, 0] as [number, number, number]);
+
+      const scale =
+        typeof config.outputs.transform.scale === 'string'
+          ? this.getUniform(config.outputs.transform.scale)
+          : ([1, 1, 1] as [number, number, number]);
+
+      transformMatrix = this.createTransformMatrix(translate, rotate, scale);
+    }
+
     this.indirectInstancer = new IndirectInstancer(
       this.device,
       this.instancePointsComputePipeline,
@@ -617,6 +712,7 @@ export class TerrainRenderer implements IRenderer {
       this.sceneUniformsBindGroupLayout,
       this.webGPU,
       mesh.textures,
+      transformMatrix,
     );
   }
 

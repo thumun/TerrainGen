@@ -16,6 +16,10 @@ export class IndirectInstancer {
   textureBindGroup: GPUBindGroup | undefined;
   useTextures = false;
 
+  transformBuffer: GPUBuffer | undefined;
+  transformBindGroupLayout: GPUBindGroupLayout | undefined;
+  transformBindGroup: GPUBindGroup | undefined;
+
   constructor(
     device: GPUDevice,
     instancePointsComputePipeline: InstancePointsPipeline,
@@ -23,10 +27,64 @@ export class IndirectInstancer {
     instanceIndexBuffer: GPUBuffer,
     sceneUniformsBindGroupLayout: GPUBindGroupLayout,
     webGPU: WebGPUContext,
-    imageBitmaps?: ImageBitmap[]
+    imageBitmaps?: ImageBitmap[],
+    transformMatrix?: Float32Array,
   ) {
     this.device = device;
     this.instancePointsComputePipeline = instancePointsComputePipeline;
+
+    if (transformMatrix) {
+      this.transformBuffer = this.device.createBuffer({
+        label: 'transform matrix buffer',
+        size: 64, // mat4x4 = 16 floats * 4 bytes
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+      this.device.queue.writeBuffer(this.transformBuffer, 0, transformMatrix.buffer);
+
+      this.transformBindGroupLayout = this.device.createBindGroupLayout({
+        label: 'transform bind group layout',
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: { type: 'uniform' },
+          },
+        ],
+      });
+
+      this.transformBindGroup = this.device.createBindGroup({
+        label: 'transform bind group',
+        layout: this.transformBindGroupLayout,
+        entries: [{ binding: 0, resource: { buffer: this.transformBuffer } }],
+      });
+    } else {
+      // Create identity matrix as default
+      const identityMatrix = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+      this.transformBuffer = this.device.createBuffer({
+        label: 'transform matrix buffer (identity)',
+        size: 64,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+      this.device.queue.writeBuffer(this.transformBuffer, 0, identityMatrix);
+
+      this.transformBindGroupLayout = this.device.createBindGroupLayout({
+        label: 'transform bind group layout',
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.VERTEX,
+            buffer: { type: 'uniform' },
+          },
+        ],
+      });
+
+      this.transformBindGroup = this.device.createBindGroup({
+        label: 'transform bind group (identity)',
+        layout: this.transformBindGroupLayout,
+        entries: [{ binding: 0, resource: { buffer: this.transformBuffer } }],
+      });
+    }
 
     const drawArgs = new Uint32Array(4);
     drawArgs[0] = instanceIndexBuffer.size / 4;
@@ -101,13 +159,21 @@ export class IndirectInstancer {
         }
       ],
     });
+    const bindGroupLayouts = [
+      sceneUniformsBindGroupLayout,
+      this.instancingPointsBindGroupLayout,
+      textureBindGroupLayout,
+    ];
+    if (this.transformBindGroupLayout) {
+      bindGroupLayouts.push(this.transformBindGroupLayout);
+    }
 
     // create render pipeline for instancing as well
     this.instancingRenderPipeline = this.device.createRenderPipeline({
       label: 'instancing render pipeline',
       layout: this.device.createPipelineLayout({
         label: 'instancing pipeline layout',
-        bindGroupLayouts: [sceneUniformsBindGroupLayout, this.instancingPointsBindGroupLayout, textureBindGroupLayout],
+        bindGroupLayouts,
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -200,6 +266,9 @@ export class IndirectInstancer {
     renderPass.setBindGroup(1, this.instancingPointsBindGroup);
     if (this.useTextures) {
       renderPass.setBindGroup(2, this.textureBindGroup);
+    }
+    if (this.transformBindGroup) {
+      renderPass.setBindGroup(3, this.transformBindGroup);
     }
     renderPass.drawIndirect(this.indirectInstanceBuffer, 0);
   }
