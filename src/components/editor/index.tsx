@@ -37,7 +37,7 @@ export default function Editor() {
 
   // states for size and resolution...
   const [globalParams, setGlobalParams] = useState({
-    size: 10,
+    size: 20,
     resolution: 100,
   });
 
