@@ -1,8 +1,11 @@
+override shadowBias: f32 = 0.002;
+
 struct FragmentInput
 {
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
-    @location(2) uv: vec2f
+    @location(2) uv: vec2f,
+    @location(3) shadow_pos: vec3f,
 }
 
 fn random3D(seed: vec3f) -> vec3f {
@@ -46,10 +49,16 @@ fn celShade(value: f32, bands: f32) -> f32 {
 }
 
 @group(0) @binding(0) var<uniform> camera : CameraUniforms;
+@group(0) @binding(1) var<uniform> directionalLightUniforms: DirectionalLightUniforms;
+@group(0) @binding(2) var shadow_map: texture_depth_2d;
+@group(0) @binding(3) var shadow_sampler: sampler;
 
 @fragment
 fn main(in: FragmentInput) -> @location(0) vec4f
 {
+    let shadowSample = textureSample(shadow_map, shadow_sampler, in.shadow_pos.xy);
+    let isShadowed = shadowSample < in.shadow_pos.z - shadowBias;
+
     let scale = 3.0;
     let scaledPos = vec3f(
         in.pos.x * scale,
@@ -81,6 +90,10 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     var finalColor = waterC * diffuse;
 
     finalColor = mix(finalColor, waterC, combinedNoise * combinedNoise * 0.5);
+    
+    if isShadowed {
+        finalColor *= 0.5;
+    }
     
     return vec4f(finalColor, 0.85);
 }
