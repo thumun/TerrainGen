@@ -94,27 +94,11 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuSub>
-                <ContextMenuSubTrigger>Math</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem onSelect={() => createNode('mathVec3')}>
-                    Vector
-                  </ContextMenuItem>
-                  <ContextMenuItem onSelect={() => createNode('mathFloat')}>
-                    Float
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
+                <ContextMenuItem onSelect={() => createNode('math')}>Math</ContextMenuItem>
               </ContextMenuSub>
 
               <ContextMenuSub>
-                <ContextMenuSubTrigger>Mix</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem onSelect={() => createNode('mixVec3')}>
-                    Vector
-                  </ContextMenuItem>
-                  <ContextMenuItem onSelect={() => createNode('mixFloat')}>
-                    Float
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
+                <ContextMenuItem onSelect={() => createNode('mix')}>Mix</ContextMenuItem>
               </ContextMenuSub>
 
               <ContextMenuSub>
@@ -151,7 +135,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               <ContextMenuItem onSelect={() => createNode('primGeo')}>
                 Primitive Geometry
               </ContextMenuItem>
-              <ContextMenuItem onSelect={() => createNode('loadGeo')}>Load OBJ</ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('loadGeo')}>
+                Load Mesh
+              </ContextMenuItem>
               <ContextMenuItem onSelect={() => createNode('builtinGeo')}>
                 Built-in Geometry
               </ContextMenuItem>

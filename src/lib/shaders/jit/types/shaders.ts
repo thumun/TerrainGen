@@ -16,6 +16,12 @@ export type DisplaceShaderConfig = ShaderConfigBase & {
   };
 };
 
+export type TransformConfig = {
+  translate: string;
+  rotate: string;
+  scale: string;
+};
+
 export type InstancingShaderConfig = ShaderConfigBase & {
   outputs: {
     instanceCount: number;
@@ -24,6 +30,8 @@ export type InstancingShaderConfig = ShaderConfigBase & {
     fileContent?: string;
     maskKey?: util.ReferenceKey;
     threshold?: number;
+    transform?: TransformConfig;
+    fileType?: string;
   };
 };
 
@@ -41,6 +49,7 @@ type InstancingShaderTemplateValues = {
   posKey: string;
   maskKey?: string;
   threshold?: number;
+  transformCode?: string;
 };
 
 export type DisplaceShaderTemplate = {

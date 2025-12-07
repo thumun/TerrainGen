@@ -1,3 +1,6 @@
+import { load } from '@loaders.gl/core';
+import { GLTFLoader, type GLTFWithBuffers, type GLTF } from '@loaders.gl/gltf';
+
 // storage class for mesh uniforms
 class MeshUniforms {
   readonly buffer = new ArrayBuffer(8);
@@ -13,6 +16,14 @@ class MeshUniforms {
   }
 }
 
+const numComponents: { [key: string]: number } = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4,
+  MAT4: 16,
+};
+
 // template class
 export abstract class Mesh {
   numVertices = 0;
@@ -20,6 +31,7 @@ export abstract class Mesh {
 
   vertexBuffer: GPUBuffer | undefined;
   indexBuffer: GPUBuffer | undefined;
+  textureBuffer: GPUBuffer[] | undefined;
 
   indirectBuffer: GPUBuffer | undefined;
 
@@ -113,6 +125,7 @@ export class OBJ extends Mesh {
 
   vertices: Float32Array<ArrayBuffer> | undefined;
   indices: Uint32Array<ArrayBuffer> | undefined;
+  textures: ImageBitmap[] | undefined;
 
   constructor() {
     super(1, 1);
@@ -121,10 +134,10 @@ export class OBJ extends Mesh {
   async loadObj(url: string) {
     const response = await fetch(url);
     const text = await response.text();
-    this.parseObjContent(text);
+    await this.parseObjContent(text);
   }
 
-  parseObjContent(text: string) {
+  async parseObjContent(text: string) {
     const positions: number[][] = [];
     const normals: number[][] = [];
     const uvs: number[][] = [];
@@ -163,7 +176,7 @@ export class OBJ extends Mesh {
             const uv = t >= 0 && t < uvs.length ? uvs[t] : [0, 0];
             const nor = n >= 0 && n < normals.length ? normals[n] : [0, 0, 0];
 
-            finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1]);
+            finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1], 1);
 
             vertexMap.set(key, finalVertices.length / 8 - 1);
           }
@@ -179,7 +192,211 @@ export class OBJ extends Mesh {
       }
     }
 
+    // set grey texture for obj by default
+    const baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+    const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.fillRect(0, 0, 1, 1);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas toBlob() returned null"));
+      }, "image/png");
+    });
+    const imageBitmap = await createImageBitmap(blob);
+
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
+    this.textures = [imageBitmap];
+  }
+
+  async loadGltf(url: string): Promise<{ gltfWithBuffers: GLTFWithBuffers; gltf: GLTF }> {
+    console.log('load gltf');
+    const gltfWithBuffers = await load(url, GLTFLoader);
+    const gltf = gltfWithBuffers.json;
+    return {
+      gltfWithBuffers,
+      gltf,
+    };
+  }
+
+  async parseGLTFContent(gltfWithBuffers: GLTFWithBuffers, gltf: GLTF) {
+    const finalVertices: number[] = [];
+    const finalIndices: number[] = [];
+    const finalBitmaps: ImageBitmap[] = [];
+
+    for (const mesh of gltf.meshes!) {
+      for (const prim of mesh.primitives) {
+        // load positions
+        const posAccessor = gltf.accessors![prim.attributes['POSITION']];
+        const posBufferView = gltf.bufferViews![posAccessor.bufferView!];
+        const posBuffer = gltfWithBuffers.buffers[posBufferView.buffer];
+
+        const posByteOffset =
+          (posBufferView.byteOffset ?? 0) +
+          (posAccessor.byteOffset ?? 0) +
+          posBuffer.byteOffset;
+        const posArrayLength = posAccessor.count * numComponents[posAccessor.type];
+        const positions = new Float32Array(
+          posBuffer.arrayBuffer,
+          posByteOffset,
+          posArrayLength,
+        );
+
+        // load normals
+        const norAccessor = gltf.accessors![prim.attributes['NORMAL']];
+        const norBufferView = gltf.bufferViews![norAccessor.bufferView!];
+        const norBuffer = gltfWithBuffers.buffers[norBufferView.buffer];
+
+        const norByteOffset =
+          (norBufferView.byteOffset ?? 0) +
+          (norAccessor.byteOffset ?? 0) +
+          norBuffer.byteOffset;
+        const norArrayLength = norAccessor.count * numComponents[norAccessor.type];
+        const normals = new Float32Array(norBuffer.arrayBuffer, norByteOffset, norArrayLength);
+
+        // load uvs
+        let uvs: Float32Array;
+        if (prim.attributes.TEXCOORD_0 !== undefined) {
+          const uvAccessorIndex = prim.attributes.TEXCOORD_0;
+          const uvAccessor = gltf.accessors![uvAccessorIndex];
+          const uvBufferView = gltf.bufferViews![uvAccessor.bufferView!];
+          const uvBuffer = gltfWithBuffers.buffers[uvBufferView.buffer];
+
+          const uvByteOffset =
+            (uvBufferView.byteOffset ?? 0) + (uvAccessor.byteOffset ?? 0) + uvBuffer.byteOffset;
+          const uvArrayLength = uvAccessor.count * 2;
+          uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
+        } else {
+          const tempUVs: number[] = [];
+          for (let i = 0; i < positions.length / 3; i++) {
+            if (i % 3 == 0) {
+              tempUVs.push(0, 1);
+            } else if (i % 3 == 1) {
+              tempUVs.push(1, 1);
+            } else {
+              tempUVs.push(0, 0);
+            }
+          }
+          uvs = new Float32Array(tempUVs);
+        }
+
+        // load indices
+        const idxAccessor = gltf.accessors![prim.indices!];
+        const idxBufferView = gltf.bufferViews![idxAccessor.bufferView!];
+        const idxBuffer = gltfWithBuffers.buffers[idxBufferView.buffer];
+
+        const idxOffset =
+          (idxBufferView.byteOffset ?? 0) +
+          (idxAccessor.byteOffset ?? 0) +
+          idxBuffer.byteOffset;
+
+        let idxArray: Uint16Array | Uint32Array | Uint8Array | undefined;
+        switch (idxAccessor.componentType) {
+          case 5121: // UNSIGNED_BYTE
+            idxArray = new Uint8Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          case 5123: // UNSIGNED_SHORT
+            idxArray = new Uint16Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          case 5125: // UNSIGNED_INT
+            idxArray = new Uint32Array(idxBuffer.arrayBuffer, idxOffset, idxAccessor.count);
+            break;
+          default:
+            break;
+        }
+
+        const vertexOffset = finalVertices.length / 9;
+
+        const materialIndex = prim.material ?? 0;
+
+        // push these guys into the final array
+        for (let i = 0; i < positions.length / 3; i++) {
+          finalVertices.push(
+            positions[3 * i],
+            positions[3 * i + 1],
+            positions[3 * i + 2],
+            normals[3 * i],
+            normals[3 * i + 1],
+            normals[3 * i + 2],
+            uvs[2 * i],
+            uvs[2 * i + 1],
+            materialIndex + 1,
+          );
+        }
+
+        for (let i = 0; i < idxArray!.length; i++) {
+          finalIndices.push(idxArray![i] + vertexOffset);
+        }
+      }
+
+    }
+
+    // load textures here...
+    for (const gltfMaterial of gltf.materials!) {
+
+      // base color
+      if (gltfMaterial.pbrMetallicRoughness?.baseColorTexture) {
+        const texInfo = gltfMaterial.pbrMetallicRoughness?.baseColorTexture;
+        const gltfTexture = gltf.textures![texInfo.index];
+
+        const imageIndex = gltfTexture.source!;
+        const imageDef = gltf.images![imageIndex];
+
+        const view = gltf.bufferViews![imageDef.bufferView!];
+        const buffer = gltfWithBuffers.buffers[view.buffer];
+
+        const byteOffset = (view.byteOffset ?? 0) + buffer.byteOffset;
+        const byteLength = view.byteLength;
+
+        const imageBytes = new Uint8Array(buffer.arrayBuffer, byteOffset, byteLength);
+
+        // create image (sus)
+        const imageBitmap = await createImageBitmap(
+          new Blob([imageBytes], { type: imageDef.mimeType ?? 'image/png' })
+        );
+
+        finalBitmaps.push(imageBitmap);
+      }
+      else {
+        // if there is no texture for base color, create a base color bitmap
+        let baseColor: number[] = [0.5, 0.5, 0.5, 1.0];
+
+        if (gltfMaterial.pbrMetallicRoughness && gltfMaterial.pbrMetallicRoughness.baseColorFactor) {
+          baseColor = gltfMaterial.pbrMetallicRoughness.baseColorFactor
+        }
+
+        const [r, g, b, a] = baseColor.map(v => Math.round(v * 255));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 1;
+
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(0, 0, 1, 1);
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("Canvas toBlob() returned null"));
+          }, "image/png");
+        });
+        const imageBitmap = await createImageBitmap(blob);
+
+        finalBitmaps.push(imageBitmap);
+      }
+    }
+
+    this.vertices = new Float32Array(finalVertices);
+    this.indices = new Uint32Array(finalIndices);
+    this.textures = finalBitmaps;
+
+    console.log("textures", finalBitmaps);
   }
 }

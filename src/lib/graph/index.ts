@@ -116,13 +116,37 @@ function generatePipelines(
         edge.target === instancingNode.id &&
         edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
     );
-    const geometryNode = orderedDependencyNodes.find(
-      (node) => node.id === geometryEdge?.source,
-    ) as
+
+    let geometryNode:
       | (nodeTypes.PrimitiveGeometry & { id: string })
       | (nodeTypes.BuiltinGeometry & { id: string })
       | (nodeTypes.LoadGeometry & { id: string })
       | undefined;
+
+    let transformNode: (nodeTypes.Transform & { id: string }) | undefined;
+
+    let currentNodeId = geometryEdge?.source;
+    while (currentNodeId) {
+      const node = orderedDependencyNodes.find((n) => n.id === currentNodeId);
+
+      if (!node) break;
+
+      if (node.type === 'primGeo' || node.type === 'builtinGeo' || node.type === 'loadGeo') {
+        geometryNode = node as typeof geometryNode;
+        break;
+      } else if (node.type === 'transform') {
+        transformNode = node as nodeTypes.Transform & { id: string };
+
+        // Find the geometry input of the transform node
+        const transformGeoEdge = edges.find(
+          (edge) =>
+            edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo,
+        );
+        currentNodeId = transformGeoEdge?.source;
+      } else {
+        break;
+      }
+    }
 
     if (!geometryNode) {
       console.error('Instancing node requires a geometry input');
@@ -138,6 +162,45 @@ function generatePipelines(
     );
 
     const maskSourceNode = orderedDependencyNodes.find((node) => node.id === maskEdge?.source);
+    let transformConfig: { translate: string; rotate: string; scale: string } | undefined;
+    if (transformNode) {
+      const translateEdge = edges.find(
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.translate,
+      );
+      const rotateEdge = edges.find(
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate,
+      );
+      const scaleEdge = edges.find(
+        (edge) =>
+          edge.target === transformNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.transform.in.scale,
+      );
+
+      if (translateEdge && rotateEdge && scaleEdge) {
+        const translateNode = orderedDependencyNodes.find((n) => n.id === translateEdge.source);
+        const rotateNode = orderedDependencyNodes.find((n) => n.id === rotateEdge.source);
+        const scaleNode = orderedDependencyNodes.find((n) => n.id === scaleEdge.source);
+
+        transformConfig = {
+          translate: nodeMapping.getHandleKey({
+            sourceNode: translateNode!,
+            outgoingHandleId: translateEdge.sourceHandle!,
+          }),
+          rotate: nodeMapping.getHandleKey({
+            sourceNode: rotateNode!,
+            outgoingHandleId: rotateEdge.sourceHandle!,
+          }),
+          scale: nodeMapping.getHandleKey({
+            sourceNode: scaleNode!,
+            outgoingHandleId: scaleEdge.sourceHandle!,
+          }),
+        };
+      }
+    }
 
     const outputs: scene.InstancingPipeline['outputs'] = {
       instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
@@ -146,15 +209,18 @@ function generatePipelines(
         outgoingHandleId: scatterEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
-      fileContent: geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent : undefined,
       maskKey:
         maskSourceNode && maskEdge
           ? nodeMapping.getHandleKey({
-              sourceNode: maskSourceNode,
-              outgoingHandleId: maskEdge.sourceHandle!,
-            })
+            sourceNode: maskSourceNode,
+            outgoingHandleId: maskEdge.sourceHandle!,
+          })
           : undefined,
       threshold: scatterNode.data.threshold,
+      transform: transformConfig,
+      fileContent:
+        geometryNode.type === 'loadGeo' ? geometryNode.data.fileContent as string : undefined,
+      fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
     instancingPipeline = {

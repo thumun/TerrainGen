@@ -93,16 +93,16 @@ export default function NodeGraph({
           onNodesChange={onNodesChange}
           onConnect={onConnect}
           onPaneContextMenu={onPaneContextMenu}
-          panOnDrag={false}
-          panOnScroll
-          selectionOnDrag
           fitView
           fitViewOptions={fitViewOptions}
           isValidConnection={(connection) => traversal.isValidConnection(connection, nodes)}
         >
           <Background />
           <Controls />
-          <KeyboardShortcuts />
+          <KeyboardShortcuts
+            reactFlowWrapperRef={reactFlowWrapper}
+            onOpenContextMenu={onPaneContextMenu}
+          />
           <ContextMenu
             state={menuState}
             closeMenu={closeMenu}
