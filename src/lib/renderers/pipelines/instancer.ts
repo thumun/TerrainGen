@@ -96,7 +96,7 @@ export class IndirectInstancer {
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
             sampleType: 'float',
-            viewDimension: '2d',
+            viewDimension: '2d-array',
           },
         }
       ],
@@ -130,6 +130,16 @@ export class IndirectInstancer {
         targets: [
           {
             format: webGPU.canvasFormat,
+            blend: {
+              color: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha'
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha'
+              },
+            },
           },
         ],
       },
@@ -142,15 +152,19 @@ export class IndirectInstancer {
       const texture = this.device.createTexture({
         label: "FAT FUCKING TEXTURE!!!!",
         format: 'rgba8unorm',
-        size: [source.width, source.height],
+        size: {
+          width: source.width,
+          height: source.height,
+          depthOrArrayLayers: 20,
+        },
         usage: GPUTextureUsage.TEXTURE_BINDING |
           GPUTextureUsage.COPY_DST |
           GPUTextureUsage.RENDER_ATTACHMENT,
       });
 
       this.device.queue.copyExternalImageToTexture(
-        { source, flipY: true },
-        { texture },
+        { source: source, flipY: true },
+        { texture: texture, premultipliedAlpha: true, origin: { x: 0, y: 0, z: 1 }, },
         { width: source.width, height: source.height },
       );
 
@@ -162,14 +176,19 @@ export class IndirectInstancer {
         mipmapFilter: 'linear',
       });
 
-      // create bind groups for textures here
-
       this.textureBindGroup = this.device.createBindGroup({
         label: 'texture bind group',
         layout: textureBindGroupLayout,
         entries: [
-          { binding: 0, resource: sampler },
-          { binding: 1, resource: texture.createView() },
+          {
+            binding: 0, resource: sampler
+          },
+          {
+            binding: 1,
+            resource: texture.createView({
+              dimension: "2d-array",
+            }),
+          },
         ],
       });
     }

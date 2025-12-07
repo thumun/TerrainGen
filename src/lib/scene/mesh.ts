@@ -211,8 +211,6 @@ export class OBJ extends Mesh {
     });
     const imageBitmap = await createImageBitmap(blob);
 
-    console.log(imageBitmap);
-
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
     this.textures = [imageBitmap];
@@ -275,8 +273,6 @@ export class OBJ extends Mesh {
             (uvBufferView.byteOffset ?? 0) + (uvAccessor.byteOffset ?? 0) + uvBuffer.byteOffset;
           const uvArrayLength = uvAccessor.count * 2;
           uvs = new Float32Array(uvBuffer.arrayBuffer, uvByteOffset, uvArrayLength);
-
-          console.log("not hardcoded", uvs);
         } else {
           const tempUVs: number[] = [];
           for (let i = 0; i < positions.length / 3; i++) {
@@ -289,7 +285,6 @@ export class OBJ extends Mesh {
             }
           }
           uvs = new Float32Array(tempUVs);
-          console.log("hardcoded", uvs);
         }
 
         // load indices
@@ -317,12 +312,14 @@ export class OBJ extends Mesh {
             break;
         }
 
+        const vertexOffset = finalVertices.length / 8;
+
         // push these guys into the final array
         for (let i = 0; i < positions.length / 3; i++) {
           finalVertices.push(
-            positions[3 * i] * 40.0,
-            positions[3 * i + 1] * 40.0,
-            positions[3 * i + 2] * 40.0,
+            positions[3 * i],
+            positions[3 * i + 1],
+            positions[3 * i + 2],
             normals[3 * i],
             normals[3 * i + 1],
             normals[3 * i + 2],
@@ -332,9 +329,10 @@ export class OBJ extends Mesh {
         }
 
         for (let i = 0; i < idxArray!.length; i++) {
-          finalIndices.push(idxArray![i]);
+          finalIndices.push(idxArray![i] + vertexOffset);
         }
       }
+
     }
 
     // load textures here...
@@ -388,7 +386,6 @@ export class OBJ extends Mesh {
         });
         const imageBitmap = await createImageBitmap(blob);
 
-        console.log(imageBitmap);
         finalBitmaps.push(imageBitmap);
       }
     }
@@ -396,5 +393,7 @@ export class OBJ extends Mesh {
     this.vertices = new Float32Array(finalVertices);
     this.indices = new Uint32Array(finalIndices);
     this.textures = finalBitmaps;
+
+    console.log("textures", finalBitmaps);
   }
 }

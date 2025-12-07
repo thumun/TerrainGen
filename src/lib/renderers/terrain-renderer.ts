@@ -356,7 +356,7 @@ export class TerrainRenderer implements IRenderer {
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [0.3, 0, 0, 1],
+          clearValue: [0.0, 0, 0, 0],
           loadOp: 'clear',
           storeOp: 'store',
         },

@@ -14,7 +14,7 @@ var<storage, read> indices: array<u32>;
 
 // insert binding for array of image textures
 @group(2) @binding(0) var ourSampler: sampler;
-@group(2) @binding(1) var ourTexture: texture_2d<f32>;
+@group(2) @binding(1) var ourTexture: texture_2d_array<f32>;
 
 struct VertexIn {
     @builtin(vertex_index) vertex_index: u32,
@@ -78,9 +78,14 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
   let diffuse = max(dot(in.nor, lightDir), 0.0);
 
-  let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
-  let color = textureSample(ourTexture, ourSampler, texcoord);
-  //color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
+  //let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
+  //let color = textureSample(ourTexture, ourSampler, texcoord, 1);
+  let color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
+
+  if (color.w < 0) {
+    discard;
+  }
+
   return color;
 
   // var color = vec3f(0.0, 0.0, 0.0);
