@@ -19,9 +19,9 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
     [terrainRendererRef],
   );
 
-  const setInstancingPipeline = useCallback(
-    (pipeline: scene.InstancingPipeline) => {
-      void terrainRendererRef.current?.configureInstancingPipeline(pipeline);
+  const setInstancingPipelines = useCallback(
+    (pipelines: scene.InstancingPipeline[]) => {
+      void terrainRendererRef.current?.configureInstancingPipeline(pipelines);
     },
     [terrainRendererRef],
   );
@@ -43,9 +43,9 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
       );
 
       if (displacePipeline) setDisplacePipeline(displacePipeline);
-      if (instancingPipeline) void setInstancingPipeline(instancingPipeline);
+      if (instancingPipeline) void setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setInstancingPipeline],
+    [setDisplacePipeline, setInstancingPipelines],
   );
 
   const rebuildAllPipelines = useCallback(
@@ -56,9 +56,9 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
       );
 
       if (displacePipeline) setDisplacePipeline(displacePipeline);
-      if (instancingPipeline) setInstancingPipeline(instancingPipeline);
+      if (instancingPipeline) setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setInstancingPipeline],
+    [setDisplacePipeline, setInstancingPipelines],
   );
 
   return {

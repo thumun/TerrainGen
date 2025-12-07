@@ -9,7 +9,7 @@ import type * as util from '@/lib/shaders/jit/types/util';
 
 export type OutputNodeUpdates = {
   displacePipeline?: scene.DisplacePipeline;
-  instancingPipeline?: scene.InstancingPipeline;
+  instancingPipeline?: scene.InstancingPipeline[];
 };
 
 export type PipelineNode = types.Node & nodeTypes.All;
@@ -86,12 +86,10 @@ function generatePipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
-  const instancingNode = activeNodes.find((node) => node.type === 'instancing');
-  let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
+  const instancingNodes = activeNodes.filter((node) => node.type === 'instancing');
+  const instancingPipeline: scene.InstancingPipeline[] = instancingNodes.map((instancingNode) => {
 
-  if (instancingNode) {
     const orderedDependencyNodes = traversal.getOrderedNodes(instancingNode.id, nodes, edges);
-
     // generate uniforms
     const uniforms = orderedDependencyNodes.flatMap(getUniforms);
 
@@ -223,12 +221,12 @@ function generatePipelines(
       fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
-    instancingPipeline = {
+    return {
       instructionSet,
       uniforms,
       outputs,
     };
-  }
+  }).filter((pipeline): pipeline is scene.InstancingPipeline => pipeline !== null);
 
   return { displacePipeline, instancingPipeline };
 }

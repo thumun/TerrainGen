@@ -67,7 +67,7 @@ export class TerrainRenderer implements IRenderer {
   private instancePointsComputePipeline: InstancePointsPipeline;
 
   /** instancing things */
-  private indirectInstancer: IndirectInstancer | undefined;
+  private indirectInstancers: IndirectInstancer[] = [];
 
   // custom uniform buffer bindings
   private customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
@@ -442,7 +442,7 @@ export class TerrainRenderer implements IRenderer {
     this.stage.directionalLight.onFrame({
       encoder,
       meshes: [this.stage.groundPlane],
-      instancers: [...(this.indirectInstancer ? [this.indirectInstancer] : [])],
+      instancers: [...(this.indirectInstancers ? this.indirectInstancers : [])],
     });
 
     // run our main render pass
@@ -471,8 +471,8 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
 
-    if (this.indirectInstancer) {
-      this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    for (const instancer of this.indirectInstancers) {
+      instancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
     }
 
     renderPass.end();
@@ -605,146 +605,148 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
-  async configureInstancingPipeline(config: scene.InstancingPipeline) {
-    this.instancingPipelineConfigured = true;
+  async configureInstancingPipeline(configs: scene.InstancingPipeline[]) {
+    this.indirectInstancers = [];
 
-    console.log(config);
+    //this.instancingPipelineConfigured = true;
 
-    // load obj from geo node
-    const mesh = new LoadedMesh();
+    for (const config of configs) {
+      console.log(config);
 
-    if (config.outputs.fileContent) {
-      if (config.outputs.fileType === 'obj') {
-        await mesh.parseObjContent(config.outputs.fileContent);
-      } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
-        const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
-        await mesh.parseGLTFContent(gltfWithBuffers, gltf);
+      // load obj from geo node
+      const mesh = new LoadedMesh();
+
+      if (config.outputs.fileContent) {
+        if (config.outputs.fileType === 'obj') {
+          await mesh.parseObjContent(config.outputs.fileContent);
+        } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
+          const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
+          await mesh.parseGLTFContent(gltfWithBuffers, gltf);
+        }
+      } else {
+        await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
       }
-    } else {
-      await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+
+      if (!mesh.vertices || !mesh.indices) {
+        return;
+      }
+
+      // unused for now
+      /*
+      const customInstanceShader = jit.generateInstanceShaderCode(
+        config,
+        instanceComputeShaderTemplate,
+      );
+      console.log('custom instance shader:', customInstanceShader);
+      */
+
+      // Create buffers for mesh
+      const instanceVertexBuffer = this.device.createBuffer({
+        size: mesh.vertices.byteLength,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+      });
+      this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
+
+      const instanceIndexBuffer = this.device.createBuffer({
+        size: mesh.indices.byteLength,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+      });
+      this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
+
+      const customInstanceShader = jit.generateInstanceShaderCode(
+        config,
+        instanceComputeShaderTemplate,
+      );
+
+      console.log('custom instance shader:', customInstanceShader);
+
+      this.nodeGraphUniformConfig = config.uniforms;
+      const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+      this.nodeGraphUniformLayout = offsets;
+
+      if (this.nodeGraphUniformBuffer) {
+        this.nodeGraphUniformBuffer.destroy();
+      }
+
+      this.nodeGraphUniformBuffer = this.device.createBuffer({
+        label: 'instancing uniform buffer',
+        size: Math.max(totalSize, 16),
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+
+      this.initializeNodeGraphUniforms(config.uniforms);
+
+      this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+        label: 'instancing nodegraph bind group layout',
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: { type: 'uniform' },
+          },
+        ],
+      });
+
+      this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
+        label: 'instancing nodegraph bind group',
+        layout: this.customNodeGraphUniformsBindGroupLayout,
+        entries: [
+          {
+            binding: 0,
+            resource: { buffer: this.nodeGraphUniformBuffer },
+          },
+        ],
+      });
+
+      console.log('num instances:', config.outputs.instanceCount);
+
+      // Run compute to create a buffer of points
+      this.instancePointsComputePipeline = new InstancePointsPipeline(
+        this.device,
+        this.stage.groundPlane,
+        this.normalsComputePipeline,
+        config.outputs.instanceCount,
+      );
+
+      const encoder = this.device.createCommandEncoder();
+      const computePass = encoder.beginComputePass();
+      this.instancePointsComputePipeline.runComputePass(computePass);
+      computePass.end();
+      this.device.queue.submit([encoder.finish()]);
+
+      let transformMatrix: Float32Array | undefined;
+      if (config.outputs.transform) {
+        const translate =
+          typeof config.outputs.transform.translate === 'string'
+            ? this.getUniform(config.outputs.transform.translate)
+            : ([0, 0, 0] as [number, number, number]);
+
+        const rotate =
+          typeof config.outputs.transform.rotate === 'string'
+            ? this.getUniform(config.outputs.transform.rotate)
+            : ([0, 0, 0] as [number, number, number]);
+
+        const scale =
+          typeof config.outputs.transform.scale === 'string'
+            ? this.getUniform(config.outputs.transform.scale)
+            : ([1, 1, 1] as [number, number, number]);
+
+        transformMatrix = this.createTransformMatrix(translate, rotate, scale);
+      }
+
+      const instancer = new IndirectInstancer(
+        this.device,
+        this.instancePointsComputePipeline,
+        instanceVertexBuffer,
+        instanceIndexBuffer,
+        this.sceneUniformsBindGroupLayout,
+        this.webGPU,
+        mesh.textures,
+        transformMatrix,
+      );
+
+      this.indirectInstancers.push(instancer);
     }
-
-    if (!mesh.vertices || !mesh.indices) {
-      return;
-    }
-
-    // unused for now
-    /*
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-    console.log('custom instance shader:', customInstanceShader);
-    */
-
-    // Create buffers for mesh
-    const instanceVertexBuffer = this.device.createBuffer({
-      size: mesh.vertices.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
-
-    const instanceIndexBuffer = this.device.createBuffer({
-      size: mesh.indices.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
-
-    // set uniforms
-    this.nodeGraphUniformConfig = config.uniforms;
-    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
-    this.nodeGraphUniformLayout = offsets;
-
-    if (this.nodeGraphUniformBuffer) {
-      this.nodeGraphUniformBuffer.destroy();
-    }
-
-    this.nodeGraphUniformBuffer = this.device.createBuffer({
-      label: 'instancing uniform buffer',
-      size: Math.max(totalSize, 16),
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    this.initializeNodeGraphUniforms(config.uniforms);
-
-    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
-      label: 'instancing nodegraph bind group layout',
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    });
-
-    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
-      label: 'instancing nodegraph bind group',
-      layout: this.customNodeGraphUniformsBindGroupLayout,
-      entries: [
-        {
-          binding: 0,
-          resource: { buffer: this.nodeGraphUniformBuffer },
-        },
-      ],
-    });
-
-    // create custom instancing shader
-    if (!config.outputs.maskKey) {
-      config.outputs.maskKey = 'terrainPos.y';
-    }
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-
-    console.log('custom instance shader:', customInstanceShader);
-
-    // Run compute to create a buffer of points
-    this.instancePointsComputePipeline = new InstancePointsPipeline(
-      this.device,
-      this.stage.groundPlane,
-      this.normalsComputePipeline,
-      config.outputs.instanceCount,
-      customInstanceShader,
-    );
-
-    const encoder = this.device.createCommandEncoder();
-    const computePass = encoder.beginComputePass();
-    this.instancePointsComputePipeline.runComputePass(computePass);
-    computePass.end();
-    this.device.queue.submit([encoder.finish()]);
-
-    let transformMatrix: Float32Array | undefined;
-    if (config.outputs.transform) {
-      const translate =
-        typeof config.outputs.transform.translate === 'string'
-          ? this.getUniform(config.outputs.transform.translate)
-          : ([0, 0, 0] as [number, number, number]);
-
-      const rotate =
-        typeof config.outputs.transform.rotate === 'string'
-          ? this.getUniform(config.outputs.transform.rotate)
-          : ([0, 0, 0] as [number, number, number]);
-
-      const scale =
-        typeof config.outputs.transform.scale === 'string'
-          ? this.getUniform(config.outputs.transform.scale)
-          : ([1, 1, 1] as [number, number, number]);
-
-      transformMatrix = this.createTransformMatrix(translate, rotate, scale);
-    }
-
-    this.indirectInstancer = new IndirectInstancer(
-      this.device,
-      this.instancePointsComputePipeline,
-      instanceVertexBuffer,
-      instanceIndexBuffer,
-      this.sceneUniformsBindGroupLayout,
-      this.webGPU,
-      mesh.textures,
-      transformMatrix,
-    );
   }
 
   disableInstancingPipeline() {
