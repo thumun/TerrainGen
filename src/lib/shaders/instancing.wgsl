@@ -29,13 +29,14 @@ struct VertexOut {
     @location(0) pos : vec3f,
     @location(1) nor : vec3f,
     @location(2) uv : vec2f,
+    @location(3) @interpolate(flat) tex_id: u32,
 };
 
 @vertex
 fn vs_main(in : VertexIn) -> VertexOut {
     var out : VertexOut;
 
-    let vOffset = in.instance_index * 8u;
+    let vOffset = in.instance_index * 9u;
 
      // get point position
     var pos = instance_pts[in.instance_index].pos;
@@ -44,7 +45,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     var nor = normalize(instance_pts[in.instance_index].nor);
 
     let idx = indices[in.vertex_index];
-    let base = idx * 8u;
+    let base = idx * 9u;
     let local = vec3f(
         vertices[base + 0],
         vertices[base + 1],
@@ -56,6 +57,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
         vertices[base + 5],
     );
     let vert_uv = vec2f(vertices[base + 6], vertices[base + 7]);
+    let texture_id = u32(vertices[base + 8]);
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
@@ -80,6 +82,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.pos = world_pos.xyz;
     out.nor = normalize(new_nor);
     out.uv = vert_uv;
+    out.tex_id = texture_id;
     return out;
 }
 
@@ -91,12 +94,12 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
   let diffuse = max(dot(in.nor, lightDir), 0.0);
 
   let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
-  let color = textureSample(ourTexture, ourSampler, texcoord, 1);
+  let color = textureSample(ourTexture, ourSampler, texcoord, in.tex_id);
   //let color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
 
-  if (color.w < 0) {
+  if (color.a < 0.5) {
     discard;
-  }
+}
 
   return color;
 

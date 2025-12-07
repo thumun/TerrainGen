@@ -176,7 +176,7 @@ export class OBJ extends Mesh {
             const uv = t >= 0 && t < uvs.length ? uvs[t] : [0, 0];
             const nor = n >= 0 && n < normals.length ? normals[n] : [0, 0, 0];
 
-            finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1]);
+            finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1], 1);
 
             vertexMap.set(key, finalVertices.length / 8 - 1);
           }
@@ -312,7 +312,9 @@ export class OBJ extends Mesh {
             break;
         }
 
-        const vertexOffset = finalVertices.length / 8;
+        const vertexOffset = finalVertices.length / 9;
+
+        const materialIndex = prim.material ?? 0;
 
         // push these guys into the final array
         for (let i = 0; i < positions.length / 3; i++) {
@@ -325,6 +327,7 @@ export class OBJ extends Mesh {
             normals[3 * i + 2],
             uvs[2 * i],
             uvs[2 * i + 1],
+            materialIndex + 1,
           );
         }
 
