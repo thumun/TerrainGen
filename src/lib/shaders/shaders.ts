@@ -7,6 +7,8 @@ import instancingRaw from './instancing.wgsl?raw';
 import naiveFragRaw from './naive.fs.wgsl?raw';
 import naiveVertRaw from './naive.vs.wgsl?raw';
 import normalsComputeRaw from './normals.cs.wgsl?raw';
+import shadowCastVertRaw from './shadow_cast.vs.wgsl?raw';
+import shadowCastInstancedVertRaw from './shadow_cast_instanced.vs.wgsl?raw';
 import terrainComputeRaw from './terrain.cs.wgsl?raw';
 
 // CONSTANTS (for use in shaders) (need to be hardcoded in deployed environment)
@@ -34,3 +36,5 @@ export const terrainComputeSrc: string = processShaderRaw(terrainComputeRaw);
 export const normalsComputeSrc: string = processShaderRaw(normalsComputeRaw);
 export const terrainPointsComputeSrc: string = processShaderRaw(instancePointsComputeRaw);
 export const instanceSrc: string = processShaderRaw(instancingRaw);
+export const shadowCastVertSrc: string = processShaderRaw(shadowCastVertRaw);
+export const shadowCastInstancedVertSrc: string = processShaderRaw(shadowCastInstancedVertRaw);
