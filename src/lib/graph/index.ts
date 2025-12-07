@@ -156,6 +156,12 @@ function generatePipelines(
       return { displacePipeline };
     }
 
+    const maskEdge = edges.find(
+      (edge) =>
+        edge.target === scatterNode.id && edge.targetHandle === nodeTypes.HANDLES.scatter.in.a,
+    );
+
+    const maskSourceNode = orderedDependencyNodes.find((node) => node.id === maskEdge?.source);
     let transformConfig: { translate: string; rotate: string; scale: string } | undefined;
     if (transformNode) {
       const translateEdge = edges.find(
@@ -203,6 +209,14 @@ function generatePipelines(
         outgoingHandleId: scatterEdge.sourceHandle!,
       }),
       meshPath: geometryNode.data.meshPath,
+      maskKey:
+        maskSourceNode && maskEdge
+          ? nodeMapping.getHandleKey({
+              sourceNode: maskSourceNode,
+              outgoingHandleId: maskEdge.sourceHandle!,
+            })
+          : undefined,
+      threshold: scatterNode.data.threshold,
       transform: transformConfig,
       fileContent:
         geometryNode.type === 'loadGeo' ? (geometryNode.data.fileContent as string) : undefined,

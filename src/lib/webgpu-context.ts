@@ -43,6 +43,7 @@ export function initWebGPU(device: GPUDevice, canvas: HTMLCanvasElement): WebGPU
   context.configure({
     device,
     format: canvasFormat,
+    alphaMode: 'premultiplied',
   });
 
   console.log('WebGPU init successsful');

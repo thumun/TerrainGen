@@ -123,7 +123,7 @@ export class TerrainRenderer implements IRenderer {
           // shadowmap sampler
           binding: 3,
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          sampler: { type: 'filtering' },
+          sampler: { type: 'non-filtering' },
         },
       ],
     });
@@ -153,8 +153,8 @@ export class TerrainRenderer implements IRenderer {
           resource: this.device.createSampler({
             addressModeU: 'clamp-to-edge',
             addressModeV: 'clamp-to-edge',
-            magFilter: 'linear',
-            minFilter: 'linear',
+            magFilter: 'nearest',
+            minFilter: 'nearest',
           }),
         },
       ],
@@ -456,7 +456,7 @@ export class TerrainRenderer implements IRenderer {
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [0.3, 0, 0, 1],
+          clearValue: [0.0, 0, 0, 0],
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -619,10 +619,10 @@ export class TerrainRenderer implements IRenderer {
 
     if (config.outputs.fileContent) {
       if (config.outputs.fileType === 'obj') {
-        mesh.parseObjContent(config.outputs.fileContent);
+        await mesh.parseObjContent(config.outputs.fileContent);
       } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
         const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
-        mesh.parseGLTFContent(gltfWithBuffers, gltf);
+        await mesh.parseGLTFContent(gltfWithBuffers, gltf);
       }
     } else {
       await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
@@ -631,6 +631,15 @@ export class TerrainRenderer implements IRenderer {
     if (!mesh.vertices || !mesh.indices) {
       return;
     }
+
+    // unused for now
+    /*
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+    console.log('custom instance shader:', customInstanceShader);
+    */
 
     // Create buffers for mesh
     const instanceVertexBuffer = this.device.createBuffer({
@@ -645,13 +654,7 @@ export class TerrainRenderer implements IRenderer {
     });
     this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
 
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-
-    console.log('custom instance shader:', customInstanceShader);
-
+    // set uniforms
     this.nodeGraphUniformConfig = config.uniforms;
     const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
     this.nodeGraphUniformLayout = offsets;
@@ -690,7 +693,16 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    console.log('num instances:', config.outputs.instanceCount);
+    // create custom instancing shader
+    if (!config.outputs.maskKey) {
+      config.outputs.maskKey = 'terrainPos.y';
+    }
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+
+    console.log('custom instance shader:', customInstanceShader);
 
     // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
@@ -698,6 +710,7 @@ export class TerrainRenderer implements IRenderer {
       this.stage.groundPlane,
       this.normalsComputePipeline,
       config.outputs.instanceCount,
+      customInstanceShader,
     );
 
     const encoder = this.device.createCommandEncoder();
@@ -733,6 +746,7 @@ export class TerrainRenderer implements IRenderer {
       instanceIndexBuffer,
       this.sceneUniformsBindGroupLayout,
       this.webGPU,
+      mesh.textures,
       transformMatrix,
     );
   }
