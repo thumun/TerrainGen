@@ -34,7 +34,7 @@ function ScatterNode({ id, data, ...props }: NodeProps<ScatterNodeData>) {
         min={1}
       />
 
-      <TerrainGenNode.HandleInput label="Mask" handleId={HANDLES.in.a} valueType="f32" />
+      <TerrainGenNode.HandleInput label="Terrain" handleId={HANDLES.in.a} valueType="f32" />
 
       <TerrainGenNode.NumberInput
         label="Threshold"
