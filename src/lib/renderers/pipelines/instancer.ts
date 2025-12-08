@@ -216,7 +216,7 @@ export class IndirectInstancer {
     // create buffers for the image bitmaps
     const firstSource = imageBitmaps![0];
     this.textureArray = this.device.createTexture({
-      label: 'material texture',
+      label: 'FAT FUCKING TEXTURE!!!!',
       format: 'rgba8unorm',
       size: {
         width: firstSource.width,

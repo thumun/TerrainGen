@@ -107,8 +107,7 @@ export default function WebGPUCanvas({
     const camera = new Camera(webGPUContext);
     const directionalLight = new DirectionalLight(webGPUContext);
     const mesh = new Plane(20, 100);
-    const waterMesh = new Plane(20, 100);
-    const stage = new Stage(camera, directionalLight, mesh, waterMesh);
+    const stage = new Stage(camera, directionalLight, mesh);
 
     const controller = new AbortController();
     const init = async () => {
@@ -124,7 +123,7 @@ export default function WebGPUCanvas({
         height: divRef.current.clientHeight,
       });
 
-      let lastTime = 0;
+      let lastTime = Date.now();
       const doFrame = (time: number) => {
         if (!rendererRef.current) return;
         // TODO: probably add some kind of stats profiling stuff
