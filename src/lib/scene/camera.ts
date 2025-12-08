@@ -8,7 +8,7 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(304);
+  readonly buffer = new ArrayBuffer(320);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
@@ -19,6 +19,8 @@ class CameraUniforms {
   private readonly nearPlaneView = new Float32Array(this.buffer, 280, 1);
   private readonly farPlaneView = new Float32Array(this.buffer, 284, 1);
   private readonly timeView = new Float32Array(this.buffer, 288, 1);
+  private readonly fogIntensityView = new Float32Array(this.buffer, 292, 1);
+  private readonly fogColorView = new Float32Array(this.buffer, 304, 3);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
@@ -58,6 +60,14 @@ class CameraUniforms {
 
   set time(time: number) {
     this.timeView[0] = time;
+  }
+
+  set fogIntensity(intensity: number) {
+    this.fogIntensityView[0] = intensity;
+  }
+
+  set fogColor(color: [number, number, number]) {
+    this.fogColorView.set(color);
   }
 }
 

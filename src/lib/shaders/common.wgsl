@@ -11,9 +11,8 @@ struct CameraUniforms {
     nearPlane: f32,
     farPlane: f32,
     time: f32,
-    _padding1: f32,
-    _padding2: f32,
-    _padding3: f32,
+    fogIntensity: f32,
+    fogColor: vec3f,
 }
 
 struct DirectionalLightUniforms {
