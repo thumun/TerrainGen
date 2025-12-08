@@ -161,6 +161,9 @@ export default function ContextMenu({ state, closeMenu, reactFlowWrapper }: Cont
               <ContextMenuItem onSelect={() => createNode('terrain')}>
                 Terrain (Output)
               </ContextMenuItem>
+              <ContextMenuItem onSelect={() => createNode('water')}>
+                Water (Output)
+              </ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
         </DropdownMenu.Content>

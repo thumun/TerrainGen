@@ -17,7 +17,6 @@ var<storage, read> indices: array<u32>;
 @group(2) @binding(1) var ourTexture: texture_2d_array<f32>;
 
 @group(3) @binding(0)
-
 var<uniform> transform_matrix: mat4x4<f32>;
 
 struct VertexIn {
@@ -105,7 +104,7 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
 
   if (color.a < 0.5) {
     discard;
-}
+  }
 
   return color;
 
