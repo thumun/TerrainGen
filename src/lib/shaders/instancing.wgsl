@@ -31,6 +31,7 @@ struct VertexOut {
     @location(2) uv : vec2f,
     @location(3) @interpolate(flat) tex_id: u32,
     @location(4) @interpolate(flat) used: u32,
+    @location(5) camera_view_pos: vec3f,
 };
 
 @vertex
@@ -84,6 +85,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.uv = vert_uv;
     out.tex_id = texture_id;
     out.used = used;
+    out.camera_view_pos = (camera.viewMat * world_pos).xyz;
     return out;
 }
 
@@ -106,10 +108,15 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
     discard;
   }
 
-  return color;
+  let fogStrength = 1.0 - exp(-0.08 * length(in.camera_view_pos));
+  let fogColor = vec3f(0.686, 0.702, 0.725);
+
+  let finalColor = mix(color.xyz, fogColor, fogStrength);
+
+  return vec4f(finalColor, color.a);
 
   // var color = vec3f(0.0, 0.0, 0.0);
-  
+
   // if (diffuse > 0.75) {
   //   color = vec3f(0.58, 1.0, 0.235);
   // } else if (diffuse > 0.5) {
