@@ -8,6 +8,7 @@ struct FragmentInput
     @location(1) nor: vec3f,
     @location(2) uv: vec2f,
     @location(3) shadow_pos: vec3f,
+    @location(4) camera_view_pos: vec3f,
 }
 
 struct BiomeUniforms {
@@ -33,16 +34,16 @@ fn hash(p: vec2f) -> f32 {
 fn noise(p: vec2f) -> f32 {
     let i = floor(p);
     let f = fract(p);
-    
+
     // Cubic interpolation
     let u = f * f * (3.0 - 2.0 * f);
-    
+
     // Sample corners
     let a = hash(i);
     let b = hash(i + vec2f(1.0, 0.0));
     let c = hash(i + vec2f(0.0, 1.0));
     let d = hash(i + vec2f(1.0, 1.0));
-    
+
     // Interpolate
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
@@ -52,13 +53,13 @@ fn fbm(p: vec2f) -> f32 {
     var amplitude = 0.5;
     var frequency = 1.0;
     var pos = p;
-    
+
     for (var i = 0; i < 4; i++) {
         value += amplitude * noise(pos * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
     }
-    
+
     return value;
 }
 
@@ -69,9 +70,9 @@ fn celShade(value: f32, bands: f32) -> f32 {
 fn grassTexture(pos: vec3f) -> vec3f {
     let noise1 = fbm(pos.xz * 8.0);
     let noise2 = noise(pos.xz * 2.0);
-    
+
     let combinedNoise = noise1 * 0.6 + noise2 * 0.4;
-    
+
     let grassBright = vec3f(0.45, 0.85, 0.15);
     let grassMid = vec3f(0.25, 0.65, 0.10);
     let grassDark = vec3f(0.15, 0.45, 0.05);
@@ -82,27 +83,27 @@ fn grassTexture(pos: vec3f) -> vec3f {
     var grassColor = grassDark;
     grassColor = mix(grassColor, grassMid, t1);
     grassColor = mix(grassColor, grassBright, t2);
-    
+
     return grassColor;
 }
 
 fn sandTexture(pos: vec3f) -> vec3f {
     let sandScale = 20.0;
     let sandNoise = fbm(pos.xz * sandScale);
-    
+
     let sandBase = vec3f(0.95, 0.88, 0.71);
     let sandDark = vec3f(0.85, 0.78, 0.61);
-    
+
     return mix(sandDark, sandBase, sandNoise);
 }
 
 fn snowTexture(pos: vec3f) -> vec3f {
     let sandScale = 20.0;
     let sandNoise = fbm(pos.xz * sandScale);
-    
+
     let sandBase = vec3f(0.94, 0.99, 1.0);
     let sandDark = vec3f(0.812, 0.953, 0.969);
-    
+
     return mix(sandDark, sandBase, sandNoise);
 }
 
@@ -110,20 +111,20 @@ fn mountainTexture(pos: vec3f) -> vec3f {
     let noise1 = fbm(pos.xz * 3.0);
     let noise2 = noise(pos.xz * 10.0);
     let noise3 = noise(pos.xz * 30.0);
-    
+
     let combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
-    
+
     let rockDark = vec3f(0.35, 0.35, 0.38);
     let rockMid = vec3f(0.50, 0.48, 0.45);
     let rockLight = vec3f(0.65, 0.62, 0.58);
-    
+
     let t1 = smoothstep(0.25, 0.45, combinedNoise);
     let t2 = smoothstep(0.55, 0.75, combinedNoise);
-    
+
     var rockColor = rockDark;
     rockColor = mix(rockColor, rockMid, t1);
     rockColor = mix(rockColor, rockLight, t2);
-    
+
     return rockColor;
 }
 
@@ -148,7 +149,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
         let grassStart = waterHeight.height + 0.8;
         let sandEnd = waterHeight.height + 0.4;
-        
+
         baseColor = grass;
         if (waterHeight.height > in.pos.y) {
             baseColor = underwater;
@@ -212,6 +213,9 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     let ambientLight = vec3f(0.1, 0.1, 0.2);
 
-    var color = baseColor * (directLight + ambientLight);
+    let fogStrength = 1.0 - exp(-0.4 * length(in.camera_view_pos));
+    let fogColor = vec3f(0.686, 0.702, 0.725);
+
+    var color = mix(baseColor * (directLight + ambientLight), fogColor, fogStrength);
     return vec4f(color, 1.0);
 }
