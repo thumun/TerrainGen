@@ -100,6 +100,8 @@ With glTFs, base color textures can be displayed.
     - [x] OBJ import
     - [x] glTF import
 
+## Appendix
+
 ```bash
 npm install
 npm run dev
