@@ -41,7 +41,7 @@ export default function Editor() {
     size: 20,
     resolution: 100,
     fog: {
-      intensity: 0.08,
+      intensity: 0.0,
       color: [0.686, 0.702, 0.725],
     },
   });

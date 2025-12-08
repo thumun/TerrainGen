@@ -88,7 +88,7 @@ export default function TerrainSliders({ globalParams, setGlobalParams }: Terrai
         <input
           type="range"
           min={0.0}
-          max={2.5}
+          max={1.0}
           step={0.01}
           value={globalParams.fog.intensity}
           onChange={(e) => {
