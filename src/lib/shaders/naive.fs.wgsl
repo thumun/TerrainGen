@@ -213,9 +213,8 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     let ambientLight = vec3f(0.1, 0.1, 0.2);
 
-    let fogStrength = 1.0 - exp(-0.08 * length(in.camera_view_pos));
-    let fogColor = vec3f(0.686, 0.702, 0.725);
+    let fogStrength = 1.0 - exp(-camera.fogIntensity * length(in.camera_view_pos));
 
-    var color = mix(baseColor * (directLight + ambientLight), fogColor, fogStrength);
+    var color = mix(baseColor * (directLight + ambientLight), camera.fogColor, fogStrength);
     return vec4f(color, 1.0);
 }
