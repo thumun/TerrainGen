@@ -8,6 +8,7 @@ struct FragmentInput
     @location(1) nor: vec3f,
     @location(2) uv: vec2f,
     @location(3) shadow_pos: vec3f,
+    @location(4) camera_view_pos: vec3f,
 }
 
 @group(0) @binding(1) var<uniform> directionalLightUniforms: DirectionalLightUniforms;
@@ -30,8 +31,11 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
   let ambientLight = vec3f(0.1, 0.1, 0.2);
 
+  let fogStrength = 1.0 - exp(-0.4 * length(in.camera_view_pos));
+  let fogColor = vec3f(0.686, 0.702, 0.725);
+
   let baseColor = vec3f(0.8, 0.8, 0.8);
 
-  var color = baseColor * (directLight + ambientLight);
+  var color = mix(baseColor * (directLight + ambientLight), fogColor, fogStrength);
   return vec4f(color, 1.0);
 }
