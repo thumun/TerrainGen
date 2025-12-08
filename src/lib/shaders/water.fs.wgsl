@@ -96,10 +96,9 @@ fn main(in: FragmentInput) -> @location(0) vec4f
         finalColor *= 0.5;
     }
 
-    let fogStrength = 1.0 - exp(-0.08 * length(in.camera_view_pos));
-    let fogColor = vec3f(0.686, 0.702, 0.725);
+    let fogStrength = 1.0 - exp(-camera.fogIntensity * length(in.camera_view_pos));
 
-    finalColor = mix(finalColor, fogColor, fogStrength);
+    finalColor = mix(finalColor, camera.fogColor, fogStrength);
 
     return vec4f(finalColor, 0.85);
 }

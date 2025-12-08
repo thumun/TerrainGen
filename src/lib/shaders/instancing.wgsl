@@ -108,10 +108,9 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
     discard;
   }
 
-  let fogStrength = 1.0 - exp(-0.08 * length(in.camera_view_pos));
-  let fogColor = vec3f(0.686, 0.702, 0.725);
+  let fogStrength = 1.0 - exp(-camera.fogIntensity * length(in.camera_view_pos));
 
-  let finalColor = mix(color.xyz, fogColor, fogStrength);
+  let finalColor = mix(color.xyz, camera.fogColor, fogStrength);
 
   return vec4f(finalColor, color.a);
 
