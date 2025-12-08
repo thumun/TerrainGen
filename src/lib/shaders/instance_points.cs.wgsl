@@ -99,6 +99,8 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let T_rot = normalize(T * c + B * t);
     let B_rot = normalize(cross(normal, T_rot));
     let rot = mat3x3f(T_rot, B_rot, normal);
+    //let rot = mat3x3f(T, B, normal);
+
 
     instance_pts[id.x].pos = vec3<f32>(x, height, z);
     instance_pts[id.x].nor = vec3<f32>(normal.x, normal.y, normal.z);
