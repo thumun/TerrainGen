@@ -7,9 +7,8 @@ var<uniform> camera : CameraUniforms;
 
 struct VertexOut {
     @builtin(position) pos: vec4f,
-    @location(0) fragDir: vec3f,
+    @location(0) viewRay: vec3f,
 };
-
 
 @vertex
 fn vs_main(@builtin(vertex_index) vertexIndex : u32) -> VertexOut {
@@ -20,21 +19,27 @@ fn vs_main(@builtin(vertex_index) vertexIndex : u32) -> VertexOut {
     );
     
     var out: VertexOut;
-    out.pos = vec4f(positions[vertexIndex], 0.0, 1.0);
-    out.fragDir = vec3f(positions[vertexIndex], 1.0); // forward screen direction
+    let pos = positions[vertexIndex];
+    out.pos = vec4f(pos, 1.0, 1.0); // Set z=1.0 for far plane
+    
+    // Transform NDC to view space direction
+    let invProj = camera.invProjMat;
+    let viewPos = invProj * vec4f(pos, 1.0, 1.0);
+    out.viewRay = viewPos.xyz / viewPos.w;
 
     return out;
 }
 
 @fragment
 fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
-    let dirView = normalize(in.fragDir);
+    // Transform view ray to world space
+    let dirWorld = normalize((camera.invViewMat * vec4f(in.viewRay, 0.0)).xyz);
 
-    let dirWorld = normalize((camera.invViewMat * vec4f(dirView, 0.0)).xyz);
-
+    // Convert to spherical coordinates for equirectangular mapping
     let phi = atan2(dirWorld.z, dirWorld.x);
     let theta = asin(dirWorld.y);
     let u = 0.5 + (phi / (2.0 * 3.14159265));
     let v = 0.5 - (theta / 3.14159265);
+    
     return textureSample(hdrTex, hdrSampler, vec2f(u, v));
 }

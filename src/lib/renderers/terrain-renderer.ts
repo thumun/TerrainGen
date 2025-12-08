@@ -473,7 +473,7 @@ export class TerrainRenderer implements IRenderer {
       depthStencil: {
         format: 'depth24plus',
         depthWriteEnabled: false,
-        depthCompare: 'always',
+        depthCompare: 'less-equal',
       },
       vertex: {
         module: this.skyboxShaderModule,
