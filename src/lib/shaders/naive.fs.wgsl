@@ -95,6 +95,46 @@ fn sandTexture(pos: vec3f) -> vec3f {
     
     return mix(sandDark, sandBase, sandNoise);
 }
+
+fn snowTexture(pos: vec3f) -> vec3f {
+    let sandScale = 20.0;
+    let sandNoise = fbm(pos.xz * sandScale);
+    
+    let sandBase = vec3f(0.94, 0.99, 1.0);
+    let sandDark = vec3f(0.812, 0.953, 0.969);
+    
+    return mix(sandDark, sandBase, sandNoise);
+}
+
+fn mountainTexture(pos: vec3f) -> vec3f {
+    let noise1 = fbm(pos.xz * 3.0);
+    let noise2 = noise(pos.xz * 10.0);
+    let noise3 = noise(pos.xz * 30.0);
+    
+    let combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+    
+    let rockDark = vec3f(0.35, 0.35, 0.38);
+    let rockMid = vec3f(0.50, 0.48, 0.45);
+    let rockLight = vec3f(0.65, 0.62, 0.58);
+    
+    let t1 = smoothstep(0.25, 0.45, combinedNoise);
+    let t2 = smoothstep(0.55, 0.75, combinedNoise);
+    
+    var rockColor = rockDark;
+    rockColor = mix(rockColor, rockMid, t1);
+    rockColor = mix(rockColor, rockLight, t2);
+
+    let snowStart = 1.0;
+    let snowFull = 1.5;
+    let snowTint = vec3f(0.95, 0.96, 0.98);
+    
+    let snowAmount = smoothstep(snowStart, snowFull, pos.y);
+    
+    rockColor = mix(rockColor, snowTint, snowAmount);
+    
+    return rockColor;
+}
+
 @group(0) @binding(1) var<uniform> directionalLightUniforms: DirectionalLightUniforms;
 @group(0) @binding(2) var shadow_map: texture_depth_2d;
 @group(0) @binding(3) var shadow_sampler: sampler;
@@ -104,6 +144,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 {
     let biomeType = biome.biomeType;
     var baseColor: vec3f;
+    let underwater = vec3f(0.2, 0.3, 0.4);
 
     if (biomeType == 0) {
         // grassland
@@ -112,7 +153,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
         let grass = grassTexture(in.pos);
         let sand = sandTexture(in.pos);
-        let underwater = vec3f(0.2, 0.3, 0.4);
 
         let grassStart = waterHeight.height + 0.8;
         let sandEnd = waterHeight.height + 0.4;
@@ -134,7 +174,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
         let sandNoise = fbm(vec2f(in.pos.x, in.pos.z) * sandScale);
 
         let sand = sandTexture(in.pos);
-        let underwater = vec3f(0.2, 0.3, 0.4);
 
         baseColor = sand;
         if (waterHeight.height > in.pos.y) {
@@ -144,10 +183,24 @@ fn main(in: FragmentInput) -> @location(0) vec4f
         }
     } else if (biomeType == 2) {
         // mountain
-        baseColor = vec3f(0.2, 0.3, 0.4);
+        baseColor = mountainTexture(in.pos);
+
+        if (waterHeight.height > in.pos.y) {
+            baseColor = underwater;
+        }
     } else if (biomeType == 3) {
         // tundra
+        let sandScale = 20.0;
+        let sandNoise = fbm(vec2f(in.pos.x, in.pos.z) * sandScale);
+
+        let snow = snowTexture(in.pos);
+
         baseColor = vec3f(1.0, 1.0, 1.0);
+        if (waterHeight.height > in.pos.y) {
+            baseColor = underwater;
+        } else {
+            baseColor = snow;
+        }
     }
     else {
         // Default to grass texture
