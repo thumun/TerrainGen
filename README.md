@@ -57,8 +57,6 @@ The skybox can also be changed by uploading an HDR file.
 - [x] 🌲 Mesh instancing across terrain
   - [x] glTF/OBJ import for instancing
 
-### Node-based Description System
-
 ### JIT Shader Code Generation
 
 Once there is a valid node graph connected to one of our output pipelines (Terrain, Instancing, and Water) our pipeline gets computed and the shader code is generated. Our nodes of type input create uniform keys and each subsequent output handle generates a key on the fly. Each node has specific code that is generated and added to our vertex shader along with references to the aforementioned uniform keys.
