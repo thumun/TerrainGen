@@ -1109,6 +1109,7 @@ export class TerrainRenderer implements IRenderer {
 
   setMeshUniforms(size: number, resolution: number) {
     this.stage.groundPlane.updateUniforms(this.device, size, resolution);
+    this.stage.waterPlane.updateUniforms(this.device, size, resolution);
 
     const encoder = this.device.createCommandEncoder();
     this.runComputes(encoder);
