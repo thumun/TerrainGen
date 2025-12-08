@@ -286,6 +286,10 @@ export class TerrainRenderer implements IRenderer {
     return [0, 0, 0];
   }
 
+  private DegToRad(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
   private createTransformMatrix(
     translate: [number, number, number],
     rotate: [number, number, number],
@@ -294,7 +298,7 @@ export class TerrainRenderer implements IRenderer {
     const matrix = new Float32Array(16);
 
     // Compute rotation matrices
-    const [rx, rz, ry] = rotate;
+    const [rx, rz, ry] = rotate.map((r) => this.DegToRad(r));
     const cx = Math.cos(rx),
       sx = Math.sin(rx);
     const cy = Math.cos(ry),
