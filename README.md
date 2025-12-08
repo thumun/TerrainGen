@@ -10,7 +10,7 @@ Raymond Feng, Neha Thumu, Thomas Shaw
 
 ## Overview
 
-TerrainGen is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation and rendering tool. Our motivation for the project was to create an accessible modelling tool on the web to showcase the power of WebGPU. 
+TerrainGen is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation and rendering tool. Our motivation for the project was to create an accessible modelling tool on the web to showcase the power of WebGPU.
 
 <img width="500" height="400" alt="image" src="https://github.com/user-attachments/assets/830e006d-f6ba-4b15-9daf-a802301df2bf" />
 <img width="500" height="400" alt="Screenshot 2025-12-07 233712" src="https://github.com/user-attachments/assets/9a188925-c8d5-4b1d-ad1a-db0ab446be80" />
@@ -46,13 +46,14 @@ If this is imported, then the following node graph will be loaded in.
 The skybox can also be changed by uploading an HDR file.
 
 ## Project Features
+
 - [x] 🔌 Node-based description system for procedural terrain
 - [x] 🏭 Just-in-time WebGPU shader code generation
 - [x] 🏔️ Real-time terrain rendering
   - [x] Adjustable tesselation and terrain size
   - [x] Varied terrain type rendering (grass, rock, snow, etc)
-  - [x] Shadow mapping 
-  - [x] Distance fog 
+  - [x] Shadow mapping
+  - [x] Distance fog
 - [x] 🌲 Mesh instancing across terrain
   - [x] glTF/OBJ import for instancing
 
@@ -60,19 +61,24 @@ The skybox can also be changed by uploading an HDR file.
 
 ### JIT Shader Code Generation
 
+Once there is a valid node graph connected to one of our output pipelines (Terrain, Instancing, and Water) our pipeline gets computed and the shader code is generated. Our nodes of type input create uniform keys and each subsequent output handle generates a key on the fly. Each node has specific code that is generated and added to our vertex shader along with references to the aforementioned uniform keys.
+
 ### Terrain Rendering
-The terrain is a tesselated plane with an adjustable size and resolution. Whenever the size and resolution sliders are changed, a compute shader populates a vertex buffer and an index buffer. A second compute pass gives each vertex on the terrain a normal value, which is calculated based on the position of neighboring vertices. 
+
+The terrain is a tesselated plane with an adjustable size and resolution. Whenever the size and resolution sliders are changed, a compute shader populates a vertex buffer and an index buffer. A second compute pass gives each vertex on the terrain a normal value, which is calculated based on the position of neighboring vertices.
 
 Once the terrain is created with the compute shaders, it is rendered every frame with lambertian shading, shadow mapping, and distance fog.
 
 The terrain's color can be changed with a dropdown in the Terrain (Output) node.
 
 ### Mesh Instancing
-TerrainGen also supports OBJ and glTF import, which can be used as part of the instancing pipeline. Users can create multiple instancing pipelines, each of which creates a separate buffer of instancing points on which the desired mesh will be placed. These instancing points are randomly generated on top of the terrain using the Scatter node. 
 
-With glTFs, base color textures can be displayed. 
+TerrainGen also supports OBJ and glTF import, which can be used as part of the instancing pipeline. Users can create multiple instancing pipelines, each of which creates a separate buffer of instancing points on which the desired mesh will be placed. These instancing points are randomly generated on top of the terrain using the Scatter node.
+
+With glTFs, base color textures can be displayed.
 
 ## Node Types
+
 - General-purpose
   - [x] Basic math (add, sub, mult, div)
   - [x] Trig math (sin, cos, tan)
@@ -86,7 +92,7 @@ With glTFs, base color textures can be displayed.
   - [x] Water level
 - Scattering source
   - [x] Terrain height
-  - [x] Instancing node 
+  - [x] Instancing node
 - Scattering geometry
   - [x] Built-in objects: trees, rocks, bushes
   - [x] Primitive geometry: sphere, cube, plane
