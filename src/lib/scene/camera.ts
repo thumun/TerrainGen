@@ -8,7 +8,7 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(288);
+  readonly buffer = new ArrayBuffer(304);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
@@ -18,6 +18,7 @@ class CameraUniforms {
   private readonly cameraHeightView = new Float32Array(this.buffer, 276, 1);
   private readonly nearPlaneView = new Float32Array(this.buffer, 280, 1);
   private readonly farPlaneView = new Float32Array(this.buffer, 284, 1);
+  private readonly timeView = new Float32Array(this.buffer, 288, 1);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
