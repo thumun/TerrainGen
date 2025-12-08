@@ -100,9 +100,9 @@ function generatePipelines(
         waterHeight:
           waterHeightSourceNode && waterHeightEdge
             ? nodeMapping.getHandleKey({
-              sourceNode: waterHeightSourceNode,
-              outgoingHandleId: waterHeightEdge.sourceHandle!,
-            })
+                sourceNode: waterHeightSourceNode,
+                outgoingHandleId: waterHeightEdge.sourceHandle!,
+              })
             : undefined,
 
         biome: (() => {
@@ -281,9 +281,9 @@ function generatePipelines(
         maskKey:
           maskSourceNode && maskEdge
             ? nodeMapping.getHandleKey({
-              sourceNode: maskSourceNode,
-              outgoingHandleId: maskEdge.sourceHandle!,
-            })
+                sourceNode: maskSourceNode,
+                outgoingHandleId: maskEdge.sourceHandle!,
+              })
             : undefined,
         threshold: scatterNode.data.threshold,
         transform: transformConfig,
