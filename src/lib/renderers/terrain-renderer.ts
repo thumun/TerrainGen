@@ -391,21 +391,19 @@ export class TerrainRenderer implements IRenderer {
 
     // create rectangular texture
     this.skyboxTexture = this.device.createTexture({
-      label: "hdr texture",
+      label: 'hdr texture',
       size: [hdr.width, hdr.height],
-      format: "rgba32float",
-      usage:
-        GPUTextureUsage.TEXTURE_BINDING |
-        GPUTextureUsage.COPY_DST
+      format: 'rgba32float',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
 
     this.device.queue.writeTexture(
       { texture: this.skyboxTexture },
       rgbaData,
       {
-        bytesPerRow: hdr.width * 16,  // 8 bytes per pixel in rgba16float
+        bytesPerRow: hdr.width * 16, // 8 bytes per pixel in rgba16float
       },
-      [hdr.width, hdr.height]
+      [hdr.width, hdr.height],
     );
 
     this.skyboxBindGroupLayout = this.device.createBindGroupLayout({
@@ -418,8 +416,8 @@ export class TerrainRenderer implements IRenderer {
           texture: {
             sampleType: 'unfilterable-float',
             viewDimension: '2d',
-            multisampled: false
-          }
+            multisampled: false,
+          },
         },
         {
           // hdr sampler
@@ -448,14 +446,13 @@ export class TerrainRenderer implements IRenderer {
       mipmapFilter: 'nearest',
     });
 
-
     this.skyboxBindGroup = this.device.createBindGroup({
       label: 'skybox bind group',
       layout: this.skyboxBindGroupLayout,
       entries: [
         { binding: 0, resource: this.skyboxTexture.createView() },
         { binding: 1, resource: this.skyboxSampler },
-        { binding: 2, resource: this.stage.camera.uniformsBuffer }
+        { binding: 2, resource: this.stage.camera.uniformsBuffer },
       ],
     });
 
@@ -484,7 +481,7 @@ export class TerrainRenderer implements IRenderer {
         entryPoint: 'fs_main',
         targets: [
           {
-            format: this.webGPU.canvasFormat
+            format: this.webGPU.canvasFormat,
           },
         ],
       },
