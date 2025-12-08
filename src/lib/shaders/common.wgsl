@@ -4,7 +4,7 @@ struct CameraUniforms {
     viewProjMat: mat4x4f,
     invProjMat: mat4x4f,
     viewMat: mat4x4f,
-    rotMat: mat4x4f,
+    invViewMat: mat4x4f,
     viewDir: vec4f,
     cameraWidth: f32,
     cameraHeight: f32,
