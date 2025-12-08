@@ -90,7 +90,6 @@ export class TerrainRenderer implements IRenderer {
   private waterHeightUniformBuffer: GPUBuffer;
   private waterHeightBindGroupLayout: GPUBindGroupLayout;
   private waterHeightBindGroup: GPUBindGroup;
-  private currentWaterHeight: number = 0.0;
 
   /** Custom displace pipeline, gets reconfigured whenever node structure is changed */
   private customDisplacePipeline: GPUComputePipeline;
@@ -1316,7 +1315,6 @@ export class TerrainRenderer implements IRenderer {
   }
 
   setWaterHeightForTerrain(height: number) {
-    this.currentWaterHeight = height;
     this.device.queue.writeBuffer(this.waterHeightUniformBuffer, 0, new Float32Array([height]));
     console.log('Updated water height for terrain fragment shader:', height);
   }
