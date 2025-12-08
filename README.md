@@ -1,14 +1,18 @@
 # TerrainGen
 
-_Final project for CIS5650_
+_Final project for University of Pennsylvania, CIS5650 GPU Programming and Architecture, Fall 2025_
 
-![Milestone 1 Demo](./docs/images/milestone_01_demo.webp)
+Raymond Feng, Neha Thumu, Thomas Shaw
+
+<img width="1195" height="569" alt="Screenshot 2025-12-07 231302" src="https://github.com/user-attachments/assets/b1dab04f-0c98-46ac-9cde-09d7cb394e71" />
 
 [Link to website! ](https://thumun.github.io/TerrainGen/)
 
-## Motivation
+## Overview
 
-This is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation tool.
+TerrainGen is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation and rendering tool. Our motivation for the project was to create an accessible modelling tool on the web to showcase the power of WebGPU. 
+
+<img width="473" height="353" alt="image" src="https://github.com/user-attachments/assets/830e006d-f6ba-4b15-9daf-a802301df2bf" />
 
 ### Milestones
 
@@ -17,9 +21,7 @@ This is a single-page web application using WebGPU to create a real-time node-ba
 3. [Milestone 3 Progress Slides](https://docs.google.com/presentation/d/1SY8XgbtOQOwFCNqlIhqCft3_o6H0uVIyBBi3s_v93jw/edit?usp=sharing)
 4. [Final Presentation](https://docs.google.com/presentation/d/1d1kF9o0qythf8vgfsJAXlKPUyjCBU8piUQctd_OLzT8/edit?usp=sharing)
 
-## Project Details
-
-TerrainGen is a easy-to-use procedural, node-based tool that users can utilize to create terrain! Our project is entirely on WebGPU so the user does not have to worry about any setup/download issues.
+## How to Use
 
 ### Window Layout
 
@@ -29,7 +31,7 @@ Nodes can be added to the canvas element on the left-hand side of the screen and
 
 ### Import/Export
 
-<img width="200" height="292" alt="image" src="https://github.com/user-attachments/assets/5946e1e9-4189-46ef-a593-d0007ddfe020" />
+<img width="385" height="213" alt="Screenshot 2025-12-07 232242" src="https://github.com/user-attachments/assets/1a66c0e5-335a-4202-ab53-0feba296e9d6" />
 
 A user can import/export their node graph.
 
@@ -37,6 +39,51 @@ As an example, here is a saved node graph layout [file](https://github.com/user-
 If this is imported, then the following node graph will be loaded in.
 
 <img width="500" height="968" alt="image" src="https://github.com/user-attachments/assets/91ac03f7-4fad-4dd1-a62b-5bd242054c49" />
+
+The skybox can also be changed by uploading an HDR file.
+
+## Project Features
+- [x] 🔌 Node-based description system for procedural terrain
+- [x] 🏭 Just-in-time WebGPU shader code generation
+- [x] 🏔️ Real-time terrain rendering
+  - [x] Adjustable tesselation and terrain size
+  - [x] Varied terrain type rendering (grass, rock, snow, etc)
+  - [x] Shadow mapping 
+  - [x] Distance fog 
+- [x] 🌲 Mesh instancing across terrain
+  - [x] GLTF/OBJ import for instancing
+     
+### Terrain Rendering
+The terrain is a tesselated plane with an adjustable size and resolution. Whenever the size and resolution sliders are changed, a compute shader populates a vertex buffer and an index buffer. A second compute pass gives each vertex on the terrain a normal value, which is calculated based on the position of neighboring vertices. 
+
+Once the terrain is created with the compute shaders, it is rendered every frame with lambertian shading, shadow mapping, and distance fog.
+
+The terrain's color can be changed with a dropdown in the Terrain (Output) node.
+
+### Mesh Instancing
+asdf
+
+## Node Types
+- General-purpose
+  - [x] Basic math (add, sub, mult, div)
+  - [x] Trig math (sin, cos, tan)
+- Terrain source
+  - [x] Worley noise
+- Terrain input
+  - [x] Vertex XYZ position
+- Terrain output
+  - [x] Height
+  - [x] Terrain type
+  - [x] Water level
+- Scattering source
+  - [x] Terrain height
+  - [x] Instancing node 
+- Scattering geometry
+  - [x] Built-in objects: trees, rocks, bushes
+  - [x] Primitive geometry: sphere, cube, plane
+  - Custom models
+    - [x] OBJ import
+    - [x] glTF import
 
 ### Input Nodes
 
