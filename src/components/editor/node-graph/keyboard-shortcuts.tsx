@@ -32,9 +32,6 @@ export default function KeyboardShortcuts({
         return;
       }
 
-      evt.preventDefault();
-      evt.stopPropagation();
-
       const position = screenToFlowPosition(mousePos);
 
       if (evt.key === 'v') {
@@ -49,7 +46,12 @@ export default function KeyboardShortcuts({
         createNode('combine', position);
       } else if (evt.key === 'A') {
         onOpenContextMenu();
+      } else {
+        return;
       }
+
+      evt.preventDefault();
+      evt.stopPropagation();
     };
     document.addEventListener('keydown', onKeyDown);
 
