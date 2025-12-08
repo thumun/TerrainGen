@@ -6,10 +6,12 @@ export class Stage {
   readonly camera: Camera;
   readonly directionalLight: DirectionalLight;
   readonly groundPlane: Plane;
+  readonly waterPlane: Plane;
 
-  constructor(camera: Camera, directionalLight: DirectionalLight, mesh: Plane) {
+  constructor(camera: Camera, directionalLight: DirectionalLight, mesh: Plane, water: Plane) {
     this.camera = camera;
     this.directionalLight = directionalLight;
     this.groundPlane = mesh;
+    this.waterPlane = water;
   }
 }

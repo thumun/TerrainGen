@@ -1,6 +1,7 @@
 import path from 'path-browserify';
 
 import * as common from './common';
+import { WaterPipeline } from './water-pipeline';
 
 import type { IRenderer } from '@/components/common/webgpu-canvas';
 import { InstancePointsPipeline } from '@/lib/renderers/pipelines/instance-points-pipeline';
@@ -37,6 +38,9 @@ export class TerrainRenderer implements IRenderer {
 
   // terrain compute pipeline
   private readonly terrainComputePipeline: TerrainPipeline;
+
+  // water compute pipeline
+  private readonly waterComputePipeline: WaterPipeline;
 
   // custom compute pipeline
   private readonly customBindGroupLayout: GPUBindGroupLayout;
@@ -81,6 +85,26 @@ export class TerrainRenderer implements IRenderer {
   /** Custom displace pipeline, gets reconfigured whenever node structure is changed */
   private customDisplacePipeline: GPUComputePipeline;
 
+  // Water pipeline state
+  private waterPipelineConfigured: boolean = false;
+
+  // Water custom compute pipeline
+  private readonly customWaterBindGroupLayout: GPUBindGroupLayout;
+  private readonly customWaterBindGroup: GPUBindGroup;
+
+  private readonly customWaterUniformBindGroupLayout: GPUBindGroupLayout;
+  private readonly customWaterUniformBindGroup: GPUBindGroup;
+
+  private customWaterNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
+  private customWaterNodeGraphUniformsBindGroup: GPUBindGroup;
+
+  private waterNodeGraphUniformBuffer!: GPUBuffer;
+  private waterNodeGraphUniformLayout!: Map<string, number> | undefined;
+  private waterNodeGraphUniformConfig!: scene.WaterPipeline['uniforms'] | undefined;
+
+  private customWaterDisplacePipeline: GPUComputePipeline;
+  private waterRenderPipeline: GPURenderPipeline;
+
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
 
@@ -94,7 +118,8 @@ export class TerrainRenderer implements IRenderer {
 
     // create vertex data
     this.stage.groundPlane.createBuffers(this.device);
-
+    // create vertex data for water
+    this.stage.waterPlane.createBuffers(this.device);
     // set up bind groups, layouts, pipelines etc
 
     // scene uniform layouts and groups
@@ -168,9 +193,12 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+    this.waterRenderPipeline = this.createWaterRenderPipeline();
 
     // compute pipeline that creates the terrain
     this.terrainComputePipeline = new TerrainPipeline(this.device, this.stage.groundPlane);
+    // compute pipeline that creates the water plane
+    this.waterComputePipeline = new WaterPipeline(this.device, this.stage.waterPlane);
 
     // ----------------------------------------------------------------------------------------
     // --------------------  CUSTOM COMPUTE PIPELINE
@@ -252,6 +280,79 @@ export class TerrainRenderer implements IRenderer {
       this.normalsComputePipeline,
       2,
     );
+
+    // ----------------------------------------------------------------------------------------
+    // --------------------  CUSTOM WATER COMPUTE PIPELINE
+    // ----------------------------------------------------------------------------------------
+
+    this.customWaterBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom water compute bind group layout',
+      entries: [
+        {
+          // vertices
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'storage',
+          },
+        },
+      ],
+    });
+
+    this.customWaterBindGroup = this.device.createBindGroup({
+      label: 'custom water compute bind group',
+      layout: this.customWaterBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.stage.waterPlane.vertexBuffer! } }],
+    });
+
+    this.customWaterUniformBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom water compute uniform bind group layout',
+      entries: [
+        {
+          // uniform containing mesh size and resolution
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.customWaterUniformBindGroup = this.device.createBindGroup({
+      label: 'custom water compute uniform bind group',
+      layout: this.customWaterUniformBindGroupLayout,
+      entries: [{ binding: 0, resource: { buffer: this.stage.waterPlane.uniformsBuffer! } }],
+    });
+
+    this.customWaterNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom water node graph uniform bind group layout',
+      entries: [],
+    });
+
+    this.customWaterNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'custom water node graph uniforms bind group',
+      layout: this.customWaterNodeGraphUniformsBindGroupLayout,
+      entries: [],
+    });
+
+    this.customWaterDisplacePipeline = this.device.createComputePipeline({
+      label: 'custom water compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'custom water compute pipeline layout',
+        bindGroupLayouts: [
+          this.customWaterBindGroupLayout,
+          this.customWaterUniformBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'custom water compute shader',
+          code: shaders.waterComputeSrc,
+        }),
+        entryPoint: 'main',
+      },
+    });
 
     // ----------------------------------------------------------------------------------------
     // --------------------  RUNNING COMPUTES
@@ -359,7 +460,19 @@ export class TerrainRenderer implements IRenderer {
     // pass 3: calculate terrain normals
     this.normalsComputePipeline.runComputePass(computePass);
 
-    // pass 4: create points on terrain to instance on
+    // pass 4: create water plane
+    this.waterComputePipeline.runComputePass(computePass);
+
+    // pass 5: run custom water compute pipeline from node graph
+    if (this.waterPipelineConfigured) {
+      computePass.setPipeline(this.customWaterDisplacePipeline);
+      computePass.setBindGroup(0, this.customWaterBindGroup);
+      computePass.setBindGroup(1, this.customWaterUniformBindGroup);
+      computePass.setBindGroup(2, this.customWaterNodeGraphUniformsBindGroup);
+      computePass.dispatchWorkgroups(Math.ceil(this.stage.waterPlane.numVertices / 64));
+    }
+
+    // pass 6: create points on terrain to instance on
     this.instancePointsComputePipeline.runComputePass(computePass);
 
     computePass.end();
@@ -425,6 +538,185 @@ export class TerrainRenderer implements IRenderer {
     });
   }
 
+  private createWaterRenderPipeline() {
+    return this.device.createRenderPipeline({
+      layout: this.device.createPipelineLayout({
+        label: 'water pipeline layout',
+        bindGroupLayouts: [this.sceneUniformsBindGroupLayout],
+      }),
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: 'less',
+        format: 'depth24plus',
+      },
+      vertex: {
+        module: this.device.createShaderModule({
+          label: 'water vert shader',
+          code: shaders.naiveVertSrc,
+        }),
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
+      },
+      fragment: {
+        module: this.device.createShaderModule({
+          label: 'water frag shader',
+          code: shaders.waterFragSrc,
+        }),
+        targets: [
+          {
+            format: this.webGPU.canvasFormat,
+            blend: {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  configureWaterPipeline(config: scene.WaterPipeline) {
+    this.waterPipelineConfigured = true;
+
+    const customWaterComputeShader = jit.generateDisplaceShaderCode(
+      config,
+      displaceComputeShaderTemplate,
+    );
+
+    console.log('custom water compute shader:', customWaterComputeShader);
+
+    this.waterNodeGraphUniformConfig = config.uniforms;
+
+    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+    this.waterNodeGraphUniformLayout = offsets;
+
+    if (this.waterNodeGraphUniformBuffer) {
+      this.waterNodeGraphUniformBuffer.destroy();
+    }
+
+    this.waterNodeGraphUniformBuffer = this.device.createBuffer({
+      label: 'water uniform buffer',
+      size: Math.max(totalSize, 16),
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    this.initializeWaterNodeGraphUniforms(config.uniforms);
+
+    this.customWaterNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'custom water nodegraph bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.customWaterNodeGraphUniformsBindGroup = this.device.createBindGroup({
+      label: 'custom water nodegraph bind group',
+      layout: this.customWaterNodeGraphUniformsBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: this.waterNodeGraphUniformBuffer },
+        },
+      ],
+    });
+
+    this.customWaterDisplacePipeline = this.device.createComputePipeline({
+      label: 'custom water compute pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'custom water compute pipeline layout',
+        bindGroupLayouts: [
+          this.customWaterBindGroupLayout,
+          this.customWaterUniformBindGroupLayout,
+          this.customWaterNodeGraphUniformsBindGroupLayout,
+        ],
+      }),
+      compute: {
+        module: this.device.createShaderModule({
+          label: 'custom water compute shader',
+          code: customWaterComputeShader,
+        }),
+        entryPoint: 'main',
+      },
+    });
+
+    // RUN COMPUTE PIPELINE
+    const encoder = this.device.createCommandEncoder();
+    this.runComputes(encoder);
+    this.device.queue.submit([encoder.finish()]);
+  }
+
+  private initializeWaterNodeGraphUniforms(uniforms: scene.WaterPipeline['uniforms']) {
+    if (!this.waterNodeGraphUniformBuffer || !this.waterNodeGraphUniformLayout) return;
+
+    for (const uniform of uniforms) {
+      if (uniform.initialValue !== null) {
+        const offset = this.waterNodeGraphUniformLayout.get(uniform.key);
+        if (offset === undefined) continue;
+
+        if (uniform.type === 'f32') {
+          const data = new Float32Array([uniform.initialValue]);
+          this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+        } else if (uniform.type === 'u32') {
+          const data = new Uint32Array([uniform.initialValue]);
+          this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+        } else if (uniform.type === 'vec3f') {
+          const data = new Float32Array(uniform.initialValue);
+          this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+        }
+      }
+    }
+  }
+
+  disableWaterPipeline() {
+    this.waterPipelineConfigured = false;
+  }
+
+  setWaterPipelineUniform(key: string, value: number | [number, number, number]) {
+    if (!this.waterPipelineConfigured) {
+      console.log('Cannot set water uniform');
+      return;
+    }
+
+    const offset = this.waterNodeGraphUniformLayout?.get(key);
+    if (offset === undefined) {
+      console.warn(`Water uniform key "${key}" not found`);
+      return;
+    }
+
+    const uniformConfig = this.waterNodeGraphUniformConfig?.find((u) => u.key === key);
+    if (!uniformConfig) {
+      console.warn(`Water uniform config for key "${key}" not found`);
+      return;
+    }
+
+    if (uniformConfig.type === 'f32') {
+      const data = new Float32Array([value as number]);
+      this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+    } else if (uniformConfig.type === 'u32') {
+      const data = new Uint32Array([value as number]);
+      this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+    } else if (uniformConfig.type === 'vec3f') {
+      const data = new Float32Array(value as [number, number, number]);
+      this.device.queue.writeBuffer(this.waterNodeGraphUniformBuffer, offset, data);
+    }
+
+    const encoder = this.device.createCommandEncoder();
+    this.runComputes(encoder);
+    this.device.queue.submit([encoder.finish()]);
+    console.log('rerunning compute after water uniform update');
+  }
+
   // ------------------------------------------------------------------------------------------
   // ------ Required methods for IRenderer interface
   // ------------------------------------------------------------------------------------------
@@ -435,6 +727,7 @@ export class TerrainRenderer implements IRenderer {
     this.depthTextureView = this.depthTexture.createView();
 
     this.pipeline = this.createRenderPipeline();
+    this.waterRenderPipeline = this.createWaterRenderPipeline();
   }
 
   onFrame(frameInfo: { time: number; deltaTime: number }) {
@@ -474,6 +767,13 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setVertexBuffer(0, this.stage.groundPlane.vertexBuffer);
     renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
+
+    // Render water plane
+    renderPass.setPipeline(this.waterRenderPipeline);
+    renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
+    renderPass.setVertexBuffer(0, this.stage.waterPlane.vertexBuffer);
+    renderPass.setIndexBuffer(this.stage.waterPlane.indexBuffer!, 'uint32');
+    renderPass.drawIndexedIndirect(this.stage.waterPlane.indirectBuffer!, 0);
 
     if (this.indirectInstancer) {
       this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
