@@ -58,31 +58,49 @@ export default function TerrainSliders({ globalParams, setGlobalParams }: Terrai
         <div className="text-xs opacity-75">{globalParams.resolution}</div>
       </div>
 
+      <label className="block space-y-2 text-sm font-medium">
+        <span className="block text-sm font-medium">Fog Color</span>
+        <input
+          type="color"
+          value={`#${fogColorChannelHexes[0]}${fogColorChannelHexes[1]}${fogColorChannelHexes[2]}`}
+          onChange={(evt) => {
+            const { value } = evt.target;
+            if (value.startsWith('#')) {
+              console.log(value);
+              const color: [number, number, number] = [
+                parseInt(value.slice(1, 3), 16) / 255,
+                parseInt(value.slice(3, 5), 16) / 255,
+                parseInt(value.slice(5, 7), 16) / 255,
+              ];
+              setGlobalParams((prev) => ({
+                ...prev,
+                fog: { ...prev.fog, color },
+              }));
+            } else {
+              console.warn('uh oh we dont have logic for this onChange result');
+            }
+          }}
+        />
+      </label>
+
       <div className="space-y-2">
-        <label className="text-sm font-medium">
-          <span className="block">Terrain Resolution</span>
-          <input
-            type="color"
-            value={`#${fogColorChannelHexes[0]}${fogColorChannelHexes[1]}${fogColorChannelHexes[2]}`}
-            onChange={(evt) => {
-              const { value } = evt.target;
-              if (value.startsWith('#')) {
-                console.log(value);
-                const color: [number, number, number] = [
-                  parseInt(value.slice(1, 3), 16) / 255,
-                  parseInt(value.slice(3, 5), 16) / 255,
-                  parseInt(value.slice(5, 7), 16) / 255,
-                ];
-                setGlobalParams((prev) => ({
-                  ...prev,
-                  fog: { ...prev.fog, color },
-                }));
-              } else {
-                console.warn('uh oh we dont have logic for this onChange result');
-              }
-            }}
-          />
-        </label>
+        <label className="text-sm font-medium">Fog Intensity</label>
+        <input
+          type="range"
+          min={0.0}
+          max={10}
+          step={0.01}
+          value={globalParams.fog.intensity}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value);
+            setGlobalParams((prev) => ({
+              ...prev,
+              fog: { ...prev.fog, intensity: v },
+            }));
+          }}
+          className="w-full"
+        />
+        <div className="text-xs opacity-75">{globalParams.size.toFixed(0)}</div>
       </div>
     </div>
   );
