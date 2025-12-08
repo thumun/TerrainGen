@@ -49,7 +49,7 @@ export function uploadFileToString(opts: { accept?: string }): Promise<string> {
 
 /**
  * Opens a system dialog for the user to select a file. Returns the file as an ArrayBuffer.
- * 
+ *
  * @param opts.accept  file types to accept. example: `'.hdr'`
  */
 export function uploadFileToArrayBuffer(opts: { accept?: string }): Promise<ArrayBuffer> {
