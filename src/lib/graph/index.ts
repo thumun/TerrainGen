@@ -246,9 +246,9 @@ function generatePipelines(
         maskKey:
           maskSourceNode && maskEdge
             ? nodeMapping.getHandleKey({
-              sourceNode: maskSourceNode,
-              outgoingHandleId: maskEdge.sourceHandle!,
-            })
+                sourceNode: maskSourceNode,
+                outgoingHandleId: maskEdge.sourceHandle!,
+              })
             : undefined,
         threshold: scatterNode.data.threshold,
         transform: transformConfig,
