@@ -21,7 +21,10 @@ export type Mix = Node<'mix', { nodeType: 'Vec3' | 'Float' }>;
 export type SmoothstepFloat = Node<'smoothstepFloat'>;
 export type SmoothstepVec3 = Node<'smoothstepVec3'>;
 export type VertexData = Node<'vertexData'>;
-export type Terrain = Node<'terrain'>;
+export type Terrain = Node<
+  'terrain',
+  { biome: 'Grassland' | 'Desert' | 'Mountain' | 'Tundra' }
+>;
 export type Separate = Node<'separate'>;
 export type Combine = Node<'combine'>;
 export type Float = Node<'float', { value: number }>;
@@ -114,7 +117,10 @@ export const HANDLES = {
     out: { position: 'vec3-pos-out' },
   },
   terrain: {
-    in: { height: 'float-trans-in' },
+    in: {
+      height: 'float-trans-in',
+      waterHeight: 'float-waterHeight-in',
+    },
     out: {},
   },
   separate: {
@@ -174,7 +180,10 @@ export const NODE_PREFABS: { [nodeType in All['type']]: All & { type: nodeType }
   },
   mix: { type: 'mix', data: { nodeType: 'Float' } },
   vertexData: { type: 'vertexData', data: {} },
-  terrain: { type: 'terrain', data: {} },
+  terrain: {
+    type: 'terrain',
+    data: { biome: 'Grassland' },
+  },
   vector: { type: 'vector', data: { x: 0, y: 0, z: 0 } },
   mathFloat: {
     type: 'mathFloat',

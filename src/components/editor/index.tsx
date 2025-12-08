@@ -26,7 +26,7 @@ const initialNodes: (Node & nodeTypes.All)[] = [
     id: 'terrain-out',
     position: { x: 250, y: 0 },
     type: 'terrain',
-    data: {},
+    data: { biome: 'Grassland' },
   },
 ];
 

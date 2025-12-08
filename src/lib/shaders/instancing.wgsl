@@ -34,18 +34,28 @@ struct VertexOut {
     @location(5) camera_view_pos: vec3f,
 };
 
+fn hash11(n: f32) -> f32 {
+    let x = fract(sin(n) * 43758.5453123);
+    return x;
+}
+
+fn rotateAroundAxis(v: vec3f, axis: vec3f, angle: f32) -> vec3f {
+  let cosA = cos(angle);
+  let sinA = sin(angle);
+  return v * cosA +
+          cross(axis, v) * sinA +
+          axis * dot(axis, v) * (1.0 - cosA);
+}
+
 @vertex
 fn vs_main(in : VertexIn) -> VertexOut {
     var out : VertexOut;
 
     let vOffset = in.instance_index * 9u;
 
-     // get point position
+     // get point data
     var pos = instance_pts[in.instance_index].pos;
-
-    // point nor for testing...
     var nor = normalize(instance_pts[in.instance_index].nor);
-
     var used = instance_pts[in.instance_index].used;
 
     let idx = indices[in.vertex_index];
@@ -65,9 +75,13 @@ fn vs_main(in : VertexIn) -> VertexOut {
 
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
-    let rotated = rot * local;
-    let world = transform_matrix * vec4(pos + rotated, 1.0);
-    let world_pos = camera.viewProjMat * world;
+    let rotatedLocal = rot * local;
+    //let rotatedLocal = local;
+    let transformedLocal = (transform_matrix * vec4(rotatedLocal, 0.0)).xyz;
+
+    // translate
+    let worldPos = pos + transformedLocal;
+    let clipPos = camera.viewProjMat * vec4(worldPos, 1.0);
 
     // transform normals too
     let normal_matrix = mat3x3<f32>(
@@ -75,13 +89,13 @@ fn vs_main(in : VertexIn) -> VertexOut {
         transform_matrix[1].xyz,
         transform_matrix[2].xyz
     );
-    let transformed_nor = rot * vert_nor;
-    let new_nor = normalize(normal_matrix * transformed_nor);
+    let transformedNor = normal_matrix * (rot * vert_nor);
+    let newNor = normalize(transformedNor);
 
     // set output
-    out.position = world_pos;
-    out.pos = world_pos.xyz;
-    out.nor = normalize(new_nor);
+    out.position = clipPos;
+    out.pos = worldPos;
+    out.nor = normalize(newNor);
     out.uv = vert_uv;
     out.tex_id = texture_id;
     out.used = used;
@@ -96,35 +110,24 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
     discard;
   }
 
-  // do lambertian shading
-  let lightDir = normalize(vec3f(-1.0, 1.0, -1.0));
-  let diffuse = max(dot(in.nor, lightDir), 0.0);
-
   let texcoord = vec2f(in.uv.x, 1.0 - in.uv.y);
-  let color = textureSample(ourTexture, ourSampler, texcoord, in.tex_id);
-  //let color = vec4(in.uv.x, in.uv.y, 0.0, 1.0);
+  let diffuse = textureSample(ourTexture, ourSampler, texcoord, in.tex_id);
 
-  if (color.a < 0.5) {
+  if (diffuse.a < 0.5) {
     discard;
   }
 
+  // do lambertian shading
+  let lightDir = normalize(vec3f(0.2, 0.25, 0.1));
+  var directionalLightStrength = max(dot(in.nor, lightDir), 0.0);
+  let directLight = vec3f(1.0, 0.95, 0.8) * directionalLightStrength;
+
+  let ambientLight = vec3f(0.1, 0.1, 0.1);
+
+  var color = diffuse.xyz * (directLight + ambientLight);
   let fogStrength = 1.0 - exp(-camera.fogIntensity * length(in.camera_view_pos));
 
-  let finalColor = mix(color.xyz, camera.fogColor, fogStrength);
+  let foggedColor = mix(color.xyz, camera.fogColor, fogStrength);
 
-  return vec4f(finalColor, color.a);
-
-  // var color = vec3f(0.0, 0.0, 0.0);
-
-  // if (diffuse > 0.75) {
-  //   color = vec3f(0.58, 1.0, 0.235);
-  // } else if (diffuse > 0.5) {
-  //   color = vec3f(0.447, 0.749, 0.313);
-  // } else if (diffuse > 0.25) {
-  //   color = vec3f(0.309, 0.490, 0.396);
-  // } else {
-  //   color = vec3f(0.176, 0.235, 0.478);
-  // }
-
-  // return vec4f(color, 1.0);
+  return vec4f(foggedColor, color.a);
 }

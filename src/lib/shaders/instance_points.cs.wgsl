@@ -85,11 +85,22 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let height = mix(mix(h_bl, h_br, fx), mix(h_tl, h_tr, fx), fz);
     let normal = normalize(mix(mix(nor_bl, nor_br, fx), mix(nor_tl, nor_tr, fx), fz));
 
+    // rotate in a random direction
+    let rnd = hash11(f32(id.x) + 1234.0);
+    let angle = rnd * 6.2831853;
+    let c = cos(angle);
+    let t = tan(angle);
+
     // do all the annoying calc in here, then store it in instance_pts...
     let helper = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(normal.y) > 0.99);
     let T = normalize(cross(helper, normal));
     let B = cross(normal, T);
-    let rot = mat3x3f(T, B, normal);
+
+    let T_rot = normalize(T * c + B * t);
+    let B_rot = normalize(cross(normal, T_rot));
+    let rot = mat3x3f(T_rot, B_rot, normal);
+    //let rot = mat3x3f(T, B, normal);
+
 
     instance_pts[id.x].pos = vec3<f32>(x, height, z);
     instance_pts[id.x].nor = vec3<f32>(normal.x, normal.y, normal.z);

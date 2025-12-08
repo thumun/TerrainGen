@@ -15,6 +15,7 @@ This is a single-page web application using WebGPU to create a real-time node-ba
 1. [Milestone 1 Progress Slides](https://docs.google.com/presentation/d/1IfnNaKhCkMEOW8t8lHOAx6w-G378lC401EXVFlAbnQ0/edit?usp=sharing)
 2. [Milestone 2 Progress Slides](https://docs.google.com/presentation/d/1EiJf1spHf-v6SMP9DFZE5cckQX3vl9SmCcZ-_3t7WVw/edit?usp=sharing)
 3. [Milestone 3 Progress Slides](https://docs.google.com/presentation/d/1SY8XgbtOQOwFCNqlIhqCft3_o6H0uVIyBBi3s_v93jw/edit?usp=sharing)
+4. [Final Presentation](https://docs.google.com/presentation/d/1d1kF9o0qythf8vgfsJAXlKPUyjCBU8piUQctd_OLzT8/edit?usp=sharing)
 
 ## Project Details
 
