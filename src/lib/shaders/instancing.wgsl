@@ -99,7 +99,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.uv = vert_uv;
     out.tex_id = texture_id;
     out.used = used;
-    out.camera_view_pos = (camera.viewMat * world_pos).xyz;
+    out.camera_view_pos = (camera.viewMat * vec4f(worldPos, 1.0)).xyz;
     return out;
 }
 
