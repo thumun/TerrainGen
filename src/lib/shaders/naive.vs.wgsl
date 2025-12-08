@@ -14,7 +14,6 @@ struct VertexOutput
     @location(1) nor: vec3f,
     @location(2) uv: vec2f,
     @location(3) shadow_pos: vec3f,
-    @location(4) camera_view_pos: vec3f,
 }
 
 @group(0) @binding(0) var<uniform> camera : CameraUniforms;
@@ -38,7 +37,6 @@ fn main(in: VertexInput) -> VertexOutput
         posFromLight.xy * vec2(0.5, -0.5) + vec2(0.5),
         posFromLight.z
     );
-    out.camera_view_pos = (camera.viewMat * modelPos).xyz;
 
     return out;
 }

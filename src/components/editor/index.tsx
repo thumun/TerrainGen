@@ -5,7 +5,6 @@ import NodeGraph from './node-graph';
 import NodeGraphCanvas from './node-graph-canvas';
 import TerrainCanvas from './terrain-canvas';
 import TerrainSliders from './terrain-sliders';
-import type { GlobalParams } from './terrain-sliders';
 import Toolbar from './toolbar';
 import type { ToolbarProps } from './toolbar';
 
@@ -37,13 +36,9 @@ export default function Editor() {
   });
 
   // states for size and resolution...
-  const [globalParams, setGlobalParams] = useState<GlobalParams>({
+  const [globalParams, setGlobalParams] = useState({
     size: 20,
     resolution: 100,
-    fog: {
-      intensity: 0.08,
-      color: [0.686, 0.702, 0.725],
-    },
   });
 
   // hook owning node + edge state, and react flow

@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 
-import type { GlobalParams } from './terrain-sliders';
-
 import WebGPUCanvas, { type WebGPUCanvasProps } from '@/components/common/webgpu-canvas';
-import { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
+import {
+  TerrainRenderer,
+  type TerrainRendererGlobalParameters,
+} from '@/lib/renderers/terrain-renderer';
 
 export type TerrainCanvasProps = {
   rendererRef: React.RefObject<TerrainRenderer | undefined>;
-  globalParams: GlobalParams;
+  globalParams: TerrainRendererGlobalParameters;
 };
 
 const createRenderer: WebGPUCanvasProps['createRenderer'] = async (webGPU, stage) => {
@@ -21,13 +22,6 @@ export default function TerrainCanvas({ rendererRef, globalParams }: TerrainCanv
   useEffect(() => {
     rendererRef.current?.setMeshUniforms(globalParams.size, globalParams.resolution);
   }, [globalParams.resolution, globalParams.size, rendererRef]);
-
-  useEffect(() => {
-    rendererRef.current?.setCameraUniforms({
-      fogColor: globalParams.fog.color,
-      fogIntensity: globalParams.fog.intensity,
-    });
-  }, [globalParams.fog.color, globalParams.fog.intensity, rendererRef]);
 
   return (
     <WebGPUCanvas
