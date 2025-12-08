@@ -13,6 +13,8 @@ type ShaderConfigBase = {
 export type DisplaceShaderConfig = ShaderConfigBase & {
   outputs: {
     height: util.ReferenceKey;
+    waterHeight?: util.ReferenceKey;
+    biome?: number;
   };
 };
 

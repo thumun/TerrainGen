@@ -76,15 +76,49 @@ function generatePipelines(
     const heightEdgeSourceNode = orderedDependencyNodes.find(
       (node) => node.id === heightEdge?.source,
     );
-    const outputs: scene.DisplacePipeline['outputs'] = {
-      height: nodeMapping.getHandleKey({
-        // TODO: wow these type assertions are awesome (evil as fuck)
-        sourceNode: heightEdgeSourceNode!,
-        outgoingHandleId: heightEdge!.sourceHandle!,
-      }),
-    };
 
-    displacePipeline = { instructionSet, uniforms, outputs };
+    // Add this check - if no height edge, skip building the pipeline
+    if (!heightEdge || !heightEdgeSourceNode) {
+      console.warn('Terrain node requires a height input connection');
+      displacePipeline = undefined;
+    } else {
+      const waterHeightEdge = edges.find(
+        (edge) =>
+          edge.target === terrainNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.terrain.in.waterHeight,
+      );
+      const waterHeightSourceNode = waterHeightEdge
+        ? orderedDependencyNodes.find((node) => node.id === waterHeightEdge.source)
+        : undefined;
+
+      const outputs: scene.DisplacePipeline['outputs'] = {
+        height: nodeMapping.getHandleKey({
+          sourceNode: heightEdgeSourceNode,
+          outgoingHandleId: heightEdge.sourceHandle!,
+        }),
+
+        waterHeight:
+          waterHeightSourceNode && waterHeightEdge
+            ? nodeMapping.getHandleKey({
+                sourceNode: waterHeightSourceNode,
+                outgoingHandleId: waterHeightEdge.sourceHandle!,
+              })
+            : undefined,
+
+        biome: (() => {
+          const biome = (terrainNode as nodeTypes.Terrain & { id: string }).data.biome;
+          const biomeMap: Record<string, number> = {
+            Grassland: 0,
+            Desert: 1,
+            Mountain: 2,
+            Tundra: 3,
+          };
+          return biomeMap[biome] ?? 0;
+        })(),
+      };
+
+      displacePipeline = { instructionSet, uniforms, outputs };
+    }
   }
 
   // find water pipeline
@@ -111,6 +145,7 @@ function generatePipelines(
         sourceNode: heightEdgeSourceNode!,
         outgoingHandleId: heightEdge!.sourceHandle!,
       }),
+      waterHeight: undefined,
     };
 
     waterPipeline = { instructionSet, uniforms, outputs };
