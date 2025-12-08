@@ -123,14 +123,6 @@ fn mountainTexture(pos: vec3f) -> vec3f {
     var rockColor = rockDark;
     rockColor = mix(rockColor, rockMid, t1);
     rockColor = mix(rockColor, rockLight, t2);
-
-    let snowStart = 1.0;
-    let snowFull = 1.5;
-    let snowTint = vec3f(0.95, 0.96, 0.98);
-    
-    let snowAmount = smoothstep(snowStart, snowFull, pos.y);
-    
-    rockColor = mix(rockColor, snowTint, snowAmount);
     
     return rockColor;
 }
