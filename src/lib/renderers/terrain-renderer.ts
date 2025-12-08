@@ -18,11 +18,6 @@ import { instanceComputeShaderTemplate } from '@/lib/shaders/jit/templates/insta
 import * as shaders from '@/lib/shaders/shaders';
 import type { WebGPUContext } from '@/lib/webgpu-context';
 
-export type TerrainRendererGlobalParameters = {
-  size: number;
-  resolution: number;
-};
-
 export class TerrainRenderer implements IRenderer {
   private readonly stage: Stage;
 
@@ -1277,6 +1272,19 @@ export class TerrainRenderer implements IRenderer {
     const encoder = this.device.createCommandEncoder();
     this.runComputes(encoder);
     this.device.queue.submit([encoder.finish()]);
+  }
+
+  setCameraUniforms({
+    fogColor,
+    fogIntensity,
+  }: {
+    fogColor?: [number, number, number];
+    fogIntensity?: number;
+  }) {
+    const cameraUniforms = this.stage.camera.uniforms;
+
+    if (fogColor) cameraUniforms.fogColor = fogColor;
+    if (fogIntensity) cameraUniforms.fogIntensity = fogIntensity;
   }
 
   setDisplacePipelineUniform(key: string, value: number | [number, number, number]) {
