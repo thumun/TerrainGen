@@ -75,6 +75,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     // do transformations
     let rot = instance_pts[in.instance_index].rotMat;
     let rotatedLocal = rot * local;
+    //let rotatedLocal = local;
     let transformedLocal = (transform_matrix * vec4(rotatedLocal, 0.0)).xyz;
 
     // translate
