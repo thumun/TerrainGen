@@ -9,6 +9,7 @@ import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
 import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
+import { decodeRGBE } from '@/lib/scene/io-rgbe-main/src/decode';
 import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
@@ -71,7 +72,7 @@ export class TerrainRenderer implements IRenderer {
   private instancePointsComputePipeline: InstancePointsPipeline;
 
   /** instancing things */
-  private indirectInstancer: IndirectInstancer | undefined;
+  private indirectInstancers: IndirectInstancer[] = [];
 
   // custom uniform buffer bindings
   private customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
@@ -116,6 +117,14 @@ export class TerrainRenderer implements IRenderer {
 
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
+
+  // skybox
+  private skyboxTexture: GPUTexture | undefined;
+  private skyboxBindGroupLayout: GPUBindGroupLayout | undefined;
+  private skyboxBindGroup: GPUBindGroup | undefined;
+  private skyboxRenderPipeline: GPURenderPipeline | undefined;
+  private skyboxSampler: GPUSampler | undefined;
+  private skyboxShaderModule: GPUShaderModule | undefined;
 
   constructor(
     private webGPU: WebGPUContext,
@@ -549,24 +558,126 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
   }
 
-  async init_mesh() {
+  async load_skybox(url: string) {
     // create test mesh
-    const testMesh = new LoadedMesh();
-    await testMesh.loadObj(path.join(import.meta.env.BASE_URL, '/models/cube.obj'));
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+    const hdr = decodeRGBE(view);
 
-    const instanceVertexBuffer = this.device.createBuffer({
-      label: 'instancing vertex buffer',
-      size: testMesh.vertices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, testMesh.vertices!);
+    // convert rgb to rgba
+    const rgbaData = new Float32Array(hdr.width * hdr.height * 4);
 
-    const instanceIndexBuffer = this.device.createBuffer({
-      label: 'instancing index buffer',
-      size: testMesh.indices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    for (let i = 0, j = 0; i < hdr.data.length; i += 3, j += 4) {
+      rgbaData[j + 0] = hdr.data[i + 0];
+      rgbaData[j + 1] = hdr.data[i + 1];
+      rgbaData[j + 2] = hdr.data[i + 2];
+      rgbaData[j + 3] = 1.0; // alpha always 1
+    }
+
+    //console.log(rgbaData);
+
+    // create rectangular texture
+    this.skyboxTexture = this.device.createTexture({
+      label: 'hdr texture',
+      size: [hdr.width, hdr.height],
+      format: 'rgba32float',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
+
+    this.device.queue.writeTexture(
+      { texture: this.skyboxTexture },
+      rgbaData,
+      {
+        bytesPerRow: hdr.width * 16, // 8 bytes per pixel in rgba16float
+      },
+      [hdr.width, hdr.height],
+    );
+
+    this.skyboxBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'skybox bind group layout',
+      entries: [
+        {
+          // hdr texture
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: 'unfilterable-float',
+            viewDimension: '2d',
+            multisampled: false,
+          },
+        },
+        {
+          // hdr sampler
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {
+            type: 'non-filtering',
+          },
+        },
+        {
+          // camera uniforms
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.skyboxSampler = this.device.createSampler({
+      addressModeU: 'repeat',
+      addressModeV: 'clamp-to-edge',
+      magFilter: 'nearest',
+      minFilter: 'nearest',
+      mipmapFilter: 'nearest',
+    });
+
+    this.skyboxBindGroup = this.device.createBindGroup({
+      label: 'skybox bind group',
+      layout: this.skyboxBindGroupLayout,
+      entries: [
+        { binding: 0, resource: this.skyboxTexture.createView() },
+        { binding: 1, resource: this.skyboxSampler },
+        { binding: 2, resource: this.stage.camera.uniformsBuffer },
+      ],
+    });
+
+    this.skyboxShaderModule = this.device.createShaderModule({
+      label: 'instancing render shader',
+      code: shaders.skySrc,
+    });
+
+    this.skyboxRenderPipeline = this.device.createRenderPipeline({
+      label: 'skybox render pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'skybox pipeline layout',
+        bindGroupLayouts: [this.skyboxBindGroupLayout],
+      }),
+      depthStencil: {
+        format: 'depth24plus',
+        depthWriteEnabled: false,
+        depthCompare: 'less-equal',
+      },
+      vertex: {
+        module: this.skyboxShaderModule,
+        entryPoint: 'vs_main',
+      },
+      fragment: {
+        module: this.skyboxShaderModule,
+        entryPoint: 'fs_main',
+        targets: [
+          {
+            format: this.webGPU.canvasFormat,
+          },
+        ],
+      },
+      primitive: {
+        topology: 'triangle-list',
+        cullMode: 'none',
+      },
+    });
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -814,7 +925,7 @@ export class TerrainRenderer implements IRenderer {
     this.stage.directionalLight.onFrame({
       encoder,
       meshes: [this.stage.groundPlane],
-      instancers: [...(this.indirectInstancer ? [this.indirectInstancer] : [])],
+      instancers: [...(this.indirectInstancers ? this.indirectInstancers : [])],
     });
 
     // run our main render pass
@@ -824,7 +935,7 @@ export class TerrainRenderer implements IRenderer {
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [0.0, 0, 0, 0],
+          clearValue: [0.0, 0.0, 0.0, 0.0],
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -837,6 +948,13 @@ export class TerrainRenderer implements IRenderer {
       },
     });
 
+    // draw the sky
+    if (this.skyboxRenderPipeline && this.skyboxBindGroup) {
+      renderPass.setPipeline(this.skyboxRenderPipeline);
+      renderPass.setBindGroup(0, this.skyboxBindGroup);
+      renderPass.draw(3, 1, 0, 0); // fullscreen triangle
+    }
+
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
     renderPass.setBindGroup(1, this.waterHeightBindGroup);
@@ -845,16 +963,16 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
 
+    for (const instancer of this.indirectInstancers) {
+      instancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
+    }
+
     // Render water plane
     renderPass.setPipeline(this.waterRenderPipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
     renderPass.setVertexBuffer(0, this.stage.waterPlane.vertexBuffer);
     renderPass.setIndexBuffer(this.stage.waterPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.waterPlane.indirectBuffer!, 0);
-
-    if (this.indirectInstancer) {
-      this.indirectInstancer.runRenderPass(renderPass, this.sceneUniformsBindGroup);
-    }
 
     renderPass.end();
 
@@ -868,6 +986,7 @@ export class TerrainRenderer implements IRenderer {
     if (this.stage.groundPlane.indexBuffer) this.stage.groundPlane.indexBuffer.destroy();
     if (this.stage.groundPlane.indirectBuffer) this.stage.groundPlane.indirectBuffer.destroy();
     if (this.stage.groundPlane.uniformsBuffer) this.stage.groundPlane.uniformsBuffer.destroy();
+    if (this.skyboxTexture) this.skyboxTexture.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
@@ -1006,146 +1125,146 @@ export class TerrainRenderer implements IRenderer {
     this.displacePipelineConfigured = false;
   }
 
-  async configureInstancingPipeline(config: scene.InstancingPipeline) {
-    this.instancingPipelineConfigured = true;
+  async configureInstancingPipeline(configs: scene.InstancingPipeline[]) {
+    this.indirectInstancers = [];
 
-    console.log(config);
+    for (const config of configs) {
+      console.log(config);
 
-    // load obj from geo node
-    const mesh = new LoadedMesh();
+      // load obj from geo node
+      const mesh = new LoadedMesh();
 
-    if (config.outputs.fileContent) {
-      if (config.outputs.fileType === 'obj') {
-        await mesh.parseObjContent(config.outputs.fileContent);
-      } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
-        const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
-        await mesh.parseGLTFContent(gltfWithBuffers, gltf);
+      if (config.outputs.fileContent) {
+        if (config.outputs.fileType === 'obj') {
+          await mesh.parseObjContent(config.outputs.fileContent);
+        } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
+          const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
+          await mesh.parseGLTFContent(gltfWithBuffers, gltf);
+        }
+      } else {
+        await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
       }
-    } else {
-      await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
+
+      if (!mesh.vertices || !mesh.indices) {
+        return;
+      }
+
+      // unused for now
+      /*
+      const customInstanceShader = jit.generateInstanceShaderCode(
+        config,
+        instanceComputeShaderTemplate,
+      );
+      console.log('custom instance shader:', customInstanceShader);
+      */
+
+      // Create buffers for mesh
+      const instanceVertexBuffer = this.device.createBuffer({
+        size: mesh.vertices.byteLength,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+      });
+      this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
+
+      const instanceIndexBuffer = this.device.createBuffer({
+        size: mesh.indices.byteLength,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+      });
+      this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
+
+      const customInstanceShader = jit.generateInstanceShaderCode(
+        config,
+        instanceComputeShaderTemplate,
+      );
+
+      console.log('custom instance shader:', customInstanceShader);
+
+      this.nodeGraphUniformConfig = config.uniforms;
+      const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
+      this.nodeGraphUniformLayout = offsets;
+
+      if (this.nodeGraphUniformBuffer) {
+        this.nodeGraphUniformBuffer.destroy();
+      }
+
+      this.nodeGraphUniformBuffer = this.device.createBuffer({
+        label: 'instancing uniform buffer',
+        size: Math.max(totalSize, 16),
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+
+      this.initializeNodeGraphUniforms(config.uniforms);
+
+      this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
+        label: 'instancing nodegraph bind group layout',
+        entries: [
+          {
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: { type: 'uniform' },
+          },
+        ],
+      });
+
+      this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
+        label: 'instancing nodegraph bind group',
+        layout: this.customNodeGraphUniformsBindGroupLayout,
+        entries: [
+          {
+            binding: 0,
+            resource: { buffer: this.nodeGraphUniformBuffer },
+          },
+        ],
+      });
+
+      console.log('num instances:', config.outputs.instanceCount);
+
+      // Run compute to create a buffer of points
+      this.instancePointsComputePipeline = new InstancePointsPipeline(
+        this.device,
+        this.stage.groundPlane,
+        this.normalsComputePipeline,
+        config.outputs.instanceCount,
+      );
+
+      const encoder = this.device.createCommandEncoder();
+      const computePass = encoder.beginComputePass();
+      this.instancePointsComputePipeline.runComputePass(computePass);
+      computePass.end();
+      this.device.queue.submit([encoder.finish()]);
+
+      let transformMatrix: Float32Array | undefined;
+      if (config.outputs.transform) {
+        const translate =
+          typeof config.outputs.transform.translate === 'string'
+            ? this.getUniform(config.outputs.transform.translate)
+            : ([0, 0, 0] as [number, number, number]);
+
+        const rotate =
+          typeof config.outputs.transform.rotate === 'string'
+            ? this.getUniform(config.outputs.transform.rotate)
+            : ([0, 0, 0] as [number, number, number]);
+
+        const scale =
+          typeof config.outputs.transform.scale === 'string'
+            ? this.getUniform(config.outputs.transform.scale)
+            : ([1, 1, 1] as [number, number, number]);
+
+        transformMatrix = this.createTransformMatrix(translate, rotate, scale);
+      }
+
+      const instancer = new IndirectInstancer(
+        this.device,
+        this.instancePointsComputePipeline,
+        instanceVertexBuffer,
+        instanceIndexBuffer,
+        this.sceneUniformsBindGroupLayout,
+        this.webGPU,
+        mesh.textures,
+        transformMatrix,
+      );
+
+      this.indirectInstancers.push(instancer);
     }
-
-    if (!mesh.vertices || !mesh.indices) {
-      return;
-    }
-
-    // unused for now
-    /*
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-    console.log('custom instance shader:', customInstanceShader);
-    */
-
-    // Create buffers for mesh
-    const instanceVertexBuffer = this.device.createBuffer({
-      size: mesh.vertices.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, mesh.vertices);
-
-    const instanceIndexBuffer = this.device.createBuffer({
-      size: mesh.indices.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
-
-    // set uniforms
-    this.nodeGraphUniformConfig = config.uniforms;
-    const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
-    this.nodeGraphUniformLayout = offsets;
-
-    if (this.nodeGraphUniformBuffer) {
-      this.nodeGraphUniformBuffer.destroy();
-    }
-
-    this.nodeGraphUniformBuffer = this.device.createBuffer({
-      label: 'instancing uniform buffer',
-      size: Math.max(totalSize, 16),
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    this.initializeNodeGraphUniforms(config.uniforms);
-
-    this.customNodeGraphUniformsBindGroupLayout = this.device.createBindGroupLayout({
-      label: 'instancing nodegraph bind group layout',
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    });
-
-    this.customNodeGraphUniformsBindGroup = this.device.createBindGroup({
-      label: 'instancing nodegraph bind group',
-      layout: this.customNodeGraphUniformsBindGroupLayout,
-      entries: [
-        {
-          binding: 0,
-          resource: { buffer: this.nodeGraphUniformBuffer },
-        },
-      ],
-    });
-
-    // create custom instancing shader
-    if (!config.outputs.maskKey) {
-      config.outputs.maskKey = 'terrainPos.y';
-    }
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-
-    console.log('custom instance shader:', customInstanceShader);
-
-    // Run compute to create a buffer of points
-    this.instancePointsComputePipeline = new InstancePointsPipeline(
-      this.device,
-      this.stage.groundPlane,
-      this.normalsComputePipeline,
-      config.outputs.instanceCount,
-      customInstanceShader,
-    );
-
-    const encoder = this.device.createCommandEncoder();
-    const computePass = encoder.beginComputePass();
-    this.instancePointsComputePipeline.runComputePass(computePass);
-    computePass.end();
-    this.device.queue.submit([encoder.finish()]);
-
-    let transformMatrix: Float32Array | undefined;
-    if (config.outputs.transform) {
-      const translate =
-        typeof config.outputs.transform.translate === 'string'
-          ? this.getUniform(config.outputs.transform.translate)
-          : ([0, 0, 0] as [number, number, number]);
-
-      const rotate =
-        typeof config.outputs.transform.rotate === 'string'
-          ? this.getUniform(config.outputs.transform.rotate)
-          : ([0, 0, 0] as [number, number, number]);
-
-      const scale =
-        typeof config.outputs.transform.scale === 'string'
-          ? this.getUniform(config.outputs.transform.scale)
-          : ([1, 1, 1] as [number, number, number]);
-
-      transformMatrix = this.createTransformMatrix(translate, rotate, scale);
-    }
-
-    this.indirectInstancer = new IndirectInstancer(
-      this.device,
-      this.instancePointsComputePipeline,
-      instanceVertexBuffer,
-      instanceIndexBuffer,
-      this.sceneUniformsBindGroupLayout,
-      this.webGPU,
-      mesh.textures,
-      transformMatrix,
-    );
   }
 
   disableInstancingPipeline() {

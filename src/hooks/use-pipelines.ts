@@ -19,16 +19,16 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
     [terrainRendererRef],
   );
 
-  const setWaterPipeline = useCallback(
-    (pipeline: scene.WaterPipeline) => {
-      terrainRendererRef.current?.configureWaterPipeline(pipeline);
+  const setInstancingPipelines = useCallback(
+    (pipelines: scene.InstancingPipeline[]) => {
+      void terrainRendererRef.current?.configureInstancingPipeline(pipelines);
     },
     [terrainRendererRef],
   );
 
-  const setInstancingPipeline = useCallback(
-    (pipeline: scene.InstancingPipeline) => {
-      void terrainRendererRef.current?.configureInstancingPipeline(pipeline);
+  const setWaterPipeline = useCallback(
+    (pipeline: scene.WaterPipeline) => {
+      terrainRendererRef.current?.configureWaterPipeline(pipeline);
     },
     [terrainRendererRef],
   );
@@ -48,11 +48,11 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
       const { displacePipeline, waterPipeline, instancingPipeline } =
         graph.generatePipelinesFromNode(nodeId, options.nodes, options.edges);
 
-      if (displacePipeline) setDisplacePipeline(displacePipeline);
       if (waterPipeline) setWaterPipeline(waterPipeline);
-      if (instancingPipeline) void setInstancingPipeline(instancingPipeline);
+      if (displacePipeline) setDisplacePipeline(displacePipeline);
+      if (instancingPipeline) void setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setWaterPipeline, setInstancingPipeline],
+    [setDisplacePipeline, setWaterPipeline, setInstancingPipelines],
   );
 
   const rebuildAllPipelines = useCallback(
@@ -60,11 +60,11 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
       const { displacePipeline, waterPipeline, instancingPipeline } =
         graph.generateAllPipelines(options.nodes, options.edges);
 
-      if (displacePipeline) setDisplacePipeline(displacePipeline);
       if (waterPipeline) setWaterPipeline(waterPipeline);
-      if (instancingPipeline) void setInstancingPipeline(instancingPipeline);
+      if (displacePipeline) setDisplacePipeline(displacePipeline);
+      if (instancingPipeline) setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setWaterPipeline, setInstancingPipeline],
+    [setDisplacePipeline, setWaterPipeline, setInstancingPipelines],
   );
 
   return {
