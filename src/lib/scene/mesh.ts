@@ -178,7 +178,7 @@ export class OBJ extends Mesh {
 
             finalVertices.push(pos[0], pos[1], pos[2], nor[0], nor[1], nor[2], uv[0], uv[1], 1);
 
-            vertexMap.set(key, finalVertices.length / 8 - 1);
+            vertexMap.set(key, finalVertices.length / 9 - 1);
           }
 
           faceVertices.push(vertexMap.get(key)!);
