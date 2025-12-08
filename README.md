@@ -12,7 +12,8 @@ Raymond Feng, Neha Thumu, Thomas Shaw
 
 TerrainGen is a single-page web application using WebGPU to create a real-time node-based procedural terrain generation and rendering tool. Our motivation for the project was to create an accessible modelling tool on the web to showcase the power of WebGPU. 
 
-<img width="473" height="353" alt="image" src="https://github.com/user-attachments/assets/830e006d-f6ba-4b15-9daf-a802301df2bf" />
+<img width="500" height="400" alt="image" src="https://github.com/user-attachments/assets/830e006d-f6ba-4b15-9daf-a802301df2bf" />
+<img width="500" height="400" alt="Screenshot 2025-12-07 233712" src="https://github.com/user-attachments/assets/9a188925-c8d5-4b1d-ad1a-db0ab446be80" />
 
 ### Milestones
 
@@ -51,8 +52,12 @@ The skybox can also be changed by uploading an HDR file.
   - [x] Shadow mapping 
   - [x] Distance fog 
 - [x] 🌲 Mesh instancing across terrain
-  - [x] GLTF/OBJ import for instancing
-     
+  - [x] glTF/OBJ import for instancing
+
+### Node-based Description System
+
+### JIT Shader Code Generation
+
 ### Terrain Rendering
 The terrain is a tesselated plane with an adjustable size and resolution. Whenever the size and resolution sliders are changed, a compute shader populates a vertex buffer and an index buffer. A second compute pass gives each vertex on the terrain a normal value, which is calculated based on the position of neighboring vertices. 
 
@@ -61,7 +66,9 @@ Once the terrain is created with the compute shaders, it is rendered every frame
 The terrain's color can be changed with a dropdown in the Terrain (Output) node.
 
 ### Mesh Instancing
-asdf
+TerrainGen also supports OBJ and glTF import, which can be used as part of the instancing pipeline. Users can create multiple instancing pipelines, each of which creates a separate buffer of instancing points on which the desired mesh will be placed. These instancing points are randomly generated on top of the terrain using the Scatter node. 
+
+With glTFs, base color textures can be displayed. 
 
 ## Node Types
 - General-purpose
@@ -147,43 +154,6 @@ This node allows for an input unsigned int variable.
 | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | <img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" />               |
 | This node triggers the terrain pipeline if the height float input is connected to a valid node.                                    | This node triggers the instancing pipeline. The pipeline is only run/rerun if both the scatter and geometry inputs are connected to valid nodes. |
-
-### Feature checklist
-
-- [x] 🔌 Node-based description system for procedural terrain
-- [x] 🏭 Just-in-time WebGPU shader code generation
-- [x] 🏔️ Real-time terrain rendering
-  - [x] Adjustable tesselation and terrain size
-  - [ ] Varied terrain type rendering (grass, rock, snow, etc)
-- [ ] 🔎 Real-time in-editor node previews
-- [x] 🌲 Mesh instancing across terrain
-  - [x] Mesh import for instancing
-- [ ] 💾 Export to glTF or similar format
-
-#### Node types:
-
-- General-purpose
-  - [x] Basic math (add, sub, mult, div)
-  - [x] Trig math (sin, cos, tan)
-  - [ ] Masking/graphics util (mix, lt, gt, min, max)
-- Terrain source
-  - [ ] Perlin noise
-  - [ ] Custom image texture
-- Terrain input
-  - [x] Vertex XYZ position
-- Terrain output
-  - [x] Height
-  - [ ] Terrain type
-- Scattering source
-  - [x] Terrain height
-  - [ ] Voronoi scattering
-- Scattering geometry
-  - [x] Built-in objects: trees, rocks, bushes
-  - [x] Primitive geometry: sphere, cube, plane, line
-  - Custom models
-    - [x] OBJ import
-    - [ ] glTF import
-  - [ ] Vegetation → like Unreal’s PCG
 
 ## Development
 
