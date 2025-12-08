@@ -31,6 +31,7 @@ struct VertexOut {
     @location(2) uv : vec2f,
     @location(3) @interpolate(flat) tex_id: u32,
     @location(4) @interpolate(flat) used: u32,
+    @location(5) camera_view_pos: vec3f,
 };
 
 fn hash11(n: f32) -> f32 {
@@ -98,6 +99,7 @@ fn vs_main(in : VertexIn) -> VertexOut {
     out.uv = vert_uv;
     out.tex_id = texture_id;
     out.used = used;
+    out.camera_view_pos = (camera.viewMat * vec4f(worldPos, 1.0)).xyz;
     return out;
 }
 
@@ -122,6 +124,9 @@ fn fs_main(in: VertexOut) -> @location(0) vec4f
 
   let ambientLight = vec3f(0.1, 0.1, 0.1);
 
+  let fogStrength = 1.0 - exp(-camera.fogIntensity * length(in.camera_view_pos));
+
   var color = diffuse.xyz * (directLight + ambientLight);
+  color = mix(color.xyz, camera.fogColor, fogStrength);
   return vec4f(color, 1.0);
 }
