@@ -1,5 +1,6 @@
 import path from 'path-browserify';
 
+import * as common from './common';
 import { WaterPipeline } from './water-pipeline';
 
 import type { IRenderer } from '@/components/common/webgpu-canvas';
@@ -112,30 +113,6 @@ export class TerrainRenderer implements IRenderer {
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
 
-  private static VertexBufferLayout: GPUVertexBufferLayout = {
-    arrayStride: 32,
-    attributes: [
-      {
-        // pos
-        format: 'float32x3',
-        offset: 0,
-        shaderLocation: 0,
-      },
-      {
-        // nor
-        format: 'float32x3',
-        offset: 12,
-        shaderLocation: 1,
-      },
-      {
-        // uv
-        format: 'float32x2',
-        offset: 24,
-        shaderLocation: 2,
-      },
-    ],
-  };
-
   constructor(
     private webGPU: WebGPUContext,
     stage: Stage,
@@ -160,6 +137,24 @@ export class TerrainRenderer implements IRenderer {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
+        {
+          // directional light
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'depth' },
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          sampler: { type: 'non-filtering' },
+        },
       ],
     });
 
@@ -171,6 +166,26 @@ export class TerrainRenderer implements IRenderer {
           // camera uniforms
           binding: 0,
           resource: { buffer: this.stage.camera.uniformsBuffer },
+        },
+        {
+          // directional light
+          binding: 1,
+          resource: { buffer: this.stage.directionalLight.directionalLightUniformsBuffer },
+        },
+        {
+          // shadow texture_depth_2d
+          binding: 2,
+          resource: this.stage.directionalLight.shadowDepthTextureView,
+        },
+        {
+          // shadowmap sampler
+          binding: 3,
+          resource: this.device.createSampler({
+            addressModeU: 'clamp-to-edge',
+            addressModeV: 'clamp-to-edge',
+            magFilter: 'nearest',
+            minFilter: 'nearest',
+          }),
         },
       ],
     });
@@ -388,6 +403,85 @@ export class TerrainRenderer implements IRenderer {
     this.device.queue.submit([encoder.finish()]);
   }
 
+  private getUniform(key: string): [number, number, number] {
+    if (!this.nodeGraphUniformConfig || !this.nodeGraphUniformLayout) {
+      console.warn(`Cannot get uniform value for key "${key}" - uniforms not configured`);
+      return [0, 0, 0];
+    }
+
+    const actualKey = key.startsWith('nodeGraphUniforms.')
+      ? key.replace('nodeGraphUniforms.', '')
+      : key;
+
+    const uniformConfig = this.nodeGraphUniformConfig.find((u) => u.key === actualKey);
+    if (!uniformConfig) {
+      console.warn(`Uniform config for key "${actualKey}" not found`);
+      return [0, 0, 0];
+    }
+
+    if (uniformConfig.type === 'vec3f' && Array.isArray(uniformConfig.initialValue)) {
+      return uniformConfig.initialValue;
+    }
+
+    console.warn(`Uniform "${actualKey}" is not a vec3f type`);
+    return [0, 0, 0];
+  }
+
+  private DegToRad(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  private createTransformMatrix(
+    translate: [number, number, number],
+    rotate: [number, number, number],
+    scale: [number, number, number],
+  ): Float32Array {
+    const matrix = new Float32Array(16);
+
+    // Compute rotation matrices
+    const [rx, rz, ry] = rotate.map((r) => this.DegToRad(r));
+    const cx = Math.cos(rx),
+      sx = Math.sin(rx);
+    const cy = Math.cos(ry),
+      sy = Math.sin(ry);
+    const cz = Math.cos(rz),
+      sz = Math.sin(rz);
+
+    // Combined rotation matrix (Z * Y * X)
+    const r00 = cy * cz;
+    const r01 = cy * sz;
+    const r02 = -sy;
+    const r10 = sx * sy * cz - cx * sz;
+    const r11 = sx * sy * sz + cx * cz;
+    const r12 = sx * cy;
+    const r20 = cx * sy * cz + sx * sz;
+    const r21 = cx * sy * sz - sx * cz;
+    const r22 = cx * cy;
+
+    // Apply scale and build matrix (column-major for WebGPU)
+    matrix[0] = r00 * scale[0];
+    matrix[1] = r10 * scale[0];
+    matrix[2] = r20 * scale[0];
+    matrix[3] = 0;
+
+    matrix[4] = r01 * scale[2];
+    matrix[5] = r11 * scale[2];
+    matrix[6] = r21 * scale[2];
+    matrix[7] = 0;
+
+    matrix[8] = r02 * scale[1];
+    matrix[9] = r12 * scale[1];
+    matrix[10] = r22 * scale[1];
+    matrix[11] = 0;
+
+    matrix[12] = translate[0];
+    matrix[13] = translate[2];
+    matrix[14] = translate[1];
+    matrix[15] = 1;
+
+    return matrix;
+  }
+
   private runComputes(encoder: GPUCommandEncoder) {
     const computePass = encoder.beginComputePass();
 
@@ -468,7 +562,7 @@ export class TerrainRenderer implements IRenderer {
           label: 'naive vert shader',
           code: shaders.naiveVertSrc,
         }),
-        buffers: [TerrainRenderer.VertexBufferLayout],
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
       fragment: {
         module: this.device.createShaderModule({
@@ -500,7 +594,7 @@ export class TerrainRenderer implements IRenderer {
           label: 'water vert shader',
           code: shaders.naiveVertSrc,
         }),
-        buffers: [TerrainRenderer.VertexBufferLayout],
+        buffers: [common.VERTEX_BUFFER_LAYOUT],
       },
       fragment: {
         module: this.device.createShaderModule({
@@ -679,18 +773,23 @@ export class TerrainRenderer implements IRenderer {
   onFrame(frameInfo: { time: number; deltaTime: number }) {
     this.stage.camera.onFrame(frameInfo.deltaTime);
 
-    // run the pipeline
     const encoder = this.device.createCommandEncoder();
+
+    // run shadowmapping
+    this.stage.directionalLight.onFrame({
+      encoder,
+      meshes: [this.stage.groundPlane],
+      instancers: [...(this.indirectInstancer ? [this.indirectInstancer] : [])],
+    });
+
+    // run our main render pass
     const canvasTextureView = this.context.getCurrentTexture().createView();
-
-    // TODO: run directional light shadow mapping
-
     const renderPass = encoder.beginRenderPass({
       label: 'naive render pass',
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [0.3, 0, 0, 1],
+          clearValue: [0.0, 0, 0, 0],
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -872,10 +971,10 @@ export class TerrainRenderer implements IRenderer {
 
     if (config.outputs.fileContent) {
       if (config.outputs.fileType === 'obj') {
-        mesh.parseObjContent(config.outputs.fileContent);
+        await mesh.parseObjContent(config.outputs.fileContent);
       } else if (config.outputs.fileType === 'gltf' || config.outputs.fileType === 'glb') {
         const { gltfWithBuffers, gltf } = await mesh.loadGltf(config.outputs.fileContent);
-        mesh.parseGLTFContent(gltfWithBuffers, gltf);
+        await mesh.parseGLTFContent(gltfWithBuffers, gltf);
       }
     } else {
       await mesh.loadObj(path.join(import.meta.env.BASE_URL, config.outputs.meshPath));
@@ -884,6 +983,15 @@ export class TerrainRenderer implements IRenderer {
     if (!mesh.vertices || !mesh.indices) {
       return;
     }
+
+    // unused for now
+    /*
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+    console.log('custom instance shader:', customInstanceShader);
+    */
 
     // Create buffers for mesh
     const instanceVertexBuffer = this.device.createBuffer({
@@ -898,13 +1006,7 @@ export class TerrainRenderer implements IRenderer {
     });
     this.device.queue.writeBuffer(instanceIndexBuffer, 0, mesh.indices);
 
-    const customInstanceShader = jit.generateInstanceShaderCode(
-      config,
-      instanceComputeShaderTemplate,
-    );
-
-    console.log('custom instance shader:', customInstanceShader);
-
+    // set uniforms
     this.nodeGraphUniformConfig = config.uniforms;
     const { totalSize, offsets } = jit.calculateUniformLayout(config.uniforms);
     this.nodeGraphUniformLayout = offsets;
@@ -943,7 +1045,16 @@ export class TerrainRenderer implements IRenderer {
       ],
     });
 
-    console.log('num instances:', config.outputs.instanceCount);
+    // create custom instancing shader
+    if (!config.outputs.maskKey) {
+      config.outputs.maskKey = 'terrainPos.y';
+    }
+    const customInstanceShader = jit.generateInstanceShaderCode(
+      config,
+      instanceComputeShaderTemplate,
+    );
+
+    console.log('custom instance shader:', customInstanceShader);
 
     // Run compute to create a buffer of points
     this.instancePointsComputePipeline = new InstancePointsPipeline(
@@ -951,6 +1062,7 @@ export class TerrainRenderer implements IRenderer {
       this.stage.groundPlane,
       this.normalsComputePipeline,
       config.outputs.instanceCount,
+      customInstanceShader,
     );
 
     const encoder = this.device.createCommandEncoder();
@@ -959,6 +1071,26 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
     this.device.queue.submit([encoder.finish()]);
 
+    let transformMatrix: Float32Array | undefined;
+    if (config.outputs.transform) {
+      const translate =
+        typeof config.outputs.transform.translate === 'string'
+          ? this.getUniform(config.outputs.transform.translate)
+          : ([0, 0, 0] as [number, number, number]);
+
+      const rotate =
+        typeof config.outputs.transform.rotate === 'string'
+          ? this.getUniform(config.outputs.transform.rotate)
+          : ([0, 0, 0] as [number, number, number]);
+
+      const scale =
+        typeof config.outputs.transform.scale === 'string'
+          ? this.getUniform(config.outputs.transform.scale)
+          : ([1, 1, 1] as [number, number, number]);
+
+      transformMatrix = this.createTransformMatrix(translate, rotate, scale);
+    }
+
     this.indirectInstancer = new IndirectInstancer(
       this.device,
       this.instancePointsComputePipeline,
@@ -966,6 +1098,8 @@ export class TerrainRenderer implements IRenderer {
       instanceIndexBuffer,
       this.sceneUniformsBindGroupLayout,
       this.webGPU,
+      mesh.textures,
+      transformMatrix,
     );
   }
 

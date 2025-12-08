@@ -41,8 +41,10 @@ export function generateInstanceShaderCode(
     .join('\n');
 
   const posKey = shaderConfig.outputs.instancePositions;
+  const maskKey = shaderConfig.outputs.maskKey;
+  const threshold = shaderConfig.outputs.threshold;
 
-  return template.content({ uniforms, utils, body, posKey });
+  return template.content({ uniforms, utils, body, posKey, maskKey, threshold });
 }
 
 // double check this

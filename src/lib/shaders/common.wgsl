@@ -15,6 +15,11 @@ struct CameraUniforms {
     _padding3: f32,
 }
 
+struct DirectionalLightUniforms {
+    lightViewProjMatrix: mat4x4f,
+    lightDir: vec3f,
+}
+
 struct MeshUniforms {
     size: f32,
     resolution: f32,
@@ -31,4 +36,5 @@ struct InstanceVertex {
     nor: vec3<f32>,
     uv: vec2<f32>,
     rotMat: mat3x3<f32>,
+    used: u32,
 };
