@@ -77,6 +77,10 @@ export class TerrainRenderer implements IRenderer {
   private customNodeGraphUniformsBindGroupLayout: GPUBindGroupLayout;
   private customNodeGraphUniformsBindGroup: GPUBindGroup;
 
+  private biomeUniformBuffer: GPUBuffer;
+  private biomeBindGroupLayout: GPUBindGroupLayout;
+  private biomeBindGroup: GPUBindGroup;
+
   // custom uniform buffers
   private nodeGraphUniformBuffer!: GPUBuffer;
   private nodeGraphUniformLayout!: Map<string, number> | undefined;
@@ -186,6 +190,37 @@ export class TerrainRenderer implements IRenderer {
             magFilter: 'nearest',
             minFilter: 'nearest',
           }),
+        },
+      ],
+    });
+
+    this.biomeUniformBuffer = this.device.createBuffer({
+      label: 'biome uniform',
+      size: 16,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    const defaultBiome = new Uint32Array([0]);
+    this.device.queue.writeBuffer(this.biomeUniformBuffer, 0, defaultBiome);
+
+    this.biomeBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'biome bind group layout',
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.biomeBindGroup = this.device.createBindGroup({
+      label: 'biome bind group',
+      layout: this.biomeBindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: this.biomeUniformBuffer },
         },
       ],
     });
@@ -546,7 +581,11 @@ export class TerrainRenderer implements IRenderer {
     return this.device.createRenderPipeline({
       layout: this.device.createPipelineLayout({
         label: 'naive pipeline layout',
-        bindGroupLayouts: [this.sceneUniformsBindGroupLayout, this.waterHeightBindGroupLayout],
+        bindGroupLayouts: [
+          this.sceneUniformsBindGroupLayout,
+          this.waterHeightBindGroupLayout,
+          this.biomeBindGroupLayout,
+        ],
       }),
       depthStencil: {
         depthWriteEnabled: true,
@@ -801,6 +840,7 @@ export class TerrainRenderer implements IRenderer {
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
     renderPass.setBindGroup(1, this.waterHeightBindGroup);
+    renderPass.setBindGroup(2, this.biomeBindGroup);
     renderPass.setVertexBuffer(0, this.stage.groundPlane.vertexBuffer);
     renderPass.setIndexBuffer(this.stage.groundPlane.indexBuffer!, 'uint32');
     renderPass.drawIndexedIndirect(this.stage.groundPlane.indirectBuffer!, 0);
@@ -859,6 +899,11 @@ export class TerrainRenderer implements IRenderer {
       ) {
         this.setWaterHeightForTerrain(waterHeightUniform.initialValue);
       }
+    }
+
+    if (config.outputs.biome !== undefined) {
+      const biomeData = new Uint32Array([config.outputs.biome]);
+      this.device.queue.writeBuffer(this.biomeUniformBuffer, 0, biomeData);
     }
 
     const customComputeShader = jit.generateDisplaceShaderCode(

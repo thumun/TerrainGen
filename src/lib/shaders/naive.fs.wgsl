@@ -10,12 +10,17 @@ struct FragmentInput
     @location(3) shadow_pos: vec3f,
 }
 
+struct BiomeUniforms {
+    biomeType: u32,
+}
+
 struct WaterHeightUniforms {
     height: f32,
 }
 
 @group(0) @binding(0) var<uniform> camera : CameraUniforms;
 @group(1) @binding(0) var<uniform> waterHeight : WaterHeightUniforms;
+@group(2) @binding(0) var<uniform> biome : BiomeUniforms;
 
 // Simple hash function for noise
 fn hash(p: vec2f) -> f32 {
@@ -97,28 +102,58 @@ fn sandTexture(pos: vec3f) -> vec3f {
 @fragment
 fn main(in: FragmentInput) -> @location(0) vec4f
 {
-    let sandScale = 20.0;
-    let sandNoise = fbm(vec2f(in.pos.x, in.pos.z) * sandScale);
+    let biomeType = biome.biomeType;
+    var baseColor: vec3f;
 
-    let grass = grassTexture(in.pos);
-    let sand = sandTexture(in.pos);
-    let underwater = vec3f(0.2, 0.3, 0.4);
+    if (biomeType == 0) {
+        // grassland
+        let sandScale = 20.0;
+        let sandNoise = fbm(vec2f(in.pos.x, in.pos.z) * sandScale);
 
-    let grassStart = waterHeight.height + 0.8;
-    let sandEnd = waterHeight.height + 0.4;
-    
-    var baseColor = grass;
-    if (waterHeight.height > in.pos.y) {
-        baseColor = underwater;
-    } else if (in.pos.y <= sandEnd) {
-        baseColor = sand;
-    } else if (in.pos.y <= grassStart) {
-        let t = (in.pos.y - sandEnd) / (grassStart - sandEnd);
-        baseColor = mix(sand, grass, t);
-    } else {
+        let grass = grassTexture(in.pos);
+        let sand = sandTexture(in.pos);
+        let underwater = vec3f(0.2, 0.3, 0.4);
+
+        let grassStart = waterHeight.height + 0.8;
+        let sandEnd = waterHeight.height + 0.4;
+        
         baseColor = grass;
+        if (waterHeight.height > in.pos.y) {
+            baseColor = underwater;
+        } else if (in.pos.y <= sandEnd) {
+            baseColor = sand;
+        } else if (in.pos.y <= grassStart) {
+            let t = (in.pos.y - sandEnd) / (grassStart - sandEnd);
+            baseColor = mix(sand, grass, t);
+        } else {
+            baseColor = grass;
+        }
+    } else if (biomeType == 1) {
+        // desert
+        let sandScale = 20.0;
+        let sandNoise = fbm(vec2f(in.pos.x, in.pos.z) * sandScale);
+
+        let sand = sandTexture(in.pos);
+        let underwater = vec3f(0.2, 0.3, 0.4);
+
+        baseColor = sand;
+        if (waterHeight.height > in.pos.y) {
+            baseColor = underwater;
+        } else {
+            baseColor = sand;
+        }
+    } else if (biomeType == 2) {
+        // mountain
+        baseColor = vec3f(0.2, 0.3, 0.4);
+    } else if (biomeType == 3) {
+        // tundra
+        baseColor = vec3f(1.0, 1.0, 1.0);
     }
-    
+    else {
+        // Default to grass texture
+        baseColor = grassTexture(in.pos);
+    }
+
     let shadowSample = textureSample(shadow_map, shadow_sampler, in.shadow_pos.xy);
     let isShadowed = shadowSample < in.shadow_pos.z - shadowBias;
 
