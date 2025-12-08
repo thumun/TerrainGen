@@ -1,3 +1,4 @@
+import path from 'path-browserify';
 import { useEffect } from 'react';
 
 import type { GlobalParams } from './terrain-sliders';
@@ -12,7 +13,7 @@ export type TerrainCanvasProps = {
 
 const createRenderer: WebGPUCanvasProps['createRenderer'] = async (webGPU, stage) => {
   const renderer = new TerrainRenderer(webGPU, stage);
-  await renderer.load_skybox('/skyboxes/sky.hdr');
+  await renderer.load_skybox(path.join(import.meta.env.BASE_URL, '/skyboxes/sky.hdr'));
   return renderer;
 };
 
