@@ -61,7 +61,11 @@ export default function Editor() {
       <main className="grid grow grid-cols-[3fr_minmax(560px,2fr)] bg-zinc-800">
         {/* Left column */}
         <div className="flex flex-col">
-          <Toolbar nodeGraph={nodeGraph} onLoadScene={onLoadScene} />
+          <Toolbar
+            nodeGraph={nodeGraph}
+            onLoadScene={onLoadScene}
+            terrainRendererRef={terrainRendererRef}
+          />
           <div className="relative grow">
             <NodeGraphCanvas previewNodes={previewNodes} />
             <NodeGraph

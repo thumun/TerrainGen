@@ -46,3 +46,32 @@ export function uploadFileToString(opts: { accept?: string }): Promise<string> {
     document.body.removeChild(element);
   });
 }
+
+/**
+ * Opens a system dialog for the user to select a file. Returns the file as an ArrayBuffer.
+ * 
+ * @param opts.accept  file types to accept. example: `'.hdr'`
+ */
+export function uploadFileToArrayBuffer(opts: { accept?: string }): Promise<ArrayBuffer> {
+  return new Promise<ArrayBuffer>((resolve) => {
+    const element = document.createElement('input');
+    element.setAttribute('type', 'file');
+    element.style.display = 'none';
+    if (opts.accept) element.setAttribute('accept', opts.accept);
+
+    element.onchange = () => {
+      const reader = new FileReader();
+
+      reader.addEventListener('load', () => {
+        resolve(reader.result as ArrayBuffer);
+      });
+
+      reader.readAsArrayBuffer(element.files![0]);
+    };
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  });
+}
