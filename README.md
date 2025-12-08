@@ -233,3 +233,4 @@ npm run format:check  # don't write to any files, just report issues
 - [TanStack Router](https://tanstack.com/router). The initial setup is a code based router. Which means that the routes are defined in code (in the `./src/main.tsx` file). If you like you can also use a file based routing setup by following the [File Based Routing](https://tanstack.com/router/latest/docs/framework/react/guide/file-based-routing) guide.
 - [React Flow](https://reactflow.dev/) for node editor functionality
 - [loaders.gl](https://loaders.gl/) for reading/writing of external files
+- [io-rgbe](https://github.com/DerSchmale/io-rgbe) for HDR loading
