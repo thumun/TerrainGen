@@ -5,13 +5,15 @@ import * as styles from '@/components/common/styles';
 import type { UseNodeGraphResult } from '@/hooks/use-node-graph';
 import * as files from '@/lib/files';
 import * as serialize from '@/lib/graph/serialize';
+import type { TerrainRenderer } from '@/lib/renderers/terrain-renderer';
 
 export type ToolbarProps = {
   nodeGraph: UseNodeGraphResult;
   onLoadScene: (options: { nodes: Node[]; edges: Edge[] }) => void;
+  terrainRendererRef?: React.RefObject<TerrainRenderer | undefined>;
 };
 
-export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
+export default function Toolbar({ nodeGraph, onLoadScene, terrainRendererRef }: ToolbarProps) {
   const saveNodeGraph = () => {
     const serializedGraph = serialize.serializeReactFlowNodeGraph(nodeGraph);
     files.downloadStringAsFile({
@@ -34,6 +36,18 @@ export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
     onLoadScene({ nodes: result.graph.nodes, edges: result.graph.edges });
   };
 
+  const uploadSkybox = async () => {
+    try {
+      const arrayBuffer = await files.uploadFileToArrayBuffer({ accept: '.hdr' });
+      const url = URL.createObjectURL(new Blob([arrayBuffer]));
+      await terrainRendererRef?.current?.load_skybox(url);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to load skybox:', error);
+      alert('Failed to load skybox. Please try again.');
+    }
+  };
+
   return (
     <div className="bg-zinc-900 text-zinc-400">
       <Menubar.Root>
@@ -54,6 +68,14 @@ export default function Toolbar({ nodeGraph, onLoadScene }: ToolbarProps) {
                 iconClassName="icon-[tabler--arrow-bar-up]"
               >
                 Import node graph from file
+              </MenubarItem>
+              <MenubarItem
+                onSelect={() => {
+                  void uploadSkybox();
+                }}
+                iconClassName="icon-[tabler--photo]"
+              >
+                Upload skybox (.hdr)
               </MenubarItem>
             </Menubar.Content>
           </Menubar.Portal>

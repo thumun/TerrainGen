@@ -8,16 +8,17 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(240);
+  readonly buffer = new ArrayBuffer(304);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
-  private readonly viewDirView = new Float32Array(this.buffer, 192, 4);
-  private readonly cameraWidthView = new Float32Array(this.buffer, 208, 1);
-  private readonly cameraHeightView = new Float32Array(this.buffer, 212, 1);
-  private readonly nearPlaneView = new Float32Array(this.buffer, 216, 1);
-  private readonly farPlaneView = new Float32Array(this.buffer, 220, 1);
-  private readonly timeView = new Float32Array(this.buffer, 224, 1);
+  private readonly invViewMatView = new Float32Array(this.buffer, 192, 16);
+  private readonly viewDirView = new Float32Array(this.buffer, 256, 4);
+  private readonly cameraWidthView = new Float32Array(this.buffer, 272, 1);
+  private readonly cameraHeightView = new Float32Array(this.buffer, 276, 1);
+  private readonly nearPlaneView = new Float32Array(this.buffer, 280, 1);
+  private readonly farPlaneView = new Float32Array(this.buffer, 284, 1);
+  private readonly timeView = new Float32Array(this.buffer, 288, 1);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
@@ -29,6 +30,10 @@ class CameraUniforms {
 
   set viewMat(mat: Float32Array) {
     this.viewMatView.set(mat.subarray(0, 16), 0);
+  }
+
+  set invViewMat(mat: Float32Array) {
+    this.invViewMatView.set(mat.subarray(0, 16), 0);
   }
 
   set viewDir(dir: Float32Array) {
@@ -217,6 +222,7 @@ export class Camera {
 
     // write to extra buffers needed for light clustering here
     this.uniforms.viewMat = viewMat;
+    this.uniforms.invViewMat = mat4.inverse(viewMat);
 
     this.uniforms.time = this.time;
 

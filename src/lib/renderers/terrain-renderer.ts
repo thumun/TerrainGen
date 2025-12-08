@@ -9,6 +9,7 @@ import { IndirectInstancer } from '@/lib/renderers/pipelines/instancer';
 import { NormalsPipeline } from '@/lib/renderers/pipelines/normals-pipeline';
 import { TerrainPipeline } from '@/lib/renderers/pipelines/terrain-pipeline';
 import type * as scene from '@/lib/scene';
+import { decodeRGBE } from '@/lib/scene/io-rgbe-main/src/decode';
 import { OBJ as LoadedMesh } from '@/lib/scene/mesh';
 import { Stage } from '@/lib/scene/stage';
 import * as jit from '@/lib/shaders/jit';
@@ -107,6 +108,14 @@ export class TerrainRenderer implements IRenderer {
 
   /** overall render pipeline, must get recreated upon canvas resize */
   private pipeline: GPURenderPipeline;
+
+  // skybox
+  private skyboxTexture: GPUTexture | undefined;
+  private skyboxBindGroupLayout: GPUBindGroupLayout | undefined;
+  private skyboxBindGroup: GPUBindGroup | undefined;
+  private skyboxRenderPipeline: GPURenderPipeline | undefined;
+  private skyboxSampler: GPUSampler | undefined;
+  private skyboxShaderModule: GPUShaderModule | undefined;
 
   constructor(
     private webGPU: WebGPUContext,
@@ -478,24 +487,126 @@ export class TerrainRenderer implements IRenderer {
     computePass.end();
   }
 
-  async init_mesh() {
+  async load_skybox(url: string) {
     // create test mesh
-    const testMesh = new LoadedMesh();
-    await testMesh.loadObj(path.join(import.meta.env.BASE_URL, '/models/cube.obj'));
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+    const hdr = decodeRGBE(view);
 
-    const instanceVertexBuffer = this.device.createBuffer({
-      label: 'instancing vertex buffer',
-      size: testMesh.vertices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
-    });
-    this.device.queue.writeBuffer(instanceVertexBuffer, 0, testMesh.vertices!);
+    // convert rgb to rgba
+    const rgbaData = new Float32Array(hdr.width * hdr.height * 4);
 
-    const instanceIndexBuffer = this.device.createBuffer({
-      label: 'instancing index buffer',
-      size: testMesh.indices!.byteLength,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+    for (let i = 0, j = 0; i < hdr.data.length; i += 3, j += 4) {
+      rgbaData[j + 0] = hdr.data[i + 0];
+      rgbaData[j + 1] = hdr.data[i + 1];
+      rgbaData[j + 2] = hdr.data[i + 2];
+      rgbaData[j + 3] = 1.0; // alpha always 1
+    }
+
+    //console.log(rgbaData);
+
+    // create rectangular texture
+    this.skyboxTexture = this.device.createTexture({
+      label: 'hdr texture',
+      size: [hdr.width, hdr.height],
+      format: 'rgba32float',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
-    this.device.queue.writeBuffer(instanceIndexBuffer, 0, testMesh.indices!);
+
+    this.device.queue.writeTexture(
+      { texture: this.skyboxTexture },
+      rgbaData,
+      {
+        bytesPerRow: hdr.width * 16, // 8 bytes per pixel in rgba16float
+      },
+      [hdr.width, hdr.height],
+    );
+
+    this.skyboxBindGroupLayout = this.device.createBindGroupLayout({
+      label: 'skybox bind group layout',
+      entries: [
+        {
+          // hdr texture
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: 'unfilterable-float',
+            viewDimension: '2d',
+            multisampled: false,
+          },
+        },
+        {
+          // hdr sampler
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {
+            type: 'non-filtering',
+          },
+        },
+        {
+          // camera uniforms
+          binding: 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: {
+            type: 'uniform',
+          },
+        },
+      ],
+    });
+
+    this.skyboxSampler = this.device.createSampler({
+      addressModeU: 'repeat',
+      addressModeV: 'clamp-to-edge',
+      magFilter: 'nearest',
+      minFilter: 'nearest',
+      mipmapFilter: 'nearest',
+    });
+
+    this.skyboxBindGroup = this.device.createBindGroup({
+      label: 'skybox bind group',
+      layout: this.skyboxBindGroupLayout,
+      entries: [
+        { binding: 0, resource: this.skyboxTexture.createView() },
+        { binding: 1, resource: this.skyboxSampler },
+        { binding: 2, resource: this.stage.camera.uniformsBuffer },
+      ],
+    });
+
+    this.skyboxShaderModule = this.device.createShaderModule({
+      label: 'instancing render shader',
+      code: shaders.skySrc,
+    });
+
+    this.skyboxRenderPipeline = this.device.createRenderPipeline({
+      label: 'skybox render pipeline',
+      layout: this.device.createPipelineLayout({
+        label: 'skybox pipeline layout',
+        bindGroupLayouts: [this.skyboxBindGroupLayout],
+      }),
+      depthStencil: {
+        format: 'depth24plus',
+        depthWriteEnabled: false,
+        depthCompare: 'less-equal',
+      },
+      vertex: {
+        module: this.skyboxShaderModule,
+        entryPoint: 'vs_main',
+      },
+      fragment: {
+        module: this.skyboxShaderModule,
+        entryPoint: 'fs_main',
+        targets: [
+          {
+            format: this.webGPU.canvasFormat,
+          },
+        ],
+      },
+      primitive: {
+        topology: 'triangle-list',
+        cullMode: 'none',
+      },
+    });
   }
 
   private createDepthTexture(dimensions: { width: number; height: number }) {
@@ -749,7 +860,7 @@ export class TerrainRenderer implements IRenderer {
       colorAttachments: [
         {
           view: canvasTextureView,
-          clearValue: [0.0, 0, 0, 0],
+          clearValue: [0.0, 0.0, 0.0, 0.0],
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -761,6 +872,13 @@ export class TerrainRenderer implements IRenderer {
         depthStoreOp: 'store',
       },
     });
+
+    // draw the sky
+    if (this.skyboxRenderPipeline && this.skyboxBindGroup) {
+      renderPass.setPipeline(this.skyboxRenderPipeline);
+      renderPass.setBindGroup(0, this.skyboxBindGroup);
+      renderPass.draw(3, 1, 0, 0); // fullscreen triangle
+    }
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.sceneUniformsBindGroup);
@@ -791,6 +909,7 @@ export class TerrainRenderer implements IRenderer {
     if (this.stage.groundPlane.indexBuffer) this.stage.groundPlane.indexBuffer.destroy();
     if (this.stage.groundPlane.indirectBuffer) this.stage.groundPlane.indirectBuffer.destroy();
     if (this.stage.groundPlane.uniformsBuffer) this.stage.groundPlane.uniformsBuffer.destroy();
+    if (this.skyboxTexture) this.skyboxTexture.destroy();
   }
 
   // ------------------------------------------------------------------------------------------
