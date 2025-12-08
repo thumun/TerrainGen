@@ -9,7 +9,8 @@ import type * as util from '@/lib/shaders/jit/types/util';
 
 export type OutputNodeUpdates = {
   displacePipeline?: scene.DisplacePipeline;
-  instancingPipeline?: scene.InstancingPipeline;
+  instancingPipeline?: scene.InstancingPipeline[];
+  waterPipeline?: scene.WaterPipeline;
 };
 
 export type PipelineNode = types.Node & nodeTypes.All;
@@ -86,11 +87,11 @@ function generatePipelines(
     displacePipeline = { instructionSet, uniforms, outputs };
   }
 
-  const instancingNode = activeNodes.find((node) => node.type === 'instancing');
-  let instancingPipeline: scene.InstancingPipeline | undefined = undefined;
-
-  if (instancingNode) {
-    const orderedDependencyNodes = traversal.getOrderedNodes(instancingNode.id, nodes, edges);
+  // find water pipeline
+  const waterNode = activeNodes.find((node) => node.type === 'water');
+  let waterPipeline: scene.WaterPipeline | undefined = undefined;
+  if (waterNode) {
+    const orderedDependencyNodes = traversal.getOrderedNodes(waterNode.id, nodes, edges);
 
     // generate uniforms
     const uniforms = orderedDependencyNodes.flatMap(getUniforms);
@@ -100,137 +101,173 @@ function generatePipelines(
       .map((node) => getInstruction(node, orderedDependencyNodes, edges))
       .filter((instruction) => instruction !== null);
 
-    // Get inputs from the incoming edges of the instancing node
-    const scatterEdge = edges.find(
-      (edge) =>
-        edge.target === instancingNode.id &&
-        edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
+    // Get height key from the incoming edge of the water node
+    const heightEdge = edges.find((edge) => edge.target === waterNode.id);
+    const heightEdgeSourceNode = orderedDependencyNodes.find(
+      (node) => node.id === heightEdge?.source,
     );
-
-    const scatterNode = orderedDependencyNodes.find(
-      (node) => node.id === scatterEdge?.source && node.type === 'scatter',
-    ) as (nodeTypes.Scatter & { id: string }) | undefined;
-
-    const geometryEdge = edges.find(
-      (edge) =>
-        edge.target === instancingNode.id &&
-        edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
-    );
-
-    let geometryNode:
-      | (nodeTypes.PrimitiveGeometry & { id: string })
-      | (nodeTypes.BuiltinGeometry & { id: string })
-      | (nodeTypes.LoadGeometry & { id: string })
-      | undefined;
-
-    let transformNode: (nodeTypes.Transform & { id: string }) | undefined;
-
-    let currentNodeId = geometryEdge?.source;
-    while (currentNodeId) {
-      const node = orderedDependencyNodes.find((n) => n.id === currentNodeId);
-
-      if (!node) break;
-
-      if (node.type === 'primGeo' || node.type === 'builtinGeo' || node.type === 'loadGeo') {
-        geometryNode = node as typeof geometryNode;
-        break;
-      } else if (node.type === 'transform') {
-        transformNode = node as nodeTypes.Transform & { id: string };
-
-        // Find the geometry input of the transform node
-        const transformGeoEdge = edges.find(
-          (edge) =>
-            edge.target === node.id && edge.targetHandle === nodeTypes.HANDLES.transform.in.geo,
-        );
-        currentNodeId = transformGeoEdge?.source;
-      } else {
-        break;
-      }
-    }
-
-    if (!geometryNode) {
-      console.error('Instancing node requires a geometry input');
-      return { displacePipeline };
-    } else if (!scatterNode || !scatterEdge) {
-      console.error('Instancing node requires a scatter input');
-      return { displacePipeline };
-    }
-
-    const maskEdge = edges.find(
-      (edge) =>
-        edge.target === scatterNode.id && edge.targetHandle === nodeTypes.HANDLES.scatter.in.a,
-    );
-
-    const maskSourceNode = orderedDependencyNodes.find((node) => node.id === maskEdge?.source);
-    let transformConfig: { translate: string; rotate: string; scale: string } | undefined;
-    if (transformNode) {
-      const translateEdge = edges.find(
-        (edge) =>
-          edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.translate,
-      );
-      const rotateEdge = edges.find(
-        (edge) =>
-          edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate,
-      );
-      const scaleEdge = edges.find(
-        (edge) =>
-          edge.target === transformNode.id &&
-          edge.targetHandle === nodeTypes.HANDLES.transform.in.scale,
-      );
-
-      if (translateEdge && rotateEdge && scaleEdge) {
-        const translateNode = orderedDependencyNodes.find((n) => n.id === translateEdge.source);
-        const rotateNode = orderedDependencyNodes.find((n) => n.id === rotateEdge.source);
-        const scaleNode = orderedDependencyNodes.find((n) => n.id === scaleEdge.source);
-
-        transformConfig = {
-          translate: nodeMapping.getHandleKey({
-            sourceNode: translateNode!,
-            outgoingHandleId: translateEdge.sourceHandle!,
-          }),
-          rotate: nodeMapping.getHandleKey({
-            sourceNode: rotateNode!,
-            outgoingHandleId: rotateEdge.sourceHandle!,
-          }),
-          scale: nodeMapping.getHandleKey({
-            sourceNode: scaleNode!,
-            outgoingHandleId: scaleEdge.sourceHandle!,
-          }),
-        };
-      }
-    }
-
-    const outputs: scene.InstancingPipeline['outputs'] = {
-      instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
-      instancePositions: nodeMapping.getHandleKey({
-        sourceNode: scatterNode,
-        outgoingHandleId: scatterEdge.sourceHandle!,
+    const outputs: scene.WaterPipeline['outputs'] = {
+      height: nodeMapping.getHandleKey({
+        sourceNode: heightEdgeSourceNode!,
+        outgoingHandleId: heightEdge!.sourceHandle!,
       }),
-      meshPath: geometryNode.data.meshPath,
-      maskKey:
-        maskSourceNode && maskEdge
-          ? nodeMapping.getHandleKey({
-              sourceNode: maskSourceNode,
-              outgoingHandleId: maskEdge.sourceHandle!,
-            })
-          : undefined,
-      threshold: scatterNode.data.threshold,
-      transform: transformConfig,
-      fileContent:
-        geometryNode.type === 'loadGeo' ? (geometryNode.data.fileContent as string) : undefined,
-      fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
     };
 
-    instancingPipeline = {
-      instructionSet,
-      uniforms,
-      outputs,
-    };
+    waterPipeline = { instructionSet, uniforms, outputs };
   }
 
-  return { displacePipeline, instancingPipeline };
+  const instancingNodes = activeNodes.filter((node) => node.type === 'instancing');
+  const instancingPipeline: scene.InstancingPipeline[] = instancingNodes
+    .map((instancingNode) => {
+      const orderedDependencyNodes = traversal.getOrderedNodes(instancingNode.id, nodes, edges);
+      // generate uniforms
+      const uniforms = orderedDependencyNodes.flatMap(getUniforms);
+
+      // generate instruction set
+      const instructionSet = orderedDependencyNodes
+        .map((node) => getInstruction(node, orderedDependencyNodes, edges))
+        .filter((instruction) => instruction !== null);
+
+      // Get inputs from the incoming edges of the instancing node
+      const scatterEdge = edges.find(
+        (edge) =>
+          edge.target === instancingNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.instancing.in.position,
+      );
+
+      const scatterNode = orderedDependencyNodes.find(
+        (node) => node.id === scatterEdge?.source && node.type === 'scatter',
+      ) as (nodeTypes.Scatter & { id: string }) | undefined;
+
+      const geometryEdge = edges.find(
+        (edge) =>
+          edge.target === instancingNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.instancing.in.geometry,
+      );
+
+      let geometryNode:
+        | (nodeTypes.PrimitiveGeometry & { id: string })
+        | (nodeTypes.BuiltinGeometry & { id: string })
+        | (nodeTypes.LoadGeometry & { id: string })
+        | undefined;
+
+      let transformNode: (nodeTypes.Transform & { id: string }) | undefined;
+
+      let currentNodeId = geometryEdge?.source;
+      while (currentNodeId) {
+        const node = orderedDependencyNodes.find((n) => n.id === currentNodeId);
+
+        if (!node) break;
+
+        if (node.type === 'primGeo' || node.type === 'builtinGeo' || node.type === 'loadGeo') {
+          geometryNode = node as typeof geometryNode;
+          break;
+        } else if (node.type === 'transform') {
+          transformNode = node as nodeTypes.Transform & { id: string };
+
+          // Find the geometry input of the transform node
+          const transformGeoEdge = edges.find(
+            (edge) =>
+              edge.target === node.id &&
+              edge.targetHandle === nodeTypes.HANDLES.transform.in.geo,
+          );
+          currentNodeId = transformGeoEdge?.source;
+        } else {
+          break;
+        }
+      }
+
+      if (!geometryNode) {
+        console.error('Instancing node requires a geometry input');
+        return { displacePipeline };
+      } else if (!scatterNode || !scatterEdge) {
+        console.error('Instancing node requires a scatter input');
+        return { displacePipeline };
+      }
+
+      const maskEdge = edges.find(
+        (edge) =>
+          edge.target === scatterNode.id &&
+          edge.targetHandle === nodeTypes.HANDLES.scatter.in.a,
+      );
+
+      const maskSourceNode = orderedDependencyNodes.find(
+        (node) => node.id === maskEdge?.source,
+      );
+      let transformConfig: { translate: string; rotate: string; scale: string } | undefined;
+      if (transformNode) {
+        const translateEdge = edges.find(
+          (edge) =>
+            edge.target === transformNode.id &&
+            edge.targetHandle === nodeTypes.HANDLES.transform.in.translate,
+        );
+        const rotateEdge = edges.find(
+          (edge) =>
+            edge.target === transformNode.id &&
+            edge.targetHandle === nodeTypes.HANDLES.transform.in.rotate,
+        );
+        const scaleEdge = edges.find(
+          (edge) =>
+            edge.target === transformNode.id &&
+            edge.targetHandle === nodeTypes.HANDLES.transform.in.scale,
+        );
+
+        if (translateEdge && rotateEdge && scaleEdge) {
+          const translateNode = orderedDependencyNodes.find(
+            (n) => n.id === translateEdge.source,
+          );
+          const rotateNode = orderedDependencyNodes.find((n) => n.id === rotateEdge.source);
+          const scaleNode = orderedDependencyNodes.find((n) => n.id === scaleEdge.source);
+
+          transformConfig = {
+            translate: nodeMapping.getHandleKey({
+              sourceNode: translateNode!,
+              outgoingHandleId: translateEdge.sourceHandle!,
+            }),
+            rotate: nodeMapping.getHandleKey({
+              sourceNode: rotateNode!,
+              outgoingHandleId: rotateEdge.sourceHandle!,
+            }),
+            scale: nodeMapping.getHandleKey({
+              sourceNode: scaleNode!,
+              outgoingHandleId: scaleEdge.sourceHandle!,
+            }),
+          };
+        }
+      }
+
+      const outputs: scene.InstancingPipeline['outputs'] = {
+        instanceCount: !scatterNode ? 1 : Math.max(scatterNode.data.instances, 1),
+        instancePositions: nodeMapping.getHandleKey({
+          sourceNode: scatterNode,
+          outgoingHandleId: scatterEdge.sourceHandle!,
+        }),
+        meshPath: geometryNode.data.meshPath,
+        maskKey:
+          maskSourceNode && maskEdge
+            ? nodeMapping.getHandleKey({
+                sourceNode: maskSourceNode,
+                outgoingHandleId: maskEdge.sourceHandle!,
+              })
+            : undefined,
+        threshold: scatterNode.data.threshold,
+        transform: transformConfig,
+        fileContent:
+          geometryNode.type === 'loadGeo'
+            ? (geometryNode.data.fileContent as string)
+            : undefined,
+        fileType: geometryNode.type === 'loadGeo' ? geometryNode.data.fileType : undefined,
+      };
+
+      return {
+        instructionSet,
+        uniforms,
+        outputs,
+      };
+    })
+    .filter((pipeline): pipeline is scene.InstancingPipeline => pipeline !== null);
+
+  return { displacePipeline, waterPipeline, instancingPipeline };
 }
 
 function getInstruction(

@@ -19,9 +19,16 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
     [terrainRendererRef],
   );
 
-  const setInstancingPipeline = useCallback(
-    (pipeline: scene.InstancingPipeline) => {
-      void terrainRendererRef.current?.configureInstancingPipeline(pipeline);
+  const setInstancingPipelines = useCallback(
+    (pipelines: scene.InstancingPipeline[]) => {
+      void terrainRendererRef.current?.configureInstancingPipeline(pipelines);
+    },
+    [terrainRendererRef],
+  );
+
+  const setWaterPipeline = useCallback(
+    (pipeline: scene.WaterPipeline) => {
+      terrainRendererRef.current?.configureWaterPipeline(pipeline);
     },
     [terrainRendererRef],
   );
@@ -29,36 +36,35 @@ export function usePipelines({ terrainRendererRef }: UsePipelinesOptions) {
   const setUniform = useCallback(
     (key: string, value: number | [number, number, number]) => {
       console.log('setting uniform', key, 'to', value);
+      // double check if ok to set both
       terrainRendererRef.current?.setDisplacePipelineUniform(key, value);
+      terrainRendererRef.current?.setWaterPipelineUniform(key, value);
     },
     [terrainRendererRef],
   );
 
   const rebuildPipelinesFromNode = useCallback(
     (nodeId: string, options: { nodes: graph.PipelineNode[]; edges: Edge[] }) => {
-      const { displacePipeline, instancingPipeline } = graph.generatePipelinesFromNode(
-        nodeId,
-        options.nodes,
-        options.edges,
-      );
+      const { displacePipeline, waterPipeline, instancingPipeline } =
+        graph.generatePipelinesFromNode(nodeId, options.nodes, options.edges);
 
+      if (waterPipeline) setWaterPipeline(waterPipeline);
       if (displacePipeline) setDisplacePipeline(displacePipeline);
-      if (instancingPipeline) void setInstancingPipeline(instancingPipeline);
+      if (instancingPipeline) void setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setInstancingPipeline],
+    [setDisplacePipeline, setWaterPipeline, setInstancingPipelines],
   );
 
   const rebuildAllPipelines = useCallback(
     (options: { nodes: graph.PipelineNode[]; edges: Edge[] }) => {
-      const { displacePipeline, instancingPipeline } = graph.generateAllPipelines(
-        options.nodes,
-        options.edges,
-      );
+      const { displacePipeline, waterPipeline, instancingPipeline } =
+        graph.generateAllPipelines(options.nodes, options.edges);
 
+      if (waterPipeline) setWaterPipeline(waterPipeline);
       if (displacePipeline) setDisplacePipeline(displacePipeline);
-      if (instancingPipeline) setInstancingPipeline(instancingPipeline);
+      if (instancingPipeline) setInstancingPipelines(instancingPipeline);
     },
-    [setDisplacePipeline, setInstancingPipeline],
+    [setDisplacePipeline, setWaterPipeline, setInstancingPipelines],
   );
 
   return {

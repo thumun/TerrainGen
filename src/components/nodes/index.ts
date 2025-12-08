@@ -19,6 +19,7 @@ import TrigMathNodeFloat from './trig-math-node';
 import UnsignedIntNode from './unsigned-int-node';
 import VectorNode from './vector-node';
 import VertexDataNode from './vertex-data-node';
+import WaterNode from './water-node';
 
 export const nodeTypes: NodeTypes = {
   transform: TransformNode,
@@ -40,4 +41,5 @@ export const nodeTypes: NodeTypes = {
   unsignedInt: UnsignedIntNode,
   loadGeo: LoadGeoNode,
   builtinGeo: BuiltInGeoNode,
+  water: WaterNode,
 };

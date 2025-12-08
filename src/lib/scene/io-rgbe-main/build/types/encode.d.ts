@@ -1,4 +1,4 @@
-import { HDRImageData } from "./HDRImageData";
+import { HDRImageData } from './HDRImageData';
 /**
  * Encodes the HDRImageData or ImageData (LDR) to the RGBE file format.
  */

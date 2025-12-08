@@ -8,7 +8,7 @@ function toRadians(degrees: number) {
 }
 
 class CameraUniforms {
-  readonly buffer = new ArrayBuffer(288);
+  readonly buffer = new ArrayBuffer(304);
   private readonly floatView = new Float32Array(this.buffer, 0, 16);
   private readonly invProjMatView = new Float32Array(this.buffer, 64, 16);
   private readonly viewMatView = new Float32Array(this.buffer, 128, 16);
@@ -18,6 +18,7 @@ class CameraUniforms {
   private readonly cameraHeightView = new Float32Array(this.buffer, 276, 1);
   private readonly nearPlaneView = new Float32Array(this.buffer, 280, 1);
   private readonly farPlaneView = new Float32Array(this.buffer, 284, 1);
+  private readonly timeView = new Float32Array(this.buffer, 288, 1);
 
   set viewProjMat(mat: Float32Array) {
     this.floatView.set(mat.subarray(0, 16), 0);
@@ -54,6 +55,10 @@ class CameraUniforms {
   set farPlane(far: number) {
     this.farPlaneView[0] = far;
   }
+
+  set time(time: number) {
+    this.timeView[0] = time;
+  }
 }
 
 export class Camera {
@@ -69,6 +74,7 @@ export class Camera {
   pitch: number = 0;
   moveSpeed: number = 0.004;
   sensitivity: number = 0.15;
+  time: number = 0;
 
   static readonly nearPlane = 0.1;
   static readonly farPlane = 1000;
@@ -197,6 +203,8 @@ export class Camera {
   onFrame(deltaTime: number) {
     this.processInput(deltaTime);
 
+    this.time += deltaTime / 1000.0;
+
     const lookPos = vec3.add(this.cameraPos, vec3.scale(this.cameraFront, 1));
     const viewMat = mat4.lookAt(this.cameraPos, lookPos, [0, 1, 0]);
     const viewProjMat = mat4.mul(this.projMat, viewMat);
@@ -215,6 +223,8 @@ export class Camera {
     // write to extra buffers needed for light clustering here
     this.uniforms.viewMat = viewMat;
     this.uniforms.invViewMat = mat4.inverse(viewMat);
+
+    this.uniforms.time = this.time;
 
     // upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
     this.device.queue.writeBuffer(this.uniformsBuffer, 0, this.uniforms.buffer);

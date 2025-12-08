@@ -41,5 +41,8 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let u = 0.5 + (phi / (2.0 * 3.14159265));
     let v = 0.5 - (theta / 3.14159265);
     
-    return textureSample(hdrTex, hdrSampler, vec2f(u, v));
+    var color = textureSample(hdrTex, hdrSampler, vec2f(u, v));
+    color = pow(color, vec4f(1.0 / 2.2));
+
+    return color;
 }

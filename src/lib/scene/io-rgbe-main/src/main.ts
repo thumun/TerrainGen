@@ -1,3 +1,3 @@
-export * from "./HDRImageData";
-export * from "./decode";
-export * from "./encode";
+export * from './HDRImageData';
+export * from './decode';
+export * from './encode';
