@@ -24,6 +24,8 @@ TerrainGen is a single-page web application using WebGPU to create a real-time n
 
 ## How to Use
 
+For a more in-depth look at how to use each node/feature, check out the **[project wiki](https://github.com/thumun/TerrainGen/wiki)**.
+
 ### Window Layout
 
 <img width="900" height="945" alt="image" src="https://github.com/user-attachments/assets/3572e3e8-1551-47da-ae8d-d7ba98b7e206" />
@@ -91,73 +93,6 @@ With glTFs, base color textures can be displayed.
   - Custom models
     - [x] OBJ import
     - [x] glTF import
-
-### Input Nodes
-
-#### Vertex Data
-
-This node outputs the position of the verticies. Nodes connected to this one can be used to offset these positions.
-<img width="378" height="174" alt="image" src="https://github.com/user-attachments/assets/38adfa94-68c6-42cb-8bd6-b7689630da02" />
-
-#### Geometry
-
-These nodes all work the same functionally. In that, they load a chosen model based on user input after connected to the **instancing (output)** node.
-|<img width="379" height="241" alt="image" src="https://github.com/user-attachments/assets/aa79ad21-5101-40a2-9b4e-874bb0944ef5" /> | <img width="373" height="241" alt="image" src="https://github.com/user-attachments/assets/91e9f8f0-09c5-4d9a-9ab1-5a317ee425d2" /> | <img width="481" height="261" alt="Screenshot 2025-12-01 135707" src="https://github.com/user-attachments/assets/0a9cf638-f27d-43b0-94fb-de3d3d76534d" /> |
--------------------------- | -------------------------- | -------------------------- |
-A user can add primitive geometry with this node (cube, sphere, plane) | A user can load their personal models with this node (only OBJ is supported for the time being) | A user can choose between our custom built-in geometry (ex. trees, rocks) to add to the terrain rather than upload their own |
-
-#### Float
-
-This node allows for an input float variable.
-
-<img width="320" height="197" alt="image" src="https://github.com/user-attachments/assets/27a5aca0-a385-470a-ba32-99a32d944072" />
-
-#### Vector
-
-This node allows for an input vec3f variable.
-
-<img width="318" height="325" alt="image" src="https://github.com/user-attachments/assets/417311ad-3078-410a-93ca-5e866f0d6d0f" />
-
-#### Unsigned Int
-
-This node allows for an input unsigned int variable.
-
-<img width="321" height="208" alt="image" src="https://github.com/user-attachments/assets/1109f959-3dec-4e72-911f-de0c8c3880cc" />
-
-### Utility Nodes
-
-| Separate XYZ                                                                                                                       | Combine XYZ                                                                                                                        |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| <img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" /> |
-| This node separates an input of type vec3f to three floats (x, y, z)                                                               | This node combines three float inputs into one vec3f                                                                               |
-
-### Geometry Nodes
-
--- Will be added --
-
-### Operator Nodes
-
-### Math
-
-| Math                                                                                                                                                                 | Trig Math                                                                                                                          | Mix                                                                                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| <img width="352" height="325" alt="image" src="https://github.com/user-attachments/assets/56f5bf4e-05ad-45fc-996b-010a88bfa42c" />                                   | <img width="396" height="317" alt="image" src="https://github.com/user-attachments/assets/4da26921-8eb5-4b22-ab87-7a5bfe9fdff3" /> | <img width="370" height="334" alt="image" src="https://github.com/user-attachments/assets/c23e180c-956c-4230-b1f8-0e3f4d65aba2" /> |
-| This node can be used to apply one of the following operations (add, subtract, multiply, divide) to two inputs (float or vec3f) and returns a value of the same type | This node applies a trig function to an input value and returns a float output                                                     | This node linearly interporaltes between the two input values based on the mix value                                               |
-
-### Noise
-
--- Will be added --
-
-### Output Nodes
-
-| Terrain                                                                                                                            | Instancing                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <img width="340" height="306" alt="image" src="https://github.com/user-attachments/assets/d1d2e9f2-9d14-4c8e-8d8f-07c4b0350d6b" /> | <img width="330" height="300" alt="image" src="https://github.com/user-attachments/assets/cd8947c4-a7f5-4eb5-80b0-b31d0ce896c1" />               |
-| This node triggers the terrain pipeline if the height float input is connected to a valid node.                                    | This node triggers the instancing pipeline. The pipeline is only run/rerun if both the scatter and geometry inputs are connected to valid nodes. |
-
-## Development
-
-To run this application:
 
 ```bash
 npm install
