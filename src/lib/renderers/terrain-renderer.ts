@@ -197,11 +197,7 @@ export class TerrainRenderer implements IRenderer {
     });
 
     // Initialize with 0
-    this.device.queue.writeBuffer(
-      this.waterHeightUniformBuffer,
-      0,
-      new Float32Array([0.0])
-    );
+    this.device.queue.writeBuffer(this.waterHeightUniformBuffer, 0, new Float32Array([0.0]));
 
     this.waterHeightBindGroupLayout = this.device.createBindGroupLayout({
       label: 'water height bind group layout',
@@ -854,9 +850,13 @@ export class TerrainRenderer implements IRenderer {
       console.log('Water height output key:', config.outputs.waterHeight);
 
       const waterHeightKey = config.outputs.waterHeight.replace('nodeGraphUniforms.', '');
-      const waterHeightUniform = config.uniforms.find(u => u.key === waterHeightKey);
+      const waterHeightUniform = config.uniforms.find((u) => u.key === waterHeightKey);
 
-      if (waterHeightUniform && waterHeightUniform.type === 'f32' && waterHeightUniform.initialValue !== null) {
+      if (
+        waterHeightUniform &&
+        waterHeightUniform.type === 'f32' &&
+        waterHeightUniform.initialValue !== null
+      ) {
         this.setWaterHeightForTerrain(waterHeightUniform.initialValue);
       }
     }
@@ -1152,11 +1152,7 @@ export class TerrainRenderer implements IRenderer {
 
   setWaterHeightForTerrain(height: number) {
     this.currentWaterHeight = height;
-    this.device.queue.writeBuffer(
-      this.waterHeightUniformBuffer,
-      0,
-      new Float32Array([height])
-    );
+    this.device.queue.writeBuffer(this.waterHeightUniformBuffer, 0, new Float32Array([height]));
     console.log('Updated water height for terrain fragment shader:', height);
   }
 }

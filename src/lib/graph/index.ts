@@ -78,7 +78,9 @@ function generatePipelines(
     );
 
     const waterHeightEdge = edges.find(
-      (edge) => edge.target === terrainNode.id && edge.targetHandle === nodeTypes.HANDLES.terrain.in.waterHeight
+      (edge) =>
+        edge.target === terrainNode.id &&
+        edge.targetHandle === nodeTypes.HANDLES.terrain.in.waterHeight,
     );
     const waterHeightSourceNode = waterHeightEdge
       ? orderedDependencyNodes.find((node) => node.id === waterHeightEdge.source)
@@ -90,12 +92,13 @@ function generatePipelines(
         sourceNode: heightEdgeSourceNode!,
         outgoingHandleId: heightEdge!.sourceHandle!,
       }),
-      waterHeight: waterHeightSourceNode && waterHeightEdge
-        ? nodeMapping.getHandleKey({
-          sourceNode: waterHeightSourceNode,
-          outgoingHandleId: waterHeightEdge.sourceHandle!,
-        })
-        : undefined,
+      waterHeight:
+        waterHeightSourceNode && waterHeightEdge
+          ? nodeMapping.getHandleKey({
+              sourceNode: waterHeightSourceNode,
+              outgoingHandleId: waterHeightEdge.sourceHandle!,
+            })
+          : undefined,
     };
 
     displacePipeline = { instructionSet, uniforms, outputs };
@@ -257,9 +260,9 @@ function generatePipelines(
       maskKey:
         maskSourceNode && maskEdge
           ? nodeMapping.getHandleKey({
-            sourceNode: maskSourceNode,
-            outgoingHandleId: maskEdge.sourceHandle!,
-          })
+              sourceNode: maskSourceNode,
+              outgoingHandleId: maskEdge.sourceHandle!,
+            })
           : undefined,
       threshold: scatterNode.data.threshold,
       transform: transformConfig,
